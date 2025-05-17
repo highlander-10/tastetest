@@ -84,6 +84,7 @@
                 <button id="copy-session-link-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg text-sm mt-2 mb-2 transition duration-150 shadow-sm">Copy Session Link</button>
                 <button id="refresh-admin-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg text-sm mb-4 transition duration-150 shadow-sm">Refresh Session Data</button>
 
+
                 <div class="space-y-3 my-4">
                     <button id="admin-rate-locations-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm"> Rate Locations (As Phill) </button>
                     <button id="admin-customize-questions-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm"> Customize Rating Questions </button>
@@ -149,7 +150,7 @@
 
 <script>
     // --- CONFIGURATION ---
-    const APP_PREFIX = 'margaritaTrackerV2_'; // For global player ID/Name localStorage only
+    const APP_PREFIX = 'margaritaTrackerV2_';
     const DEFAULT_RATING_CRITERIA_TEXT = [
         'Taste', 'Sweetness', 'Spiciness (if any)', 'Overall Quality',
         'Service Efficiency', 'Atmosphere', 'Value for Cost'
@@ -188,9 +189,11 @@
     const winnerScreen = document.getElementById('winner-screen');
     const screens = [welcomeScreen, adminCriteriaSetupScreen, adminScreen, playerScreen, resultsScreen, winnerScreen].filter(s => s);
     const phillStartsSessionBtn = document.getElementById('phill-starts-session-btn');
+    console.log("SCRIPT START: phillStartsSessionBtn DOM element check:", phillStartsSessionBtn);
     const joinSessionIdInput = document.getElementById('join-session-id-input');
     const playerNameJoinInput = document.getElementById('player-name-join-input');
     const joinSessionBtn = document.getElementById('join-session-btn');
+    console.log("SCRIPT START: joinSessionBtn DOM element check:", joinSessionBtn);
     const criteriaListEditor = document.getElementById('criteria-list-editor');
     const newCriterionInput = document.getElementById('new-criterion-input');
     const addCriterionBtn = document.getElementById('add-criterion-btn');
@@ -202,6 +205,7 @@
     const adminCustomizeQuestionsBtn = document.getElementById('admin-customize-questions-btn');
     const locationNameInput = document.getElementById('location-name-input');
     const addLocationBtn = document.getElementById('add-location-btn');
+    console.log("SCRIPT START: addLocationBtn DOM element check:", addLocationBtn);
     const adminLocationsList = document.getElementById('admin-locations-list');
     const adminPlayersList = document.getElementById('admin-players-list');
     const resetSessionBtn = document.getElementById('reset-session-btn');
@@ -230,7 +234,8 @@
     const refreshWelcomeBtn = document.getElementById('refresh-welcome-btn');
     const refreshAdminBtn = document.getElementById('refresh-admin-btn');
     const refreshPlayerBtn = document.getElementById('refresh-player-btn');
-    console.log("SCRIPT START: DOM element checks completed. phillStartsSessionBtn:", phillStartsSessionBtn, "joinSessionBtn:", joinSessionBtn, "addLocationBtn:", addLocationBtn);
+    console.log("SCRIPT START: Finished getting DOM elements.");
+
 
     // --- STATE VARIABLES ---
     let currentSessionId = null;
@@ -439,7 +444,10 @@
             } catch (error) { console.error("session.joinSession: Failed:", error); }
         },
         fetchAndUpdateCurrentSession: async () => {
-            if (!currentSessionId) { console.log("fetchAndUpdateCurrentSession: No current session ID to refresh."); return false; }
+            if (!currentSessionId) {
+                console.log("fetchAndUpdateCurrentSession: No current session ID to refresh.");
+                return false;
+            }
             console.log(`WorkspaceAndUpdateCurrentSession: Refreshing session #${currentSessionId}`);
             try {
                 const latestSessionData = await fetchApi(`/api/session/${currentSessionId}`);
@@ -452,9 +460,17 @@
                         else if (activeScreenElement === playerScreen) ui.renderPlayerScreen();
                         else if (activeScreenElement === resultsScreen) ui.renderResultsScreen();
                     }
+                    utils.showAlert("Session data refreshed!", "Refreshed");
                     return true;
-                } else { utils.showAlert(`Could not refresh session #${currentSessionId}. It may no longer exist.`, "Refresh Error"); return false; }
-            } catch (error) { console.error(`WorkspaceAndUpdateCurrentSession: Failed for session #${currentSessionId}:`, error); return false; }
+                } else {
+                    utils.showAlert(`Could not refresh session #${currentSessionId}. It may no longer exist or there was a server error.`, "Refresh Error");
+                    return false;
+                }
+            } catch (error) {
+                console.error(`WorkspaceAndUpdateCurrentSession: Failed for session #${currentSessionId}:`, error);
+                // Alert is usually shown by fetchApi
+                return false;
+            }
         },
         leaveSession: () => {
             console.log("session.leaveSession: Called");
@@ -467,7 +483,7 @@
         resetSession: async () => {
             console.log("session.resetSession: Called");
             if (!isAdmin || !currentSessionId) { utils.showAlert("Only admin can reset an active session.", "Action Denied"); return; }
-            utils.showAlert("Reset session? This deletes all locations and ratings.", "Confirm Reset")
+            utils.showAlert("Are you sure you want to reset the entire session? This will delete all locations and ratings.", "Confirm Reset")
             .then(async (confirmed) => {
                 if (confirmed && confirm("FINAL CONFIRMATION: Reset all session data?")) {
                     try {
@@ -530,48 +546,557 @@
 
     // --- UI RENDERING AND UPDATES ---
     const ui = {
-        renderCriteriaEditor: () => { /* ... (Full implementation from previous correct block) ... */ },
-        renderAdminScreen: () => { /* ... (Full implementation from previous correct block) ... */ },
-        renderPlayerScreen: () => { /* ... (Full implementation from previous correct block, including default middle rating logic) ... */ },
-        calculateAverageOverallScoreForLocation: (locationId) => { /* ... (Full implementation from previous correct block) ... */ },
-        renderResultsScreen: () => { /* ... (Full implementation from previous correct block, with no-ratings message and per-criterion winner) ... */ },
-        renderWinnerScreen: () => { /* ... (Full implementation from previous correct block, with MARGARITA_IMAGE_URL and trivia) ... */ },
-        handleStorageChange: (event) => { /* This function is no longer used with server-side state, can be removed or left empty */ console.log("Storage event (no longer primary data source):", event);}
-    };
-    // To complete UI section, copy full function bodies from previous complete answer.
+        renderCriteriaEditor: () => {
+            console.log("ui.renderCriteriaEditor: Called. tempRatingCriteria:", tempRatingCriteria ? tempRatingCriteria.length : 'null');
+            if (!criteriaListEditor) { console.error("ui.renderCriteriaEditor: criteriaListEditor is null!"); return; }
+            criteriaListEditor.innerHTML = '';
+            if (!tempRatingCriteria || tempRatingCriteria.length === 0) {
+                 criteriaListEditor.innerHTML = '<p class="text-gray-500 italic p-2">No criteria defined. Add some below.</p>';
+            } else {
+                tempRatingCriteria.forEach((crit, index) => {
+                    const critDiv = document.createElement('div');
+                    critDiv.className = 'flex items-center space-x-2 p-2 border rounded-md bg-gray-100';
+                    const critInput = document.createElement('input'); critInput.type = 'text'; critInput.value = crit.text;
+                    critInput.className = 'flex-grow p-2 border border-gray-300 rounded-md text-sm shadow-sm';
+                    critInput.onchange = (e) => { if(tempRatingCriteria[index]) tempRatingCriteria[index].text = e.target.value.trim(); };
+                    const removeBtn = document.createElement('button'); removeBtn.innerHTML = '&times;';
+                    removeBtn.className = 'bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2.5 rounded-md text-sm leading-tight';
+                    removeBtn.onclick = () => { tempRatingCriteria.splice(index, 1); ui.renderCriteriaEditor(); };
+                    critDiv.appendChild(critInput); critDiv.appendChild(removeBtn);
+                    criteriaListEditor.appendChild(critDiv);
+                });
+            }
+        },
+        renderAdminScreen: () => {
+            console.log("ui.renderAdminScreen: Called. isAdmin:", isAdmin, "SessionData exists:", !!sessionData);
+            if (!sessionData || !isAdmin) {
+                console.error("ui.renderAdminScreen: Conditions not met. Bailing to welcome screen.");
+                utils.showScreen(welcomeScreen); return;
+            }
+            if (!adminScreen) { console.error("ui.renderAdminScreen: adminScreen element is null!"); return; }
+            utils.showScreen(adminScreen);
 
-    // --- ACTIONS (client-side that call API) ---
+            if (adminSessionIdDisplay) adminSessionIdDisplay.textContent = currentSessionId; else console.error("adminSessionIdDisplay is null!");
+            if (locationNameInput) locationNameInput.value = ""; else console.error("locationNameInput is null!");
+            
+            if (adminCustomizeQuestionsBtn) {
+                const hasRatings = sessionData.locations.some(loc => loc.ratings && loc.ratings.length > 0);
+                adminCustomizeQuestionsBtn.disabled = hasRatings;
+                adminCustomizeQuestionsBtn.title = hasRatings ? "Questions cannot be changed after ratings have started." : "Customize rating questions.";
+            } else { console.error("adminCustomizeQuestionsBtn is null!"); }
+
+
+            if (adminLocationsList) {
+                adminLocationsList.innerHTML = '';
+                if (!sessionData.locations || sessionData.locations.length === 0) { adminLocationsList.innerHTML = '<p class="text-gray-500 italic p-2">No locations added yet.</p>'; }
+                else {
+                    sessionData.locations.forEach(loc => {
+                        const locElement = document.createElement('div');
+                        locElement.className = 'p-3 border rounded-lg bg-white shadow-sm';
+                        const totalRatings = loc.ratings ? loc.ratings.length : 0;
+                        const avgOverallScore = ui.calculateAverageOverallScoreForLocation(loc.id);
+                        locElement.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-semibold text-gray-800">${loc.name}</h3>
+                                <button data-location-id="${loc.id}" class="remove-location-btn text-red-500 hover:text-red-700 text-xs font-medium p-1 rounded-full hover:bg-red-100">&times; Remove</button>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1">Ratings: ${totalRatings} | Avg Score: ${avgOverallScore ? avgOverallScore.toFixed(1) + '/5' : 'N/A'}</p>
+                        `;
+                        adminLocationsList.appendChild(locElement);
+                    });
+                    document.querySelectorAll('#admin-locations-list .remove-location-btn').forEach(btn => {
+                        const newBtn = btn.cloneNode(true);
+                        btn.parentNode.replaceChild(newBtn, btn);
+                        newBtn.addEventListener('click', (e) => {
+                             const locId = e.currentTarget.dataset.locationId;
+                             if (!sessionData || !sessionData.locations) return;
+                             const locData = sessionData.locations.find(l=>l.id === locId);
+                             const locName = locData ? locData.name : 'this location';
+                             // actions.removeLocation will handle confirm
+                             actions.removeLocation(locId, locName);
+                        });
+                    });
+                }
+            } else { console.error("adminLocationsList is null!");}
+
+            if (adminPlayersList) {
+                adminPlayersList.innerHTML = '';
+                if (sessionData.players) { sessionData.players.forEach(player => {
+                    const playerLi = document.createElement('li');
+                    playerLi.className = `p-2 rounded-md text-sm ${player.id === PHILL_ADMIN_ID ? 'bg-green-100 text-green-700 font-semibold' : 'bg-blue-50 text-blue-600'}`;
+                    playerLi.textContent = `${player.name} ${player.id === PHILL_ADMIN_ID ? '(Admin)' : ''}`;
+                    adminPlayersList.appendChild(playerLi);
+                });} else { console.warn("ui.renderAdminScreen: sessionData.players is undefined or null.");}
+            } else { console.error("adminPlayersList is null!");}
+            console.log("ui.renderAdminScreen: Successfully finished.");
+        },
+        renderPlayerScreen: () => {
+            console.log("ui.renderPlayerScreen: Called. CurrentPlayerName:", currentPlayerName, "isAdmin:", isAdmin);
+            if (!sessionData) { console.error("ui.renderPlayerScreen: No sessionData!"); utils.showScreen(welcomeScreen); return; }
+            if (!playerScreen) { console.error("ui.renderPlayerScreen: playerScreen element is null!"); return; }
+            utils.showScreen(playerScreen);
+
+            const isPhillRatingAsAdmin = isAdmin && currentPlayerId === PHILL_ADMIN_ID;
+            const displayNameForScreen = isPhillRatingAsAdmin ? "Phill (Admin Rating)" : (currentPlayerName || "Player");
+            
+            if (playerNameDisplay) playerNameDisplay.textContent = displayNameForScreen; else console.error("playerNameDisplay is null");
+            if (playerSessionIdDisplay) playerSessionIdDisplay.textContent = currentSessionId; else console.error("playerSessionIdDisplay is null");
+            if (playerScreenTitle) playerScreenTitle.textContent = isPhillRatingAsAdmin ? "My Ratings (Admin)" : "Rate Margaritas!"; else console.error("playerScreenTitle is null");
+
+            if (playerLeaveSessionBtn) {
+                playerLeaveSessionBtn.textContent = isPhillRatingAsAdmin ? 'Back to Admin Panel' : 'Leave Session';
+            } else { console.error("playerLeaveSessionBtn is null"); }
+
+            if(!playerLocationsList) { console.error("playerLocationsList is null!"); return;}
+            playerLocationsList.innerHTML = '';
+
+            if(playerNoLocationsMsg) {
+                playerNoLocationsMsg.classList.toggle('hidden', sessionData.locations && sessionData.locations.length > 0);
+            } else { console.error("playerNoLocationsMsg is null!");}
+
+            if (sessionData.locations && sessionData.ratingCriteria) {
+                sessionData.locations.forEach(loc => {
+                    const locDiv = document.createElement('div');
+                    locDiv.className = 'p-4 border border-gray-200 rounded-lg bg-white shadow';
+                    locDiv.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-blue-600">${loc.name}</h3>`;
+                    const form = document.createElement('form');
+                    form.dataset.locationId = loc.id; form.className = 'space-y-4';
+                    const existingRating = loc.ratings.find(r => r.playerId === currentPlayerId);
+
+                    sessionData.ratingCriteria.forEach(criterion => {
+                        const critDiv = document.createElement('div'); critDiv.className = 'flex flex-col';
+                        const label = document.createElement('label');
+                        label.htmlFor = `rating-${loc.id}-${criterion.id}`; label.textContent = `${criterion.text}:`;
+                        label.className = 'mb-1 text-sm font-medium text-gray-700';
+                        const select = document.createElement('select');
+                        select.id = `rating-${loc.id}-${criterion.id}`; select.name = criterion.id;
+                        select.className = 'p-2.5 border border-gray-300 rounded-lg text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm bg-white';
+                        select.innerHTML = `<option value="">- Rate (1-5) -</option>`;
+                        for (let i = 1; i <= MAX_RATING; i++) {
+                            const option = document.createElement('option');
+                            option.value = i; option.textContent = `${i} star${i > 1 ? 's' : ''}`;
+                            if (existingRating && existingRating.criteria && existingRating.criteria[criterion.id] !== undefined && existingRating.criteria[criterion.id] == i) {
+                                option.selected = true;
+                            } else if (!existingRating && i === DEFAULT_MIDDLE_RATING) {
+                                option.selected = true;
+                            }
+                            select.appendChild(option);
+                        }
+                        critDiv.appendChild(label); critDiv.appendChild(select); form.appendChild(critDiv);
+                    });
+
+                    const commentsLabel = document.createElement('label'); commentsLabel.htmlFor = `comments-${loc.id}`; commentsLabel.textContent = 'Comments (optional):'; commentsLabel.className = 'text-sm font-medium text-gray-700 mt-2 block';
+                    const commentsTextarea = document.createElement('textarea'); commentsTextarea.id = `comments-${loc.id}`; commentsTextarea.name = 'comments'; commentsTextarea.rows = 2; commentsTextarea.placeholder = 'Any notes...'; commentsTextarea.className = 'w-full p-2.5 border border-gray-300 rounded-lg text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm';
+                    if (existingRating && existingRating.comments) commentsTextarea.value = existingRating.comments;
+
+                    const submitBtn = document.createElement('button'); submitBtn.type = 'submit'; submitBtn.textContent = existingRating ? 'Update Rating' : 'Submit Rating'; submitBtn.className = 'w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 mt-3 shadow-sm text-base';
+
+                    form.appendChild(commentsLabel); form.appendChild(commentsTextarea); form.appendChild(submitBtn); locDiv.appendChild(form);
+
+                    const otherRatingsDiv = document.createElement('div'); otherRatingsDiv.className = 'mt-5 pt-4 border-t border-gray-200'; otherRatingsDiv.innerHTML = `<h4 class="text-sm font-semibold text-gray-600 mb-1">Other Players' Ratings:</h4>`;
+                    const ratingsListUL = document.createElement('ul'); ratingsListUL.className = 'list-none text-xs space-y-1';
+                    let hasOtherRatings = false;
+                    if(loc.ratings && Array.isArray(loc.ratings)) {
+                        loc.ratings.forEach(r => {
+                            if (r.playerId === currentPlayerId) return;
+                            const p = sessionData.players.find(pl => pl.id === r.playerId);
+                            if (p) {
+                                hasOtherRatings = true;
+                                const numCriteriaInRating = r.criteria ? Object.keys(r.criteria).length : 0;
+                                const sumOfCriteriaForRating = numCriteriaInRating > 0 ? Object.values(r.criteria).reduce((sum, val) => sum + (Number(val) || 0), 0) : 0;
+                                const avgScoreForPlayer = numCriteriaInRating > 0 ? (sumOfCriteriaForRating / numCriteriaInRating) : 0;
+                                ratingsListUL.innerHTML += `<li class="text-gray-500"><strong>${p.name}:</strong> Rated (Avg: ${avgScoreForPlayer.toFixed(1)}/5) ${r.comments ? `<span class="italic">- "${r.comments}"</span>` : ''}</li>`;
+                            }
+                        });
+                    }
+                    if (!hasOtherRatings) ratingsListUL.innerHTML = '<li class="text-gray-400 italic">No other ratings yet.</li>';
+                    otherRatingsDiv.appendChild(ratingsListUL); locDiv.appendChild(otherRatingsDiv); playerLocationsList.appendChild(locDiv);
+
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault(); const formData = new FormData(e.target); const locationId = e.target.dataset.locationId;
+                        const ratings = {}; let ratedSomething = false;
+                        if (sessionData.ratingCriteria) {
+                            sessionData.ratingCriteria.forEach(c => {
+                                const val = formData.get(c.id);
+                                if (val && val !== "") { ratings[c.id] = parseInt(val, 10); ratedSomething = true; }
+                            });
+                        }
+                        if (!ratedSomething) { utils.showAlert("Please rate at least one criterion before submitting.", "Rating Needed"); return; }
+                        const comments = formData.get('comments').trim();
+                        actions.submitRating(locationId, ratings, comments);
+                        submitBtn.textContent = 'Rating Submitted!'; submitBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        setTimeout(() => {
+                            const currentLocData = sessionData.locations.find(l => l.id === locationId);
+                            const stillExistingRating = currentLocData ? currentLocData.ratings.find(r_1 => r_1.playerId === currentPlayerId) : null;
+                            submitBtn.textContent = stillExistingRating ? 'Update Rating' : 'Submit Rating';
+                            submitBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                            submitBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                        }, 2000);
+                    });
+                });
+            } else {
+                console.error("ui.renderPlayerScreen: sessionData.locations or sessionData.ratingCriteria is missing!");
+                if(playerLocationsList) playerLocationsList.innerHTML = "<p class='text-red-500 p-4'>Error: Could not load location rating criteria.</p>";
+            }
+            console.log("ui.renderPlayerScreen: Finished.");
+        },
+        calculateAverageOverallScoreForLocation: (locationId) => {
+            if (!sessionData || !sessionData.locations) return null;
+            const location = sessionData.locations.find(loc => loc.id === locationId);
+            if (!location || !location.ratings || location.ratings.length === 0) return null;
+            let totalScoreSum = 0; let numRatingsCounted = 0;
+            location.ratings.forEach(rating => {
+                if (!rating.criteria) return;
+                const criteriaValues = Object.values(rating.criteria).map(Number).filter(v => !isNaN(v));
+                if (criteriaValues.length > 0) {
+                    const sumOfCriteriaForRating = criteriaValues.reduce((sum, val) => sum + val, 0);
+                    totalScoreSum += (sumOfCriteriaForRating / criteriaValues.length);
+                    numRatingsCounted++;
+                }
+            });
+            return numRatingsCounted > 0 ? totalScoreSum / numRatingsCounted : null;
+        },
+        renderResultsScreen: () => {
+            console.log("ui.renderResultsScreen: Called");
+            if (!sessionData) { utils.showAlert("No session data to show results.", "No Data"); utils.showScreen(isAdmin ? adminScreen : playerScreen); return; }
+            lastViewedScreenBeforeResults = document.getElementById('admin-screen').classList.contains('hidden') === false ? adminScreen : playerScreen;
+            utils.showScreen(resultsScreen);
+
+            if (resultsSessionIdDisplay) resultsSessionIdDisplay.textContent = currentSessionId; else console.error("resultsSessionIdDisplay is null");
+            if (!resultsSummary) { console.error("resultsSummary is null"); return; }
+            resultsSummary.innerHTML = '';
+             if (resultsTrivia) resultsTrivia.textContent = utils.getRandomTrivia(); else console.error("resultsTrivia element for results screen is null");
+
+
+            const allLocationsHaveNoRatings = sessionData.locations.every(loc => !loc.ratings || loc.ratings.length === 0);
+
+            if (!sessionData.locations || sessionData.locations.length === 0 || allLocationsHaveNoRatings) {
+                resultsSummary.innerHTML = '<p class="text-gray-500 italic p-4 text-center">No ratings have been submitted for any location yet.</p>';
+                if (viewWinnerBtn) viewWinnerBtn.classList.add('hidden'); else console.error("viewWinnerBtn is null for results screen");
+                return;
+            }
+
+            const perCriterionWinners = {};
+            if (sessionData.ratingCriteria) {
+                sessionData.ratingCriteria.forEach(criterion => {
+                    let bestScore = -1; let winnerLocs = [];
+                    sessionData.locations.forEach(loc => {
+                        let critSum = 0; let critCount = 0;
+                        if (loc.ratings) {
+                            loc.ratings.forEach(r => { if (r.criteria && r.criteria[criterion.id] !== undefined) { critSum += Number(r.criteria[criterion.id]); critCount++; }});
+                        }
+                        const avgCritScore = critCount > 0 ? critSum / critCount : -1;
+                        if (avgCritScore > bestScore) { bestScore = avgCritScore; winnerLocs = [loc.id]; }
+                        else if (avgCritScore === bestScore && bestScore !== -1) { winnerLocs.push(loc.id); }
+                    });
+                    if (winnerLocs.length > 0) perCriterionWinners[criterion.id] = { locations: winnerLocs, score: bestScore };
+                });
+            } else { console.warn("ui.renderResultsScreen: sessionData.ratingCriteria is undefined.");}
+
+
+            sessionData.locations.forEach(loc => {
+                const locResultDiv = document.createElement('div');
+                locResultDiv.className = 'p-4 border rounded-lg mb-6 bg-white shadow-lg';
+                locResultDiv.innerHTML = `<h3 class="text-2xl font-semibold mb-4 text-indigo-700">${loc.name}</h3>`;
+                let criteriaTableHtml = '<table class="min-w-full text-sm mb-4"><thead><tr class="border-b"><th class="pb-2 text-left font-semibold text-gray-600">Criterion</th><th class="pb-2 text-right font-semibold text-gray-600">Avg. Rating</th></tr></thead><tbody>';
+                if (sessionData.ratingCriteria) {
+                    sessionData.ratingCriteria.forEach(c => {
+                        let critSum = 0; let critCount = 0;
+                        if (loc.ratings) {
+                            loc.ratings.forEach(r => { if (r.criteria && r.criteria[c.id] !== undefined) { critSum += Number(r.criteria[c.id]); critCount++; }});
+                        }
+                        const avg = critCount > 0 ? (critSum / critCount).toFixed(1) : 'N/A';
+                        let winnerBadgeHtml = ''; let rowClass = '';
+                        if (perCriterionWinners[c.id] && perCriterionWinners[c.id].locations.includes(loc.id)) {
+                            winnerBadgeHtml = `<span class="winner-badge">TOP ⭐</span>`;
+                            rowClass = 'criterion-winner font-semibold';
+                        }
+                        criteriaTableHtml += `<tr class="border-b border-gray-100 ${rowClass}"><td class="py-2 pr-2">${c.text}</td><td class="py-2 text-right">${avg}${avg !== 'N/A' ? '/5' : ''} ${winnerBadgeHtml}</td></tr>`;
+                    });
+                }
+                criteriaTableHtml += '</tbody></table>'; locResultDiv.innerHTML += criteriaTableHtml;
+                let individualRatingsHtml = `<details class="mt-2"><summary class="text-xs font-medium text-gray-500 cursor-pointer hover:text-indigo-600">Show Individual Ratings (${loc.ratings ? loc.ratings.length : 0})</summary><div class="mt-2 space-y-2 text-xs">`;
+                if (!loc.ratings || loc.ratings.length === 0) individualRatingsHtml += '<p class="text-gray-500 italic">No individual ratings for this location.</p>';
+                else {
+                     loc.ratings.forEach(r => {
+                        const p = sessionData.players.find(pl => pl.id === r.playerId);
+                        individualRatingsHtml += `<div class="p-2 bg-gray-50 border rounded-md"><strong class="text-gray-700">${p ? p.name : 'Unknown'}:</strong> `;
+                        if (sessionData.ratingCriteria && r.criteria) {
+                            const ratingBreakdown = sessionData.ratingCriteria.map(crit => `<span class="ml-1">${crit.text}: <span class="font-semibold">${r.criteria[crit.id] !== undefined ? r.criteria[crit.id] + '/5' : 'N/A'}</span></span>`).join(', ');
+                            individualRatingsHtml += `${ratingBreakdown}.`;
+                        }
+                        individualRatingsHtml += ` ${r.comments ? `<em class="text-gray-600 block mt-1 pl-2 italic">"${r.comments}"</em>` : ''}</div>`;
+                    });
+                }
+                individualRatingsHtml += '</div></details>'; locResultDiv.innerHTML += individualRatingsHtml; resultsSummary.appendChild(locResultDiv);
+            });
+            if (viewWinnerBtn) viewWinnerBtn.classList.toggle('hidden', allLocationsHaveNoRatings || sessionData.locations.length === 0);
+            console.log("ui.renderResultsScreen: Finished.");
+        },
+        renderWinnerScreen: () => {
+            console.log("ui.renderWinnerScreen: Called");
+            if (!sessionData || !sessionData.locations || sessionData.locations.length === 0) {
+                utils.showAlert("No locations to determine a winner.").then(() => utils.showScreen(resultsScreen));
+                return;
+            }
+            let winningLocation = null; let highestAvgScore = -1;
+            sessionData.locations.forEach(loc => {
+                const avgScore = ui.calculateAverageOverallScoreForLocation(loc.id);
+                if (avgScore !== null && avgScore > highestAvgScore) { highestAvgScore = avgScore; winningLocation = loc; }
+                else if (avgScore !== null && avgScore === highestAvgScore) { if (winningLocation && loc.name < winningLocation.name) winningLocation = loc; else if (!winningLocation) winningLocation = loc; }
+            });
+
+            if (!winningLocationDetails || !winnerImageElement || !winnerTrophyFallback) {
+                console.error("ui.renderWinnerScreen: One or more winner screen elements are null!");
+                return;
+            }
+            if (winningLocation) {
+                winningLocationDetails.innerHTML = `<h2 class="text-2xl font-bold text-green-600 mb-2">${winningLocation.name}</h2><p class="text-lg text-gray-700">With an average score of <strong class="text-xl">${highestAvgScore.toFixed(2)} / 5</strong> stars!</p><p class="mt-3 text-sm text-gray-500">Based on ${winningLocation.ratings ? winningLocation.ratings.length : 0} rating(s).</p>`;
+                winnerImageElement.src = MARGARITA_IMAGE_URL;
+                winnerImageElement.classList.remove('hidden');
+                if (winnerTrophyFallback) winnerTrophyFallback.classList.add('hidden');
+                winnerImageElement.onerror = () => {
+                    console.warn("Winner image (user-provided) failed to load. Showing fallback trophy.");
+                    if(winnerImageElement) winnerImageElement.classList.add('hidden');
+                    if (winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
+                };
+            } else {
+                winningLocationDetails.innerHTML = `<p class="text-lg text-gray-700">It's inconclusive... no clear winner from the ratings!</p>`;
+                if(winnerImageElement) winnerImageElement.classList.add('hidden');
+                if(winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
+            }
+            if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia(); else console.error("winnerTriviaElement for winner screen is null");
+            utils.showScreen(winnerScreen);
+        },
+        handleStorageChange: (event) => {
+            // This function is no longer used for primary data sync as data is on server.
+            // Could be used for other cross-tab client-side flags if needed in future.
+            console.log("ui.handleStorageChange: Storage event detected (not used for session data):", event.key);
+        }
+    };
+
+    // --- ACTIONS ---
     const actions = {
-        addCriterion: () => { /* ... (Full implementation from previous correct block) ... */ },
-        addLocation: async (name) => { /* ... (Full implementation from previous correct block, using fetchApi) ... */ },
-        removeLocation: async (locationId) => { /* ... (Full implementation from previous correct block, using fetchApi) ... */ },
-        submitRating: async (locationId, criteriaRatings, comments) => { /* ... (Full implementation from previous correct block, using fetchApi) ... */ }
-    };
-    // To complete Actions section, copy full function bodies from previous complete answer.
+        addCriterion: () => {
+            if (!newCriterionInput) { console.error("actions.addCriterion: newCriterionInput is null!"); return; }
+            const text = newCriterionInput.value.trim();
+            if (text) {
+                if (!tempRatingCriteria) tempRatingCriteria = [];
+                tempRatingCriteria.push({ id: `crit_${utils.generateId(4)}`, text: text });
+                newCriterionInput.value = '';
+                if (ui.renderCriteriaEditor) ui.renderCriteriaEditor(); else console.error("actions.addCriterion: ui.renderCriteriaEditor is undefined!");
+            } else utils.showAlert("Criterion text cannot be empty.");
+        },
+        addLocation: async (name) => {
+            console.log("actions.addLocation: Called with name -", `"${name}"`);
+            if (!isAdmin || !sessionData || !currentSessionId) { utils.showAlert("Only admin can add locations.", "Action Denied"); return; }
+            if (!utils.validateInput(name, 'text', 100, false)) { utils.showAlert("Invalid location name.", "Validation Error"); return; }
+            try {
+                const payload = {
+                    action: 'addLocation',
+                    payload: { name: name.trim(), addedBy: currentPlayerId } // currentPlayerId is PHILL_ADMIN_ID here
+                };
+                const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                sessionData = updatedSessionData;
+                ui.renderAdminScreen();
+                if (locationNameInput) locationNameInput.value = '';
+            } catch (error) { console.error("actions.addLocation: Failed", error); }
+        },
+        removeLocation: async (locationId, locationName) => { // Added locationName for confirm message
+            console.log("actions.removeLocation: Called for ID:", locationId);
+            if (!isAdmin || !sessionData || !currentSessionId) { utils.showAlert("Only admin can remove locations.", "Action Denied"); return; }
+            if (!confirm(`Are you sure you want to remove "${locationName || 'this location'}" and all its ratings?`)) return;
 
+            try {
+                 const payload = {
+                    action: 'removeLocation', // Server-side function needs to handle this
+                    payload: { locationId: locationId, adminId: currentPlayerId }
+                };
+                const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
+                    method: 'POST', // Or a DELETE method if your server function handles it differently
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                sessionData = updatedSessionData;
+                ui.renderAdminScreen();
+                 utils.showAlert("Location removed.", "Success");
+            } catch (error) {
+                console.error("actions.removeLocation: Failed", error);
+            }
+        },
+        submitRating: async (locationId, criteriaRatings, comments) => {
+            console.log("actions.submitRating: Called for loc:", locationId);
+            if (!sessionData || !currentSessionId || !currentPlayerId) { utils.showAlert("No active session to submit rating.", "Error"); return; }
+            if (comments && comments.length > 300) { utils.showAlert("Comments too long (max 300 chars)."); return; }
+
+            try {
+                const payload = {
+                    action: 'addRating',
+                    payload: {
+                        locationId: locationId,
+                        playerId: currentPlayerId,
+                        ratings: criteriaRatings,
+                        comments: comments
+                    }
+                };
+                const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                sessionData = updatedSessionData;
+                ui.renderPlayerScreen();
+            } catch (error) {
+                console.error("actions.submitRating: Failed", error);
+            }
+        }
+    };
 
     // --- EVENT LISTENERS ---
     const safeAddEventListener = (element, event, handler, elementName) => {
         console.log(`safeAddEventListener: Setting up '${event}' for '${elementName}'. Element found:`, !!element);
-        if (element) { element.addEventListener(event, handler); }
-        else { console.error(`Event Listener Setup FAILED: Element "${elementName}" not found. Check HTML ID.`); }
+        if (element) {
+            element.addEventListener(event, handler);
+        } else {
+            console.error(`Event Listener Setup FAILED: Element "${elementName}" not found in DOM. Check HTML ID.`);
+        }
     };
-    // (All safeAddEventListener calls from the previous complete block, including for new refresh buttons)
-    // Ensure refreshWelcomeBtn, refreshAdminBtn, refreshPlayerBtn listeners call session.fetchAndUpdateCurrentSession or session.checkUrlParams as appropriate
+
+    safeAddEventListener(phillStartsSessionBtn, 'click', () => {
+        console.log("PHILL STARTS SESSION BTN CLICKED (Raw Listener Test)");
+        session.startPhillAsAdmin();
+    } , 'phillStartsSessionBtn');
+
+    safeAddEventListener(joinSessionBtn, 'click', () => {
+        console.log("JOIN SESSION BTN CLICKED (Raw Listener Test)");
+        session.joinSession();
+    }, 'joinSessionBtn');
+
+    safeAddEventListener(addCriterionBtn, 'click', actions.addCriterion, 'addCriterionBtn');
+    safeAddEventListener(newCriterionInput, 'keypress', (e) => { if (e.key === 'Enter') actions.addCriterion(); }, 'newCriterionInput');
+    safeAddEventListener(confirmCriteriaChangesBtn, 'click', session.confirmCriteriaChanges, 'confirmCriteriaChangesBtn');
+    safeAddEventListener(cancelCriteriaChangesBtn, 'click', () => { if (ui.renderAdminScreen) ui.renderAdminScreen(); }, 'cancelCriteriaChangesBtn');
+    
+    safeAddEventListener(addLocationBtn, 'click', () => {
+        console.log("Add Location button clicked directly. Input value:", locationNameInput ? locationNameInput.value : "locationNameInput is null");
+        if (locationNameInput) actions.addLocation(locationNameInput.value);
+        else console.error("Add Location click: locationNameInput is null.");
+    }, 'addLocationBtn');
+
+    safeAddEventListener(locationNameInput, 'keypress', (e) => {
+        if (e.key === 'Enter') {
+            console.log("Enter key in location input (direct from listener). Value:", locationNameInput ? locationNameInput.value : "locationNameInput is null");
+            if (locationNameInput) actions.addLocation(locationNameInput.value);
+            else console.error("Add Location via Enter: locationNameInput is null.");
+        }
+    }, 'locationNameInput');
+
+    safeAddEventListener(resetSessionBtn, 'click', session.resetSession, 'resetSessionBtn');
+    safeAddEventListener(copySessionLinkBtn, 'click', () => {
+        if (currentSessionId) {
+            const shareableUrl = `${window.location.origin}${window.location.pathname}?session=${currentSessionId}`;
+            navigator.clipboard.writeText(shareableUrl)
+                .then(() => utils.showAlert("Session link copied!", "Link Copied"))
+                .catch(err => { console.error("Failed to copy link:",err); utils.showAlert("Failed to copy link.", "Error");});
+        } else { utils.showAlert("No active session to share.", "Error"); }
+    }, 'copySessionLinkBtn');
+
+    safeAddEventListener(adminRateLocationsBtn, 'click', () => {
+        if (isAdmin && currentSessionId) {
+            lastViewedScreenBeforeResults = adminScreen;
+            if (ui.renderPlayerScreen) ui.renderPlayerScreen(); else console.error("adminRateLocationsBtn: ui.renderPlayerScreen missing");
+        } else { utils.showAlert("Admin not active or no session.", "Error"); }
+    }, 'adminRateLocationsBtn');
+
+    safeAddEventListener(adminCustomizeQuestionsBtn, 'click', () => {
+        if (!adminCustomizeQuestionsBtn) { console.error("adminCustomizeQuestionsBtn is null in its own listener setup!"); return;}
+        if (adminCustomizeQuestionsBtn.disabled) { utils.showAlert("Rating questions cannot be changed after ratings have started.", "Customization Locked"); return; }
+        if (!sessionData) { utils.showAlert("No active session.", "Error"); return; }
+        tempRatingCriteria = JSON.parse(JSON.stringify(sessionData.ratingCriteria));
+        if (ui.renderCriteriaEditor) ui.renderCriteriaEditor(); else console.error("adminCustomizeQuestionsBtn: ui.renderCriteriaEditor missing");
+        utils.showScreen(adminCriteriaSetupScreen);
+    }, 'adminCustomizeQuestionsBtn');
+
+    safeAddEventListener(adminLeaveSessionBtn, 'click', session.leaveSession, 'adminLeaveSessionBtn');
+
+    safeAddEventListener(playerLeaveSessionBtn, 'click', () => {
+        const isPhillCurrentlyAdmin = isAdmin && currentPlayerId === PHILL_ADMIN_ID;
+        const onPlayerScreenView = playerScreen && !playerScreen.classList.contains('hidden');
+
+        if (isPhillCurrentlyAdmin && onPlayerScreenView) {
+            if (ui.renderAdminScreen) ui.renderAdminScreen(); else console.error("playerLeaveSessionBtn (admin context): ui.renderAdminScreen missing");
+            utils.showScreen(adminScreen);
+        } else {
+            session.leaveSession();
+        }
+    }, 'playerLeaveSessionBtn');
+
+    safeAddEventListener(adminViewResultsBtn, 'click', ui.renderResultsScreen, 'adminViewResultsBtn');
+    safeAddEventListener(playerViewResultsBtn, 'click', ui.renderResultsScreen, 'playerViewResultsBtn');
+    safeAddEventListener(viewWinnerBtn, 'click', ui.renderWinnerScreen, 'viewWinnerBtn');
+
+    safeAddEventListener(backToRoleScreenBtn, 'click', () => {
+        const currentlyAdmin = (isAdmin && currentPlayerId === PHILL_ADMIN_ID);
+        let targetScreen = lastViewedScreenBeforeResults || (currentlyAdmin ? adminScreen : playerScreen);
+        let renderFunction = null;
+
+        if (targetScreen === adminScreen && currentlyAdmin) {
+            renderFunction = ui.renderAdminScreen;
+        } else if (targetScreen === playerScreen) { 
+             renderFunction = ui.renderPlayerScreen;
+        } else { 
+            targetScreen = currentlyAdmin ? adminScreen : playerScreen;
+            renderFunction = currentlyAdmin ? ui.renderAdminScreen : ui.renderPlayerScreen;
+        }
+        
+        if (renderFunction) renderFunction(); else console.error("backToRoleScreenBtn: renderFunction is undefined. Target:", targetScreen ? targetScreen.id : "null");
+        utils.showScreen(targetScreen);
+    }, 'backToRoleScreenBtn');
+
+    safeAddEventListener(winnerBackToResultsBtn, 'click', () => utils.showScreen(resultsScreen), 'winnerBackToResultsBtn');
+    safeAddEventListener(winnerNewSessionBtn, 'click', () => { session.leaveSession(); utils.showScreen(welcomeScreen); }, 'winnerNewSessionBtn');
+    
+    // Refresh Button Listeners
+    safeAddEventListener(refreshWelcomeBtn, 'click', async () => {
+        utils.showAlert("Checking for session in URL...", "Refreshing");
+        await session.checkUrlParams(); // This attempts to load session if in URL
+        // If still no session, user stays on welcome. If session loaded, UI changes.
+    }, 'refreshWelcomeBtn');
+    safeAddEventListener(refreshAdminBtn, 'click', session.fetchAndUpdateCurrentSession, 'refreshAdminBtn');
+    safeAddEventListener(refreshPlayerBtn, 'click', session.fetchAndUpdateCurrentSession, 'refreshPlayerBtn');
+
+
+    // Remove: window.addEventListener('storage', ui.handleStorageChange); // No longer used
 
     const initApp = () => {
         console.log("App initializing...");
         if (!welcomeScreen || !adminScreen || !playerScreen || !resultsScreen || !adminCriteriaSetupScreen || !winnerScreen || !alertModal || !appHeader || !headerTitle || !headerSessionInfo) {
-            console.error("CRITICAL: One or more core screen/modal/header elements are missing! Check HTML IDs.");
-            // ... (error display logic) ...
+            console.error("CRITICAL: One or more core screen/modal/header elements are missing from the DOM! Check HTML IDs.");
+            const bodyContent = document.body;
+            if (bodyContent) {
+                bodyContent.innerHTML = "<p style='color:red; font-size:20px; padding:20px;'>App Initialization Error: Core screen elements not found. Please check the HTML IDs and ensure they match the JavaScript variables. Open the browser console (F12) for more details.</p>";
+            } else {
+                alert("Critical App Error: Core DOM structure seems to be missing. Cannot initialize the application.");
+            }
             return;
         }
         session.checkUrlParams(); // This will try to load session from URL or show welcome
+        // If no session ID after checkUrlParams, show welcome (already handled by checkUrlParams or by showScreen default)
+        if (!currentSessionId && welcomeScreen) {
+             utils.showScreen(welcomeScreen);
+        }
         console.log("App initialized successfully.");
     };
 
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initApp); }
-    else { initApp(); }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
 
 </script>
 </body>
