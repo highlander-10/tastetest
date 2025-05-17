@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Margarita Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overscroll-behavior-y: contain; /* Prevents pull-to-refresh on some mobile browsers */
+        }
+        .hidden { display: none; }
+        ul { list-style: none; padding-left: 0; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+        .criterion-winner {
+            background-color: #fffbeb; /* Light yellow highlight for winners */
+            border-left: 3px solid #f59e0b; /* Amber border */
+        }
+        .winner-badge {
+            display: inline-block;
+            padding: 0.1rem 0.4rem;
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #92400e; /* Darker amber text */
+            background-color: #fde68a; /* Lighter amber background */
+            border-radius: 0.25rem;
+            margin-left: 0.5rem;
+        }
+        button:disabled {
+            background-color: #d1d5db !important; /* Tailwind gray-300 */
+            color: #6b7280 !important; /* Tailwind gray-500 */
+            cursor: not-allowed !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app-container" class="max-w-md mx-auto bg-white min-h-screen shadow-md">
+        <header id="app-header" class="bg-green-500 text-white p-4 text-center sticky top-0 z-50 shadow">
+            <h1 id="header-title" class="text-xl font-bold">Margarita Tracker</h1>
+            <p id="header-session-info" class="text-xs"></p>
+        </header>
+
+        <main class="p-4 space-y-6">
+            <div id="welcome-screen">
+                <div class="text-7xl text-center py-8 mb-6 text-green-500">🍹</div>
+                <button id="phill-starts-session-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg text-lg mb-4 transition duration-150 shadow-sm">
+                    Phill Starts Session (Admin)
+                </button>
+                <div id="join-session-section" class="mt-6 pt-6 border-t border-gray-200">
+                    <h2 class="text-lg font-semibold mb-3 text-center text-blue-600">Player: Join Existing Session</h2>
+                    <input type="text" id="join-session-id-input" placeholder="Enter Session ID (e.g., 1, 2, 3)" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                    <input type="text" id="player-name-join-input" placeholder="Your Name for This Session" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                    <button id="join-session-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-150 shadow-sm">
+                        Join Session
+                    </button>
+                </div>
+            </div>
+
+            <div id="admin-criteria-setup-screen" class="hidden">
+                <h2 class="text-2xl font-bold mb-1 text-green-700">Customize Rating Questions</h2>
+                <p class="text-sm text-gray-600 mb-4">Review or adjust the rating questions below. (Max 5 stars for each)</p>
+                <div id="criteria-list-editor" class="space-y-3 mb-4"></div>
+                <div class="flex space-x-2 mb-6">
+                    <input type="text" id="new-criterion-input" placeholder="Add another criterion text" class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 shadow-sm">
+                    <button id="add-criterion-btn" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-150 shadow-sm">Add</button>
+                </div>
+                <button id="confirm-criteria-changes-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-150 shadow-sm">
+                    Save Question Changes
+                </button>
+                 <button id="cancel-criteria-changes-btn" class="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mt-3 text-sm transition duration-150 shadow-sm">
+                    Cancel Changes
+                </button>
+            </div>
+
+            <div id="admin-screen" class="hidden">
+                <div class="flex justify-between items-center mb-2"> <h1 class="text-2xl font-bold text-green-700">Admin Panel</h1> </div>
+                <p class="mb-1 text-sm">Session ID: <strong id="admin-session-id" class="text-purple-600 break-all"></strong></p>
+                <button id="copy-session-link-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg text-sm mt-2 mb-4 transition duration-150 shadow-sm">Copy Session Link</button>
+
+                <div class="space-y-3 my-4">
+                    <button id="admin-rate-locations-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm"> Rate Locations (As Phill) </button>
+                    <button id="admin-customize-questions-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm"> Customize Rating Questions </button>
+                </div>
+
+                <div class="my-6 p-4 border border-gray-200 rounded-lg bg-gray-50 shadow">
+                    <h2 class="text-xl font-semibold mb-3 text-green-600">Add New Margarita Location</h2>
+                    <input type="text" id="location-name-input" placeholder="Location Name" class="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:ring-green-500 focus:border-green-500 shadow-sm">
+                    <button id="add-location-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm"> Add Location </button>
+                </div>
+                <div class="my-6"> <h2 class="text-xl font-semibold mb-3 text-green-600">Locations & Ratings</h2> <div id="admin-locations-list" class="space-y-4"></div> </div>
+                <div class="my-6"> <h2 class="text-xl font-semibold mb-3 text-green-600">Players</h2> <ul id="admin-players-list" class="space-y-1"></ul> </div>
+
+                <button id="admin-view-results-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg my-4 transition duration-150 shadow-sm"> View Session Results </button>
+                <button id="reset-session-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm"> Reset Session </button>
+                <button id="admin-leave-session-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm"> End My Admin Session </button>
+            </div>
+
+            <div id="player-screen" class="hidden">
+                 <div class="flex justify-between items-center mb-2"> <h1 id="player-screen-title" class="text-2xl font-bold text-blue-700">Rate Margaritas!</h1> <p class="text-sm text-gray-600">Hi, <strong id="player-name-display"></strong>!</p> </div>
+                <p class="mb-4 text-xs">Session ID: <strong id="player-session-id" class="text-purple-600 break-all"></strong></p>
+                <div id="player-locations-list" class="space-y-6"></div>
+                <p id="player-no-locations-msg" class="text-gray-500 italic hidden">No locations added by Admin yet. Stay tuned!</p>
+                <button id="player-view-results-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg my-6 transition duration-150 shadow-sm"> View Current Results </button>
+                <button id="player-leave-session-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm"> Leave Session </button>
+            </div>
+
+            <div id="results-screen" class="hidden">
+                <h1 class="text-2xl font-bold mb-4 text-yellow-700">Session Results</h1>
+                <p class="mb-4 text-xs">Session ID: <strong id="results-session-id" class="text-purple-600 break-all"></strong></p>
+                <div id="results-summary" class="space-y-6"> </div>
+                <button id="view-winner-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg my-6 transition duration-150 shadow-sm">
+                    Reveal The Ultimate Winner!
+                </button>
+                <button id="back-to-role-screen-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
+                    Back
+                </button>
+            </div>
+
+            <div id="winner-screen" class="hidden text-center">
+                <h1 class="text-3xl font-bold mb-6 text-red-500">🎉 And the Ultimate Winner Is... 🎉</h1>
+                <div id="winning-location-details" class="p-6 bg-yellow-100 border-2 border-yellow-400 rounded-lg shadow-lg">
+                    </div>
+                <img id="winner-image" src="https://hips.hearstapps.com/hmg-prod/images/skinny-margarita-lead-6414789bca0cd.jpg?crop=1xw:0.9995665366276549xh;center,top&resize=980:*" alt="Margarita Celebration" class="mx-auto my-6 rounded-lg shadow-md max-w-xs h-auto object-contain" style="max-height: 200px;">
+                <div id="winner-trophy-fallback" class="text-6xl text-center py-6 text-yellow-500 hidden">🏆</div> <button id="winner-back-to-results-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm"> Back to Results </button>
+                <button id="winner-new-session-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm"> Start New Session (Welcome) </button>
+            </div>
+        </main>
+
+        <div id="alert-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center p-4 z-[2000]">
+            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm mx-auto">
+                <h3 id="alert-title" class="text-lg font-semibold leading-6 text-gray-900 mb-2">Alert</h3>
+                <div class="mt-2"> <p id="alert-message" class="text-sm text-gray-700"></p> </div>
+                <div class="mt-5 sm:mt-6"> <button id="alert-ok-btn" type="button" class="w-full inline-flex justify-center rounded-lg border border-transparent bg-blue-500 px-4 py-2 text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"> OK </button> </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- CONFIGURATION ---
+    const APP_PREFIX = 'margaritaTrackerV2_';
+    const LAST_SESSION_NUM_KEY = `${APP_PREFIX}lastSessionNumericId`;
+    const DEFAULT_RATING_CRITERIA_TEXT = [
+        'Taste', 'Sweetness', 'Spiciness (if any)', 'Overall Quality',
+        'Service Efficiency', 'Atmosphere', 'Value for Cost'
+    ];
+    const MAX_RATING = 5;
+    const DEFAULT_MIDDLE_RATING = 3;
+    const PHILL_ADMIN_ID = 'phill_the_admin';
+
+    console.log("SCRIPT START: Margarita Tracker script is loading...");
+
+    // --- DOM ELEMENTS ---
+    console.log("SCRIPT START: Getting DOM elements...");
+    const appHeader = document.getElementById('app-header');
+    const headerTitle = document.getElementById('header-title');
+    const headerSessionInfo = document.getElementById('header-session-info');
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const joinSessionSection = document.getElementById('join-session-section');
+    const adminCriteriaSetupScreen = document.getElementById('admin-criteria-setup-screen');
+    const adminScreen = document.getElementById('admin-screen');
+    const playerScreen = document.getElementById('player-screen');
+    const playerScreenTitle = document.getElementById('player-screen-title');
+    const resultsScreen = document.getElementById('results-screen');
+    const winnerScreen = document.getElementById('winner-screen');
+    const screens = [welcomeScreen, adminCriteriaSetupScreen, adminScreen, playerScreen, resultsScreen, winnerScreen];
+    const phillStartsSessionBtn = document.getElementById('phill-starts-session-btn');
+    console.log("SCRIPT START: phillStartsSessionBtn DOM element check:", phillStartsSessionBtn);
+    const joinSessionIdInput = document.getElementById('join-session-id-input');
+    const playerNameJoinInput = document.getElementById('player-name-join-input');
+    const joinSessionBtn = document.getElementById('join-session-btn');
+    console.log("SCRIPT START: joinSessionBtn DOM element check:", joinSessionBtn);
+    const criteriaListEditor = document.getElementById('criteria-list-editor');
+    const newCriterionInput = document.getElementById('new-criterion-input');
+    const addCriterionBtn = document.getElementById('add-criterion-btn');
+    const confirmCriteriaChangesBtn = document.getElementById('confirm-criteria-changes-btn');
+    const cancelCriteriaChangesBtn = document.getElementById('cancel-criteria-changes-btn');
+    const adminSessionIdDisplay = document.getElementById('admin-session-id');
+    const copySessionLinkBtn = document.getElementById('copy-session-link-btn');
+    const adminRateLocationsBtn = document.getElementById('admin-rate-locations-btn');
+    const adminCustomizeQuestionsBtn = document.getElementById('admin-customize-questions-btn');
+    const locationNameInput = document.getElementById('location-name-input');
+    const addLocationBtn = document.getElementById('add-location-btn');
+    console.log("SCRIPT START: addLocationBtn DOM element check:", addLocationBtn);
+    const adminLocationsList = document.getElementById('admin-locations-list');
+    const adminPlayersList = document.getElementById('admin-players-list');
+    const resetSessionBtn = document.getElementById('reset-session-btn');
+    const adminLeaveSessionBtn = document.getElementById('admin-leave-session-btn');
+    const adminViewResultsBtn = document.getElementById('admin-view-results-btn');
+    const playerSessionIdDisplay = document.getElementById('player-session-id');
+    const playerNameDisplay = document.getElementById('player-name-display');
+    const playerLocationsList = document.getElementById('player-locations-list');
+    const playerNoLocationsMsg = document.getElementById('player-no-locations-msg');
+    const playerLeaveSessionBtn = document.getElementById('player-leave-session-btn');
+    const playerViewResultsBtn = document.getElementById('player-view-results-btn');
+    const resultsSessionIdDisplay = document.getElementById('results-session-id');
+    const resultsSummary = document.getElementById('results-summary');
+    const viewWinnerBtn = document.getElementById('view-winner-btn');
+    const backToRoleScreenBtn = document.getElementById('back-to-role-screen-btn');
+    const winningLocationDetails = document.getElementById('winning-location-details');
+    const winnerImage = document.getElementById('winner-image');
+    const winnerTrophyFallback = document.getElementById('winner-trophy-fallback');
+    const winnerBackToResultsBtn = document.getElementById('winner-back-to-results-btn');
+    const winnerNewSessionBtn = document.getElementById('winner-new-session-btn');
+    const alertModal = document.getElementById('alert-modal');
+    const alertTitle = document.getElementById('alert-title');
+    const alertMessage = document.getElementById('alert-message');
+    const alertOkBtn = document.getElementById('alert-ok-btn');
+    console.log("SCRIPT START: Finished getting DOM elements.");
+
+
+    // --- STATE VARIABLES ---
+    let currentSessionId = null;
+    let currentPlayerId = null;
+    let currentPlayerName = null;
+    let isAdmin = false;
+    let sessionData = null;
+    let tempRatingCriteria = [];
+    let lastViewedScreenBeforeResults = null;
+
+    // --- UTILITY FUNCTIONS ---
+    const utils = {
+        generateId: (length = 6) => crypto.randomUUID().replace(/-/g, '').slice(0, length),
+        showScreen: (screenToShow) => {
+            console.log("utils.showScreen called for:", screenToShow ? screenToShow.id : 'null screen element');
+            let allScreensFound = true;
+            screens.forEach(screen => {
+                if (screen) {
+                    screen.classList.add('hidden');
+                } else {
+                    console.error("A screen element in the 'screens' array is null or undefined. Check HTML IDs and JS 'screens' array definition.");
+                    allScreensFound = false;
+                }
+            });
+            if (!allScreensFound && screenToShow !== welcomeScreen) {
+                 console.error("CRITICAL: Not all screen elements defined in the 'screens' array were found in the DOM. Check HTML IDs.");
+                 const appContainer = document.getElementById('app-container');
+                 if (appContainer) {
+                    appContainer.innerHTML = "<p style='color:red; font-size:18px; padding:20px;'>App Initialization Error: A critical screen element is missing. Please check the browser console for more details and verify HTML element IDs.</p>";
+                 } else {
+                    document.body.innerHTML = "<p style='color:red; font-size:18px; padding:20px;'>Critical App Error: Core DOM structure missing.</p>";
+                 }
+                 return;
+            }
+
+            if (screenToShow) {
+                screenToShow.classList.remove('hidden');
+                let currentHeaderText = "Margarita Tracker";
+                let currentSessionText = "";
+                let headerBg = "bg-green-500";
+
+                if (currentSessionId) currentSessionText = `Session #${currentSessionId}`;
+
+                if (screenToShow === welcomeScreen) { /* Defaults fine */ }
+                else if (screenToShow === adminCriteriaSetupScreen) { currentHeaderText = "Customize Questions"; headerBg = "bg-orange-500"; }
+                else if (screenToShow === adminScreen) { currentHeaderText = "Admin Panel"; headerBg = "bg-green-600"; }
+                else if (screenToShow === playerScreen) {
+                    currentHeaderText = isAdmin && currentPlayerId === PHILL_ADMIN_ID ? "My Ratings (Admin)" : "Player Mode";
+                    headerBg = "bg-blue-500";
+                } else if (screenToShow === resultsScreen || screenToShow === winnerScreen) {
+                    currentHeaderText = "Session Results"; headerBg = "bg-yellow-500";
+                }
+
+                if(headerTitle) headerTitle.textContent = currentHeaderText; else console.error("headerTitle element is null");
+                if(headerSessionInfo) headerSessionInfo.textContent = currentSessionText; else console.error("headerSessionInfo element is null");
+
+                if(appHeader) {
+                    appHeader.className = `${headerBg} text-white p-4 text-center sticky top-0 z-50 shadow`;
+                    if(headerBg.includes("yellow")) {
+                        appHeader.classList.add("text-black");
+                    } else {
+                        appHeader.classList.remove("text-black");
+                    }
+                } else {console.error("appHeader element is null");}
+
+            } else {
+                console.error("utils.showScreen: screenToShow argument is null or undefined!");
+                if(welcomeScreen) welcomeScreen.classList.remove('hidden');
+                else console.error("Fallback welcomeScreen is also null!");
+            }
+            window.scrollTo(0,0);
+        },
+        showAlert: (message, title = 'Alert') => {
+            console.log(`utils.showAlert: Title: ${title}, Message: ${message}`);
+            if (!alertTitle || !alertMessage || !alertModal || !alertOkBtn) {
+                console.error("utils.showAlert: Alert modal elements not found! Using native alert.");
+                alert(`${title}\n\n${message}`);
+                return Promise.resolve(true);
+            }
+            alertTitle.textContent = title; alertMessage.textContent = message;
+            alertModal.classList.remove('hidden');
+            return new Promise((resolve) => {
+                const okButtonListener = () => {
+                    alertModal.classList.add('hidden');
+                    alertOkBtn.removeEventListener('click', okButtonListener); resolve(true);
+                };
+                alertOkBtn.addEventListener('click', okButtonListener);
+            });
+        },
+        validateInput: (input, type = 'text', maxLength = 100, allowEmpty = false) => {
+            if (input === null || input === undefined) return false;
+            if (typeof input !== 'string') input = String(input);
+            const trimmedInput = input.trim();
+            if (!allowEmpty && trimmedInput.length === 0) return false;
+            if (trimmedInput.length > maxLength) return false;
+            return true;
+        }
+    };
+
+    // --- LOCALSTORAGE (STORE) FUNCTIONS ---
+    const store = {
+        getSessionKey: (sessionId) => `${APP_PREFIX}session_${sessionId}`,
+        getGlobalPlayerIdKey: () => `${APP_PREFIX}globalPlayerId`,
+        getGlobalPlayerNameKey: () => `${APP_PREFIX}globalPlayerName`,
+        saveSessionData: (sessionId, data) => { try { localStorage.setItem(store.getSessionKey(sessionId), JSON.stringify(data)); console.log("Session data saved for", sessionId); } catch (e) { console.error("Error saving session:", e); utils.showAlert("Could not save session data."); }},
+        loadSessionData: (sessionId) => { const d = localStorage.getItem(store.getSessionKey(sessionId)); try { const parsed = d ? JSON.parse(d) : null; console.log("Session data loaded for", sessionId); return parsed; } catch (e) { console.error("Error loading session:",e); utils.showAlert("Could not load session data."); return null; }},
+        removeSessionData: (sessionId) => localStorage.removeItem(store.getSessionKey(sessionId)),
+        getOrCreateGlobalPlayerId: () => { let p = localStorage.getItem(store.getGlobalPlayerIdKey()); if(!p){p=`gPlayer_${utils.generateId(8)}`; localStorage.setItem(store.getGlobalPlayerIdKey(),p);} return p;},
+        saveGlobalPlayerName: (name) => localStorage.setItem(store.getGlobalPlayerNameKey(), name),
+        loadGlobalPlayerName: () => localStorage.getItem(store.getGlobalPlayerNameKey())
+    };
+
+    // --- SESSION MANAGEMENT ---
+    const session = {
+        startPhillAsAdmin: () => {
+            console.log("session.startPhillAsAdmin: Function called");
+            try {
+                isAdmin = true;
+                currentPlayerId = PHILL_ADMIN_ID;
+                currentPlayerName = "Phill (Admin)";
+
+                let lastNumericId = parseInt(localStorage.getItem(LAST_SESSION_NUM_KEY), 10) || 0;
+                const newNumericSessionId = lastNumericId + 1;
+                localStorage.setItem(LAST_SESSION_NUM_KEY, newNumericSessionId.toString());
+                currentSessionId = String(newNumericSessionId);
+                console.log("session.startPhillAsAdmin: New Numeric Session ID:", currentSessionId);
+
+                if (!DEFAULT_RATING_CRITERIA_TEXT || DEFAULT_RATING_CRITERIA_TEXT.length === 0) {
+                    console.error("session.startPhillAsAdmin: DEFAULT_RATING_CRITERIA_TEXT is not defined or empty!");
+                    utils.showAlert("Critical error: Default questions are missing. Cannot start session.", "Setup Error");
+                    return;
+                }
+                const defaultCriteria = DEFAULT_RATING_CRITERIA_TEXT.map((text, index) => ({
+                    id: `crit_${utils.generateId(4)}_${index}`, text: text
+                }));
+                console.log("session.startPhillAsAdmin: Default criteria created:", defaultCriteria);
+
+                sessionData = {
+                    sessionId: currentSessionId, adminId: PHILL_ADMIN_ID,
+                    players: [{ id: PHILL_ADMIN_ID, name: "Phill (Admin)", isAdmin: true }],
+                    locations: [], ratingCriteria: defaultCriteria,
+                    state: 'active', createdAt: new Date().toISOString(), lastUpdatedAt: new Date().toISOString(),
+                };
+                console.log("session.startPhillAsAdmin: Session data object created. Snippet:", JSON.stringify(sessionData).substring(0, 200) + "...");
+
+                store.saveSessionData(currentSessionId, sessionData);
+                history.pushState({ sessionId: currentSessionId, admin: true }, "", `?session=${currentSessionId}&admin=true`);
+                
+                console.log("session.startPhillAsAdmin: Calling ui.renderAdminScreen()");
+                ui.renderAdminScreen();
+                console.log("session.startPhillAsAdmin: ui.renderAdminScreen() call completed.");
+
+                utils.showAlert(`New session #${currentSessionId} started! Share link or ID.`, "Session Started");
+            } catch (error) {
+                console.error("session.startPhillAsAdmin: CRITICAL ERROR:", error);
+                utils.showAlert("An error occurred starting the session: " + error.message, "Error");
+            }
+        },
+        confirmCriteriaChanges: () => {
+            console.log("session.confirmCriteriaChanges: Called");
+            try {
+                if (!isAdmin || !sessionData) { console.error("confirmCriteriaChanges: Not admin or no session data."); return; }
+                const validCriteria = tempRatingCriteria.filter(c => c.text.trim() !== "");
+                if (validCriteria.length === 0) {
+                    utils.showAlert("Please ensure there's at least one valid rating criterion."); return;
+                }
+                sessionData.ratingCriteria = [...validCriteria];
+                sessionData.lastUpdatedAt = new Date().toISOString();
+                store.saveSessionData(currentSessionId, sessionData);
+                utils.showAlert("Rating questions updated!", "Questions Updated");
+                ui.renderAdminScreen();
+            } catch(error) {
+                console.error("session.confirmCriteriaChanges: CRITICAL ERROR:", error);
+                utils.showAlert("An error occurred saving question changes: " + error.message, "Error");
+            }
+        },
+        joinSession: () => {
+            console.log("session.joinSession: Function called");
+            try {
+                if(!joinSessionIdInput || !playerNameJoinInput){
+                    console.error("session.joinSession: joinSessionIdInput or playerNameJoinInput is null!");
+                    utils.showAlert("Error: Input fields not found.", "Internal Error");
+                    return;
+                }
+                const sessionIdToJoin = joinSessionIdInput.value.trim();
+                const nameForThisSession = playerNameJoinInput.value.trim();
+                if (!sessionIdToJoin || !/^\d+$/.test(sessionIdToJoin)) { 
+                    utils.showAlert("Invalid Session ID. Please enter a number (e.g., 1, 2)."); return; 
+                }
+                if (!utils.validateInput(nameForThisSession, 'text', 50)) { 
+                    utils.showAlert("Enter your name (1-50 chars)."); return; 
+                }
+
+                console.log(`session.joinSession: Joining session "${sessionIdToJoin}" as "${nameForThisSession}"`);
+                const existingData = store.loadSessionData(sessionIdToJoin);
+                if (!existingData) { utils.showAlert(`Session ID #${sessionIdToJoin} not found.`); return; }
+
+                sessionData = existingData; currentSessionId = sessionIdToJoin; isAdmin = false;
+                currentPlayerId = store.getOrCreateGlobalPlayerId();
+                currentPlayerName = nameForThisSession;
+                store.saveGlobalPlayerName(currentPlayerName);
+                const existingPlayerInSession = sessionData.players.find(p => p.id === currentPlayerId);
+                if (!existingPlayerInSession) {
+                    sessionData.players.push({ id: currentPlayerId, name: currentPlayerName, isAdmin: false });
+                } else { existingPlayerInSession.name = currentPlayerName; }
+                sessionData.lastUpdatedAt = new Date().toISOString();
+                store.saveSessionData(currentSessionId, sessionData);
+                history.pushState({ sessionId: currentSessionId }, "", `?session=${currentSessionId}`);
+                console.log("session.joinSession: Calling ui.renderPlayerScreen()");
+                ui.renderPlayerScreen();
+                console.log("session.joinSession: ui.renderPlayerScreen() call completed.");
+                utils.showAlert(`Welcome, ${currentPlayerName}! You've joined session #${currentSessionId}.`, "Joined!");
+            } catch (error) {
+                console.error("session.joinSession: CRITICAL ERROR:", error);
+                utils.showAlert("An error occurred joining the session: " + error.message, "Error");
+            }
+        },
+        leaveSession: () => {
+            console.log("session.leaveSession: Called");
+            const wasAdmin = isAdmin;
+            currentSessionId = null; isAdmin = false; sessionData = null;
+            currentPlayerName = null; 
+            history.pushState({}, "", window.location.pathname);
+            utils.showScreen(welcomeScreen);
+            if(joinSessionIdInput) joinSessionIdInput.value = ""; else console.warn("leaveSession: joinSessionIdInput is null");
+            if(playerNameJoinInput) playerNameJoinInput.value = store.loadGlobalPlayerName() || ""; else console.warn("leaveSession: playerNameJoinInput is null");
+            utils.showAlert(wasAdmin ? "Admin session ended." : "You have left the session.", "Session Left");
+        },
+        resetSession: () => {
+            console.log("session.resetSession: Called");
+            if (!isAdmin || !currentSessionId || !sessionData) { console.warn("session.resetSession: Conditions not met."); return; }
+            utils.showAlert("Reset session? This deletes all locations, ratings, and non-admin players.", "Confirm Reset")
+                .then((confirmed) => {
+                    if (confirmed && confirm("FINAL CONFIRMATION: Reset all session data? This cannot be undone.")) {
+                        const phillPlayer = { id: PHILL_ADMIN_ID, name: "Phill (Admin)", isAdmin: true };
+                        const preservedCriteria = sessionData.ratingCriteria ? [...sessionData.ratingCriteria] : DEFAULT_RATING_CRITERIA_TEXT.map((text, index) => ({ id: `crit_${utils.generateId(4)}_${index}`, text: text }));
+                        
+                        sessionData.locations = [];
+                        sessionData.players = [phillPlayer];
+                        sessionData.ratingCriteria = preservedCriteria;
+                        sessionData.lastUpdatedAt = new Date().toISOString();
+                        store.saveSessionData(currentSessionId, sessionData);
+                        ui.renderAdminScreen();
+                        utils.showAlert("Session has been reset.", "Session Reset");
+                    }
+                });
+        },
+        checkUrlParams: () => {
+            console.log("session.checkUrlParams: Called");
+            const params = new URLSearchParams(window.location.search);
+            const sessionIdFromUrl = params.get('session')?.trim();
+            const globalPlayerId = store.getOrCreateGlobalPlayerId();
+            const globalPlayerNameSuggestion = store.loadGlobalPlayerName();
+            if(playerNameJoinInput) playerNameJoinInput.value = globalPlayerNameSuggestion || ""; else console.warn("checkUrlParams: playerNameJoinInput is null");
+
+            if (sessionIdFromUrl) {
+                console.log("session.checkUrlParams: Found session in URL:", sessionIdFromUrl);
+                 if (!/^\d+$/.test(sessionIdFromUrl)) {
+                     utils.showAlert(`Invalid Session ID "${sessionIdFromUrl}" in URL. Must be a number.`);
+                     history.pushState({}, "", window.location.pathname); utils.showScreen(welcomeScreen);
+                     return;
+                }
+                const loadedData = store.loadSessionData(sessionIdFromUrl);
+                if (loadedData) {
+                    sessionData = loadedData; currentSessionId = sessionIdFromUrl;
+                    if(joinSessionIdInput) joinSessionIdInput.value = currentSessionId; else console.warn("checkUrlParams: joinSessionIdInput is null");
+
+                    if (sessionData.adminId === PHILL_ADMIN_ID && globalPlayerId === PHILL_ADMIN_ID) {
+                        console.log("session.checkUrlParams: User is Phill (Admin).");
+                        isAdmin = true; currentPlayerId = PHILL_ADMIN_ID; currentPlayerName = "Phill (Admin)";
+                        ui.renderAdminScreen();
+                    } else {
+                        console.log("session.checkUrlParams: User is not Phill (Admin) or joining.");
+                        isAdmin = false; currentPlayerId = globalPlayerId;
+                        const playerInSession = sessionData.players.find(p => p.id === currentPlayerId);
+                        if (playerInSession) {
+                            console.log("session.checkUrlParams: Player found in session data.");
+                            currentPlayerName = playerInSession.name;
+                            if(playerNameJoinInput) playerNameJoinInput.value = currentPlayerName;
+                            store.saveGlobalPlayerName(currentPlayerName);
+                            ui.renderPlayerScreen();
+                        } else {
+                            console.log("session.checkUrlParams: Player not in session. Showing welcome to join.");
+                            utils.showAlert(`Joining session #${currentSessionId}. Confirm/enter your name.`, "Join Session");
+                            utils.showScreen(welcomeScreen);
+                            if(joinSessionSection) joinSessionSection.scrollIntoView({ behavior: 'smooth' });
+                            if(playerNameJoinInput) playerNameJoinInput.focus(); else console.warn("checkUrlParams: playerNameJoinInput is null, cannot focus.");
+                        }
+                    }
+                } else {
+                    utils.showAlert(`Session ID #${sessionIdFromUrl} from URL not found or data corrupted.`);
+                    history.pushState({}, "", window.location.pathname); utils.showScreen(welcomeScreen);
+                }
+            } else {
+                console.log("session.checkUrlParams: No session in URL. Showing welcome screen.");
+                utils.showScreen(welcomeScreen);
+            }
+        }
+    };
+
+    // --- UI RENDERING AND UPDATES ---
+    const ui = {
+        renderCriteriaEditor: () => {
+            console.log("ui.renderCriteriaEditor: Called. tempRatingCriteria:", tempRatingCriteria ? tempRatingCriteria.length : 'null');
+            if (!criteriaListEditor) { console.error("ui.renderCriteriaEditor: criteriaListEditor is null!"); return; }
+            criteriaListEditor.innerHTML = '';
+            if (!tempRatingCriteria || tempRatingCriteria.length === 0) {
+                 criteriaListEditor.innerHTML = '<p class="text-gray-500 italic p-2">No criteria defined. Add some below.</p>';
+            } else {
+                tempRatingCriteria.forEach((crit, index) => {
+                    const critDiv = document.createElement('div');
+                    critDiv.className = 'flex items-center space-x-2 p-2 border rounded-md bg-gray-100';
+                    const critInput = document.createElement('input'); critInput.type = 'text'; critInput.value = crit.text;
+                    critInput.className = 'flex-grow p-2 border border-gray-300 rounded-md text-sm shadow-sm';
+                    critInput.onchange = (e) => { if(tempRatingCriteria[index]) tempRatingCriteria[index].text = e.target.value.trim(); };
+                    const removeBtn = document.createElement('button'); removeBtn.innerHTML = '&times;';
+                    removeBtn.className = 'bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2.5 rounded-md text-sm leading-tight';
+                    removeBtn.onclick = () => { tempRatingCriteria.splice(index, 1); ui.renderCriteriaEditor(); };
+                    critDiv.appendChild(critInput); critDiv.appendChild(removeBtn);
+                    criteriaListEditor.appendChild(critDiv);
+                });
+            }
+        },
+        renderAdminScreen: () => {
+            console.log("ui.renderAdminScreen: Called. isAdmin:", isAdmin, "SessionData exists:", !!sessionData);
+            if (!sessionData || !isAdmin) {
+                console.error("ui.renderAdminScreen: Conditions not met. Bailing to welcome screen.");
+                utils.showScreen(welcomeScreen); return;
+            }
+            if (!adminScreen) { console.error("ui.renderAdminScreen: adminScreen element is null!"); return; }
+            utils.showScreen(adminScreen);
+
+            if (adminSessionIdDisplay) adminSessionIdDisplay.textContent = currentSessionId; else console.error("adminSessionIdDisplay is null!");
+            if (locationNameInput) locationNameInput.value = ""; else console.error("locationNameInput is null!");
+            
+            if (adminCustomizeQuestionsBtn) {
+                const hasRatings = sessionData.locations.some(loc => loc.ratings && loc.ratings.length > 0);
+                adminCustomizeQuestionsBtn.disabled = hasRatings;
+                adminCustomizeQuestionsBtn.title = hasRatings ? "Questions cannot be changed after ratings have started." : "Customize rating questions.";
+            } else { console.error("adminCustomizeQuestionsBtn is null!"); }
+
+
+            if (adminLocationsList) {
+                adminLocationsList.innerHTML = '';
+                if (!sessionData.locations || sessionData.locations.length === 0) { adminLocationsList.innerHTML = '<p class="text-gray-500 italic p-2">No locations added yet.</p>'; }
+                else {
+                    sessionData.locations.forEach(loc => {
+                        const locElement = document.createElement('div');
+                        locElement.className = 'p-3 border rounded-lg bg-white shadow-sm';
+                        const totalRatings = loc.ratings ? loc.ratings.length : 0;
+                        const avgOverallScore = ui.calculateAverageOverallScoreForLocation(loc.id);
+                        locElement.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-semibold text-gray-800">${loc.name}</h3>
+                                <button data-location-id="${loc.id}" class="remove-location-btn text-red-500 hover:text-red-700 text-xs font-medium p-1 rounded-full hover:bg-red-100">&times; Remove</button>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1">Ratings: ${totalRatings} | Avg Score: ${avgOverallScore ? avgOverallScore.toFixed(1) + '/5' : 'N/A'}</p>
+                        `;
+                        adminLocationsList.appendChild(locElement);
+                    });
+                    document.querySelectorAll('#admin-locations-list .remove-location-btn').forEach(btn => {
+                        const newBtn = btn.cloneNode(true); // Clone to remove old listeners if any
+                        btn.parentNode.replaceChild(newBtn, btn);
+                        newBtn.addEventListener('click', (e) => {
+                             const locId = e.currentTarget.dataset.locationId;
+                             if (!sessionData || !sessionData.locations) return; // Guard
+                             const locData = sessionData.locations.find(l=>l.id === locId);
+                             const locName = locData ? locData.name : 'this location';
+                             if (confirm(`Remove ${locName}? This deletes all its ratings.`)) actions.removeLocation(locId);
+                        });
+                    });
+                }
+            } else { console.error("adminLocationsList is null!");}
+
+            if (adminPlayersList) {
+                adminPlayersList.innerHTML = '';
+                if (sessionData.players) { sessionData.players.forEach(player => {
+                    const playerLi = document.createElement('li');
+                    playerLi.className = `p-2 rounded-md text-sm ${player.id === PHILL_ADMIN_ID ? 'bg-green-100 text-green-700 font-semibold' : 'bg-blue-50 text-blue-600'}`;
+                    playerLi.textContent = `${player.name} ${player.id === PHILL_ADMIN_ID ? '(Admin)' : ''}`;
+                    adminPlayersList.appendChild(playerLi);
+                });} else { console.warn("ui.renderAdminScreen: sessionData.players is undefined or null.");}
+            } else { console.error("adminPlayersList is null!");}
+            console.log("ui.renderAdminScreen: Successfully finished.");
+        },
+        renderPlayerScreen: () => {
+            console.log("ui.renderPlayerScreen: Called. CurrentPlayerName:", currentPlayerName, "isAdmin:", isAdmin);
+            if (!sessionData) { console.error("ui.renderPlayerScreen: No sessionData!"); utils.showScreen(welcomeScreen); return; }
+            if (!playerScreen) { console.error("ui.renderPlayerScreen: playerScreen element is null!"); return; }
+            utils.showScreen(playerScreen);
+
+            const isPhillRatingAsAdmin = isAdmin && currentPlayerId === PHILL_ADMIN_ID;
+            const displayNameForScreen = isPhillRatingAsAdmin ? "Phill (Admin Rating)" : (currentPlayerName || "Player");
+            
+            if (playerNameDisplay) playerNameDisplay.textContent = displayNameForScreen; else console.error("playerNameDisplay is null");
+            if (playerSessionIdDisplay) playerSessionIdDisplay.textContent = currentSessionId; else console.error("playerSessionIdDisplay is null");
+            if (playerScreenTitle) playerScreenTitle.textContent = isPhillRatingAsAdmin ? "My Ratings (Admin)" : "Rate Margaritas!"; else console.error("playerScreenTitle is null");
+
+            if (playerLeaveSessionBtn) {
+                playerLeaveSessionBtn.textContent = isPhillRatingAsAdmin ? 'Back to Admin Panel' : 'Leave Session';
+            } else { console.error("playerLeaveSessionBtn is null"); }
+
+            if(!playerLocationsList) { console.error("playerLocationsList is null!"); return;}
+            playerLocationsList.innerHTML = '';
+
+            if(playerNoLocationsMsg) {
+                playerNoLocationsMsg.classList.toggle('hidden', sessionData.locations && sessionData.locations.length > 0);
+            } else { console.error("playerNoLocationsMsg is null!");}
+
+            if (sessionData.locations && sessionData.ratingCriteria) {
+                sessionData.locations.forEach(loc => {
+                    const locDiv = document.createElement('div');
+                    locDiv.className = 'p-4 border border-gray-200 rounded-lg bg-white shadow';
+                    locDiv.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-blue-600">${loc.name}</h3>`;
+                    const form = document.createElement('form');
+                    form.dataset.locationId = loc.id; form.className = 'space-y-4';
+                    const existingRating = loc.ratings.find(r => r.playerId === currentPlayerId);
+
+                    sessionData.ratingCriteria.forEach(criterion => {
+                        const critDiv = document.createElement('div'); critDiv.className = 'flex flex-col';
+                        const label = document.createElement('label');
+                        label.htmlFor = `rating-${loc.id}-${criterion.id}`; label.textContent = `${criterion.text}:`;
+                        label.className = 'mb-1 text-sm font-medium text-gray-700';
+                        const select = document.createElement('select');
+                        select.id = `rating-${loc.id}-${criterion.id}`; select.name = criterion.id;
+                        select.className = 'p-2.5 border border-gray-300 rounded-lg text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm bg-white';
+                        select.innerHTML = `<option value="">- Rate (1-5) -</option>`;
+                        for (let i = 1; i <= MAX_RATING; i++) {
+                            const option = document.createElement('option');
+                            option.value = i; option.textContent = `${i} star${i > 1 ? 's' : ''}`;
+                            if (existingRating && existingRating.criteria && existingRating.criteria[criterion.id] !== undefined && existingRating.criteria[criterion.id] == i) {
+                                option.selected = true;
+                            } else if (!existingRating && i === DEFAULT_MIDDLE_RATING) {
+                                option.selected = true;
+                            }
+                            select.appendChild(option);
+                        }
+                        critDiv.appendChild(label); critDiv.appendChild(select); form.appendChild(critDiv);
+                    });
+
+                    const commentsLabel = document.createElement('label'); commentsLabel.htmlFor = `comments-${loc.id}`; commentsLabel.textContent = 'Comments (optional):'; commentsLabel.className = 'text-sm font-medium text-gray-700 mt-2 block';
+                    const commentsTextarea = document.createElement('textarea'); commentsTextarea.id = `comments-${loc.id}`; commentsTextarea.name = 'comments'; commentsTextarea.rows = 2; commentsTextarea.placeholder = 'Any notes...'; commentsTextarea.className = 'w-full p-2.5 border border-gray-300 rounded-lg text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm';
+                    if (existingRating && existingRating.comments) commentsTextarea.value = existingRating.comments;
+
+                    const submitBtn = document.createElement('button'); submitBtn.type = 'submit'; submitBtn.textContent = existingRating ? 'Update Rating' : 'Submit Rating'; submitBtn.className = 'w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 mt-3 shadow-sm text-base';
+
+                    form.appendChild(commentsLabel); form.appendChild(commentsTextarea); form.appendChild(submitBtn); locDiv.appendChild(form);
+
+                    const otherRatingsDiv = document.createElement('div'); otherRatingsDiv.className = 'mt-5 pt-4 border-t border-gray-200'; otherRatingsDiv.innerHTML = `<h4 class="text-sm font-semibold text-gray-600 mb-1">Other Players' Ratings:</h4>`;
+                    const ratingsListUL = document.createElement('ul'); ratingsListUL.className = 'list-none text-xs space-y-1';
+                    let hasOtherRatings = false;
+                    if(loc.ratings) {
+                        loc.ratings.forEach(r => {
+                            if (r.playerId === currentPlayerId) return;
+                            const p = sessionData.players.find(pl => pl.id === r.playerId);
+                            if (p) {
+                                hasOtherRatings = true;
+                                const numCriteriaInRating = r.criteria ? Object.keys(r.criteria).length : 0;
+                                const sumOfCriteriaForRating = numCriteriaInRating > 0 ? Object.values(r.criteria).reduce((sum, val) => sum + (Number(val) || 0), 0) : 0;
+                                const avgScoreForPlayer = numCriteriaInRating > 0 ? (sumOfCriteriaForRating / numCriteriaInRating) : 0;
+                                ratingsListUL.innerHTML += `<li class="text-gray-500"><strong>${p.name}:</strong> Rated (Avg: ${avgScoreForPlayer.toFixed(1)}/5) ${r.comments ? `<span class="italic">- "${r.comments}"</span>` : ''}</li>`;
+                            }
+                        });
+                    }
+                    if (!hasOtherRatings) ratingsListUL.innerHTML = '<li class="text-gray-400 italic">No other ratings yet.</li>';
+                    otherRatingsDiv.appendChild(ratingsListUL); locDiv.appendChild(otherRatingsDiv); playerLocationsList.appendChild(locDiv);
+
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault(); const formData = new FormData(e.target); const locationId = e.target.dataset.locationId;
+                        const ratings = {}; let ratedSomething = false;
+                        if (sessionData.ratingCriteria) {
+                            sessionData.ratingCriteria.forEach(c => {
+                                const val = formData.get(c.id);
+                                if (val && val !== "") { ratings[c.id] = parseInt(val, 10); ratedSomething = true; }
+                            });
+                        }
+                        if (!ratedSomething) { utils.showAlert("Please rate at least one criterion before submitting.", "Rating Needed"); return; }
+                        const comments = formData.get('comments').trim();
+                        actions.submitRating(locationId, ratings, comments);
+                        submitBtn.textContent = 'Rating Submitted!'; submitBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        setTimeout(() => {
+                            const locForButtonText = sessionData.locations.find(l => l.id === locationId);
+                            const stillExistingRating = locForButtonText ? locForButtonText.ratings.find(r_1 => r_1.playerId === currentPlayerId) : null;
+                            submitBtn.textContent = stillExistingRating ? 'Update Rating' : 'Submit Rating';
+                            submitBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                            submitBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                        }, 2000);
+                    });
+                });
+            } else {
+                console.error("ui.renderPlayerScreen: sessionData.locations or sessionData.ratingCriteria is missing!");
+                if(playerLocationsList) playerLocationsList.innerHTML = "<p class='text-red-500 p-4'>Error: Could not load location rating criteria.</p>";
+            }
+            console.log("ui.renderPlayerScreen: Finished.");
+        },
+        calculateAverageOverallScoreForLocation: (locationId) => {
+            if (!sessionData || !sessionData.locations) return null;
+            const location = sessionData.locations.find(loc => loc.id === locationId);
+            if (!location || !location.ratings || location.ratings.length === 0) return null;
+            let totalScoreSum = 0; let numRatingsCounted = 0;
+            location.ratings.forEach(rating => {
+                if (!rating.criteria) return;
+                const criteriaValues = Object.values(rating.criteria).map(Number).filter(v => !isNaN(v));
+                if (criteriaValues.length > 0) {
+                    const sumOfCriteriaForRating = criteriaValues.reduce((sum, val) => sum + val, 0);
+                    totalScoreSum += (sumOfCriteriaForRating / criteriaValues.length);
+                    numRatingsCounted++;
+                }
+            });
+            return numRatingsCounted > 0 ? totalScoreSum / numRatingsCounted : null;
+        },
+        renderResultsScreen: () => {
+            console.log("ui.renderResultsScreen: Called");
+            if (!sessionData) { utils.showAlert("No session data to show results.", "No Data"); utils.showScreen(isAdmin ? adminScreen : playerScreen); return; }
+            lastViewedScreenBeforeResults = document.getElementById('admin-screen').classList.contains('hidden') === false ? adminScreen : playerScreen;
+            utils.showScreen(resultsScreen);
+
+            if (resultsSessionIdDisplay) resultsSessionIdDisplay.textContent = currentSessionId; else console.error("resultsSessionIdDisplay is null");
+            if (!resultsSummary) { console.error("resultsSummary is null"); return; }
+            resultsSummary.innerHTML = '';
+
+            const allLocationsHaveNoRatings = sessionData.locations.every(loc => !loc.ratings || loc.ratings.length === 0);
+
+            if (!sessionData.locations || sessionData.locations.length === 0 || allLocationsHaveNoRatings) {
+                resultsSummary.innerHTML = '<p class="text-gray-500 italic p-4 text-center">No ratings have been submitted for any location yet.</p>';
+                if (viewWinnerBtn) viewWinnerBtn.classList.add('hidden'); else console.error("viewWinnerBtn is null for results screen");
+                return;
+            }
+
+            const perCriterionWinners = {};
+            if (sessionData.ratingCriteria) {
+                sessionData.ratingCriteria.forEach(criterion => {
+                    let bestScore = -1; let winnerLocs = [];
+                    sessionData.locations.forEach(loc => {
+                        let critSum = 0; let critCount = 0;
+                        if (loc.ratings) {
+                            loc.ratings.forEach(r => { if (r.criteria && r.criteria[criterion.id] !== undefined) { critSum += Number(r.criteria[criterion.id]); critCount++; }});
+                        }
+                        const avgCritScore = critCount > 0 ? critSum / critCount : -1;
+                        if (avgCritScore > bestScore) { bestScore = avgCritScore; winnerLocs = [loc.id]; }
+                        else if (avgCritScore === bestScore && bestScore !== -1) { winnerLocs.push(loc.id); }
+                    });
+                    if (winnerLocs.length > 0) perCriterionWinners[criterion.id] = { locations: winnerLocs, score: bestScore };
+                });
+            } else { console.warn("ui.renderResultsScreen: sessionData.ratingCriteria is undefined.");}
+
+            sessionData.locations.forEach(loc => {
+                const locResultDiv = document.createElement('div');
+                locResultDiv.className = 'p-4 border rounded-lg mb-6 bg-white shadow-lg';
+                locResultDiv.innerHTML = `<h3 class="text-2xl font-semibold mb-4 text-indigo-700">${loc.name}</h3>`;
+                let criteriaTableHtml = '<table class="min-w-full text-sm mb-4"><thead><tr class="border-b"><th class="pb-2 text-left font-semibold text-gray-600">Criterion</th><th class="pb-2 text-right font-semibold text-gray-600">Avg. Rating</th></tr></thead><tbody>';
+                if (sessionData.ratingCriteria) {
+                    sessionData.ratingCriteria.forEach(c => {
+                        let critSum = 0; let critCount = 0;
+                        if (loc.ratings) {
+                            loc.ratings.forEach(r => { if (r.criteria && r.criteria[c.id] !== undefined) { critSum += Number(r.criteria[c.id]); critCount++; }});
+                        }
+                        const avg = critCount > 0 ? (critSum / critCount).toFixed(1) : 'N/A';
+                        let winnerBadgeHtml = ''; let rowClass = '';
+                        if (perCriterionWinners[c.id] && perCriterionWinners[c.id].locations.includes(loc.id)) {
+                            winnerBadgeHtml = `<span class="winner-badge">TOP ⭐</span>`;
+                            rowClass = 'criterion-winner font-semibold';
+                        }
+                        criteriaTableHtml += `<tr class="border-b border-gray-100 ${rowClass}"><td class="py-2 pr-2">${c.text}</td><td class="py-2 text-right">${avg}${avg !== 'N/A' ? '/5' : ''} ${winnerBadgeHtml}</td></tr>`;
+                    });
+                }
+                criteriaTableHtml += '</tbody></table>'; locResultDiv.innerHTML += criteriaTableHtml;
+                let individualRatingsHtml = `<details class="mt-2"><summary class="text-xs font-medium text-gray-500 cursor-pointer hover:text-indigo-600">Show Individual Ratings (${loc.ratings ? loc.ratings.length : 0})</summary><div class="mt-2 space-y-2 text-xs">`;
+                if (!loc.ratings || loc.ratings.length === 0) individualRatingsHtml += '<p class="text-gray-500 italic">No individual ratings for this location.</p>';
+                else {
+                     loc.ratings.forEach(r => {
+                        const p = sessionData.players.find(pl => pl.id === r.playerId);
+                        individualRatingsHtml += `<div class="p-2 bg-gray-50 border rounded-md"><strong class="text-gray-700">${p ? p.name : 'Unknown'}:</strong> `;
+                        if (sessionData.ratingCriteria && r.criteria) {
+                            const ratingBreakdown = sessionData.ratingCriteria.map(crit => `<span class="ml-1">${crit.text}: <span class="font-semibold">${r.criteria[crit.id] !== undefined ? r.criteria[crit.id] + '/5' : 'N/A'}</span></span>`).join(', ');
+                            individualRatingsHtml += `${ratingBreakdown}.`;
+                        }
+                        individualRatingsHtml += ` ${r.comments ? `<em class="text-gray-600 block mt-1 pl-2 italic">"${r.comments}"</em>` : ''}</div>`;
+                    });
+                }
+                individualRatingsHtml += '</div></details>'; locResultDiv.innerHTML += individualRatingsHtml; resultsSummary.appendChild(locResultDiv);
+            });
+            if (viewWinnerBtn) viewWinnerBtn.classList.toggle('hidden', allLocationsHaveNoRatings || sessionData.locations.length === 0);
+            console.log("ui.renderResultsScreen: Finished.");
+        },
+        renderWinnerScreen: () => {
+            console.log("ui.renderWinnerScreen: Called");
+            if (!sessionData || !sessionData.locations || sessionData.locations.length === 0) {
+                utils.showAlert("No locations to determine a winner.").then(() => utils.showScreen(resultsScreen));
+                return;
+            }
+            let winningLocation = null; let highestAvgScore = -1;
+            sessionData.locations.forEach(loc => {
+                const avgScore = ui.calculateAverageOverallScoreForLocation(loc.id);
+                if (avgScore !== null && avgScore > highestAvgScore) { highestAvgScore = avgScore; winningLocation = loc; }
+                else if (avgScore !== null && avgScore === highestAvgScore) { if (winningLocation && loc.name < winningLocation.name) winningLocation = loc; else if (!winningLocation) winningLocation = loc; }
+            });
+
+            if (!winningLocationDetails || !winnerImage || !winnerTrophyFallback) {
+                console.error("ui.renderWinnerScreen: One or more winner screen elements are null!");
+                return;
+            }
+            if (winningLocation) {
+                winningLocationDetails.innerHTML = `<h2 class="text-2xl font-bold text-green-600 mb-2">${winningLocation.name}</h2><p class="text-lg text-gray-700">With an average score of <strong class="text-xl">${highestAvgScore.toFixed(2)} / 5</strong> stars!</p><p class="mt-3 text-sm text-gray-500">Based on ${winningLocation.ratings ? winningLocation.ratings.length : 0} rating(s).</p>`;
+                winnerImage.classList.remove('hidden');
+                winnerTrophyFallback.classList.add('hidden');
+                winnerImage.onerror = () => { // Fallback for the image
+                    console.warn("Winner image failed to load. Showing fallback trophy.");
+                    winnerImage.classList.add('hidden');
+                    if(winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
+                };
+            } else {
+                winningLocationDetails.innerHTML = `<p class="text-lg text-gray-700">It's inconclusive... no clear winner from the ratings!</p>`;
+                winnerImage.classList.add('hidden');
+                if(winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
+            }
+            utils.showScreen(winnerScreen);
+        },
+        handleStorageChange: (event) => {
+            console.log("ui.handleStorageChange: Storage event detected for key:", event.key);
+            if (event.key === store.getSessionKey(currentSessionId)) {
+                if (event.newValue === null) {
+                    utils.showAlert("The current session has been ended or reset by the admin.", "Session Update")
+                        .then(() => session.leaveSession());
+                    return;
+                }
+                try {
+                    const updatedData = JSON.parse(event.newValue);
+                    if (updatedData) {
+                        sessionData = updatedData;
+                        console.log("ui.handleStorageChange: Session data updated from storage event.");
+                        const activeScreenElement = screens.find(s => s && !s.classList.contains('hidden'));
+                        if (activeScreenElement) {
+                            console.log("ui.handleStorageChange: Refreshing active screen:", activeScreenElement.id);
+                            if (activeScreenElement === adminScreen && isAdmin) ui.renderAdminScreen();
+                            else if (activeScreenElement === playerScreen) ui.renderPlayerScreen();
+                            else if (activeScreenElement === resultsScreen) ui.renderResultsScreen();
+                            else if (activeScreenElement === winnerScreen) ui.renderWinnerScreen();
+                        } else { console.warn("ui.handleStorageChange: No active screen identified to refresh.");}
+                    }
+                } catch (e) { console.error("ui.handleStorageChange: Error parsing updated session data from storage.", e); }
+            }
+        }
+    };
+
+    // --- ACTIONS ---
+    const actions = {
+        addCriterion: () => {
+            if (!newCriterionInput) { console.error("actions.addCriterion: newCriterionInput is null!"); return; }
+            const text = newCriterionInput.value.trim();
+            if (text) {
+                if (!tempRatingCriteria) tempRatingCriteria = [];
+                tempRatingCriteria.push({ id: `crit_${utils.generateId(4)}`, text: text });
+                newCriterionInput.value = '';
+                if (ui.renderCriteriaEditor) ui.renderCriteriaEditor(); else console.error("actions.addCriterion: ui.renderCriteriaEditor is undefined!");
+            } else utils.showAlert("Criterion text cannot be empty.");
+        },
+        addLocation: (name) => {
+            console.log("actions.addLocation: Called with name -", `"${name}"`);
+            if (!isAdmin) { console.error("actions.addLocation: Denied. isAdmin is false."); utils.showAlert("Action denied. Not an admin.", "Access Denied"); return; }
+            if (!sessionData) { console.error("actions.addLocation: Denied. sessionData is null."); utils.showAlert("Action denied. No active session.", "Error"); return; }
+            console.log("actions.addLocation: Admin and sessionData checks passed. CurrentPlayerId for location 'addedBy':", currentPlayerId);
+
+            if (!utils.validateInput(name, 'text', 100, false)) {
+                console.warn("actions.addLocation: Validation failed for name -", `"${name}"`);
+                utils.showAlert("Invalid location name. It cannot be empty and should be less than 100 characters.", "Validation Error"); return;
+            }
+            const trimmedName = name.trim();
+            console.log("actions.addLocation: Input validation passed for name -", `"${trimmedName}"`);
+
+            const newLocation = {
+                id: `loc_${utils.generateId(6)}`, name: trimmedName, ratings: [],
+                addedBy: currentPlayerId,
+                addedAt: new Date().toISOString()
+            };
+            console.log("actions.addLocation: New location object created:", newLocation);
+
+            if (!sessionData.locations || !Array.isArray(sessionData.locations)) {
+                console.error("actions.addLocation: sessionData.locations is not an array! Initializing.", sessionData.locations);
+                sessionData.locations = [];
+            }
+            sessionData.locations.push(newLocation);
+            sessionData.lastUpdatedAt = new Date().toISOString();
+            console.log("actions.addLocation: Location pushed. Count:", sessionData.locations.length);
+
+            store.saveSessionData(currentSessionId, sessionData);
+            console.log("actions.addLocation: Session data saved. Calling ui.renderAdminScreen().");
+            if (ui.renderAdminScreen) ui.renderAdminScreen(); else console.error("actions.addLocation: ui.renderAdminScreen is undefined!");
+
+            if (locationNameInput) { locationNameInput.value = ''; console.log("actions.addLocation: locationNameInput cleared.");}
+            else { console.error("actions.addLocation: locationNameInput is null, cannot clear."); }
+            console.log("actions.addLocation: Finished successfully.");
+        },
+        removeLocation: (locationId) => {
+            console.log("actions.removeLocation: Called for ID:", locationId);
+            if (!isAdmin || !sessionData || !sessionData.locations) { console.warn("actions.removeLocation: Conditions not met."); return; }
+            sessionData.locations = sessionData.locations.filter(loc => loc.id !== locationId);
+            sessionData.lastUpdatedAt = new Date().toISOString();
+            store.saveSessionData(currentSessionId, sessionData);
+            if (ui.renderAdminScreen) ui.renderAdminScreen(); else console.error("actions.removeLocation: ui.renderAdminScreen is undefined");
+        },
+        submitRating: (locationId, criteriaRatings, comments) => {
+            console.log("actions.submitRating: Called for loc:", locationId);
+            if (!sessionData || !currentSessionId || !currentPlayerId || !sessionData.locations || !sessionData.ratingCriteria) { console.warn("actions.submitRating: Conditions not met."); return; }
+            const location = sessionData.locations.find(loc => loc.id === locationId);
+            if (!location) { utils.showAlert("Error: Location not found."); return; }
+            if (comments && comments.length > 300) { utils.showAlert("Comments too long (max 300 chars)."); return; }
+
+            const existingRatingIndex = location.ratings.findIndex(r => r.playerId === currentPlayerId);
+            const ratingData = { playerId: currentPlayerId, criteria: criteriaRatings, comments: comments, submittedAt: new Date().toISOString() };
+            if (existingRatingIndex > -1) {
+                location.ratings[existingRatingIndex] = { ...location.ratings[existingRatingIndex], ...ratingData, updatedAt: new Date().toISOString() };
+            } else { location.ratings.push(ratingData); }
+            sessionData.lastUpdatedAt = new Date().toISOString();
+            store.saveSessionData(currentSessionId, sessionData);
+            if(ui.renderPlayerScreen) ui.renderPlayerScreen(); else console.error("actions.submitRating: ui.renderPlayerScreen is undefined!");
+        }
+    };
+
+    // --- EVENT LISTENERS ---
+    const safeAddEventListener = (element, event, handler, elementName) => {
+        console.log(`safeAddEventListener: Setting up '${event}' for '${elementName}'. Element found:`, !!element);
+        if (element) {
+            element.addEventListener(event, handler);
+        } else {
+            console.error(`Event Listener Setup FAILED: Element "${elementName}" not found in DOM. Check HTML ID.`);
+        }
+    };
+
+    safeAddEventListener(phillStartsSessionBtn, 'click', () => {
+        console.log("PHILL STARTS SESSION BTN CLICKED (Raw Listener Test)");
+        session.startPhillAsAdmin();
+    } , 'phillStartsSessionBtn');
+
+    safeAddEventListener(joinSessionBtn, 'click', () => {
+        console.log("JOIN SESSION BTN CLICKED (Raw Listener Test)");
+        session.joinSession();
+    }, 'joinSessionBtn');
+
+    safeAddEventListener(addCriterionBtn, 'click', actions.addCriterion, 'addCriterionBtn');
+    safeAddEventListener(newCriterionInput, 'keypress', (e) => { if (e.key === 'Enter') actions.addCriterion(); }, 'newCriterionInput');
+    safeAddEventListener(confirmCriteriaChangesBtn, 'click', session.confirmCriteriaChanges, 'confirmCriteriaChangesBtn');
+    safeAddEventListener(cancelCriteriaChangesBtn, 'click', () => { if (ui.renderAdminScreen) ui.renderAdminScreen(); else console.error("cancelCriteriaChangesBtn: ui.renderAdminScreen missing"); }, 'cancelCriteriaChangesBtn');
+    
+    safeAddEventListener(addLocationBtn, 'click', () => {
+        console.log("Add Location button clicked directly. Input value:", locationNameInput ? locationNameInput.value : "locationNameInput is null");
+        if (locationNameInput) actions.addLocation(locationNameInput.value);
+        else console.error("Add Location click: locationNameInput is null.");
+    }, 'addLocationBtn');
+
+    safeAddEventListener(locationNameInput, 'keypress', (e) => {
+        if (e.key === 'Enter') {
+            console.log("Enter key in location input (direct from listener). Value:", locationNameInput ? locationNameInput.value : "locationNameInput is null");
+            if (locationNameInput) actions.addLocation(locationNameInput.value);
+            else console.error("Add Location via Enter: locationNameInput is null.");
+        }
+    }, 'locationNameInput');
+
+    safeAddEventListener(resetSessionBtn, 'click', session.resetSession, 'resetSessionBtn');
+    safeAddEventListener(copySessionLinkBtn, 'click', () => {
+        if (currentSessionId) {
+            const shareableUrl = `${window.location.origin}${window.location.pathname}?session=${currentSessionId}`;
+            navigator.clipboard.writeText(shareableUrl)
+                .then(() => utils.showAlert("Session link copied!", "Link Copied"))
+                .catch(err => { console.error("Failed to copy link:",err); utils.showAlert("Failed to copy link.", "Error");});
+        } else { utils.showAlert("No active session to share.", "Error"); }
+    }, 'copySessionLinkBtn');
+
+    safeAddEventListener(adminRateLocationsBtn, 'click', () => {
+        if (isAdmin && currentSessionId) {
+            lastViewedScreenBeforeResults = adminScreen;
+            if (ui.renderPlayerScreen) ui.renderPlayerScreen(); else console.error("adminRateLocationsBtn: ui.renderPlayerScreen missing");
+        } else { utils.showAlert("Admin not active or no session.", "Error"); }
+    }, 'adminRateLocationsBtn');
+
+    safeAddEventListener(adminCustomizeQuestionsBtn, 'click', () => {
+        if (!adminCustomizeQuestionsBtn) { console.error("adminCustomizeQuestionsBtn is null in its own listener setup!"); return;}
+        if (adminCustomizeQuestionsBtn.disabled) { utils.showAlert("Rating questions cannot be changed after ratings have started.", "Customization Locked"); return; }
+        if (!sessionData) { utils.showAlert("No active session.", "Error"); return; }
+        tempRatingCriteria = JSON.parse(JSON.stringify(sessionData.ratingCriteria));
+        if (ui.renderCriteriaEditor) ui.renderCriteriaEditor(); else console.error("adminCustomizeQuestionsBtn: ui.renderCriteriaEditor missing");
+        utils.showScreen(adminCriteriaSetupScreen);
+    }, 'adminCustomizeQuestionsBtn');
+
+    safeAddEventListener(adminLeaveSessionBtn, 'click', session.leaveSession, 'adminLeaveSessionBtn');
+
+    safeAddEventListener(playerLeaveSessionBtn, 'click', () => {
+        const isPhillCurrentlyAdmin = isAdmin && currentPlayerId === PHILL_ADMIN_ID;
+        const onPlayerScreenView = playerScreen && !playerScreen.classList.contains('hidden');
+
+        if (isPhillCurrentlyAdmin && onPlayerScreenView) {
+            if (ui.renderAdminScreen) ui.renderAdminScreen(); else console.error("playerLeaveSessionBtn (admin context): ui.renderAdminScreen missing");
+            utils.showScreen(adminScreen);
+        } else {
+            session.leaveSession();
+        }
+    }, 'playerLeaveSessionBtn');
+
+    safeAddEventListener(adminViewResultsBtn, 'click', ui.renderResultsScreen, 'adminViewResultsBtn');
+    safeAddEventListener(playerViewResultsBtn, 'click', ui.renderResultsScreen, 'playerViewResultsBtn');
+    safeAddEventListener(viewWinnerBtn, 'click', ui.renderWinnerScreen, 'viewWinnerBtn');
+
+    safeAddEventListener(backToRoleScreenBtn, 'click', () => {
+        const currentlyAdmin = (isAdmin && currentPlayerId === PHILL_ADMIN_ID);
+        let targetScreen = lastViewedScreenBeforeResults || (currentlyAdmin ? adminScreen : playerScreen);
+        let renderFunction = null;
+
+        // Determine target and render function more directly
+        if (targetScreen === adminScreen && currentlyAdmin) {
+            renderFunction = ui.renderAdminScreen;
+        } else if (targetScreen === playerScreen) { // Covers player or admin who was rating
+            renderFunction = ui.renderPlayerScreen;
+        } else { // Fallback if lastViewedScreenBeforeResults is not set or inappropriate
+            targetScreen = currentlyAdmin ? adminScreen : playerScreen;
+            renderFunction = currentlyAdmin ? ui.renderAdminScreen : ui.renderPlayerScreen;
+        }
+        
+        if (renderFunction) renderFunction(); else console.error("backToRoleScreenBtn: renderFunction is undefined. Target:", targetScreen ? targetScreen.id : "null");
+        utils.showScreen(targetScreen);
+    }, 'backToRoleScreenBtn');
+
+    safeAddEventListener(winnerBackToResultsBtn, 'click', () => utils.showScreen(resultsScreen), 'winnerBackToResultsBtn');
+    safeAddEventListener(winnerNewSessionBtn, 'click', () => { session.leaveSession(); utils.showScreen(welcomeScreen); }, 'winnerNewSessionBtn');
+
+    window.addEventListener('storage', ui.handleStorageChange);
+
+    const initApp = () => {
+        console.log("App initializing...");
+        if (!welcomeScreen || !adminScreen || !playerScreen || !resultsScreen || !adminCriteriaSetupScreen || !winnerScreen || !alertModal || !appHeader || !headerTitle || !headerSessionInfo) {
+            console.error("CRITICAL: One or more core screen/modal/header elements are missing from the DOM! Check HTML IDs.");
+            const bodyContent = document.body;
+            if (bodyContent) {
+                bodyContent.innerHTML = "<p style='color:red; font-size:20px; padding:20px;'>App Initialization Error: Core screen elements not found. Please check the HTML IDs and ensure they match the JavaScript variables. Open the browser console (F12) for more details.</p>";
+            } else {
+                alert("Critical App Error: Core DOM structure seems to be missing. Cannot initialize the application.");
+            }
+            return;
+        }
+        session.checkUrlParams();
+        if (!currentSessionId) {
+            utils.showScreen(welcomeScreen);
+        }
+        console.log("App initialized successfully.");
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
+
+</script>
+</body>
+</html>

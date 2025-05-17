@@ -1,0 +1,11 @@
+[build]
+command = ""
+preview_command = ""
+
+[site]
+bucket = ""
+entry-point = "index.html"
+
+[env.production]
+name = "tastetest"
+main_branch = "main"

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Margarita Tracker 🍹</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --primary-light: #dcfce7;
+            --gradient-start: #22c55e;
+            --gradient-end: #16a34a;
+            --background: #f8fafc;
+            --text: #1e293b;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .screen {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(34, 197, 94, 0.2);
+        }
+
+        .winner-card {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .rating-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .rating-bar-fill {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <header class="bg-white shadow-sm">
+            <div class="max-w-6xl mx-auto px-4 py-4">
+                <h1 class="text-2xl font-bold text-green-600">Margarita Tracker 🍹</h1>
+            </div>
+        </header>
+
+        <main class="flex-1">
+            <div class="max-w-6xl mx-auto px-4 py-8">
+                <!-- Welcome Screen -->
+                <div id="welcome-screen" class="screen active">
+                    <div class="card p-8">
+                        <h2 class="text-3xl font-bold text-center mb-8">Welcome to Margarita Tracker!</h2>
+                        <div class="space-y-4">
+                            <button id="create-session" class="btn btn-primary w-full">Start New Session</button>
+                            <div class="flex space-x-4">
+                                <input type="text" id="join-session-id" placeholder="Enter session ID" class="flex-1 p-2 border rounded">
+                                <button id="join-session" class="btn btn-primary">Join Session</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Screen -->
+                <div id="admin-screen" class="screen">
+                    <div class="card p-8">
+                        <h2 class="text-3xl font-bold text-center mb-8">Admin Dashboard</h2>
+                        <div class="space-y-4">
+                            <p class="text-center text-lg">Session ID: <span id="session-id"></span></p>
+                            <div class="flex space-x-4">
+                                <input type="text" id="new-location" placeholder="Add new location..." class="flex-1 p-2 border rounded">
+                                <button id="add-location" class="btn btn-primary">Add Location</button>
+                            </div>
+                            <div id="locations-list" class="space-y-4"></div>
+                            <button id="reset-session" class="btn btn-primary w-full">Reset Session</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Player Screen -->
+                <div id="player-screen" class="screen">
+                    <div class="card p-8">
+                        <h2 class="text-3xl font-bold text-center mb-8">Rate Margaritas</h2>
+                        <div id="rating-container" class="space-y-6"></div>
+                        <button id="submit-ratings" class="btn btn-primary w-full">Submit Ratings</button>
+                    </div>
+                </div>
+
+                <!-- Results Screen -->
+                <div id="results-screen" class="screen">
+                    <div class="card p-8">
+                        <h2 class="text-3xl font-bold text-center mb-8">Results</h2>
+                        <div id="results-container" class="space-y-6"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

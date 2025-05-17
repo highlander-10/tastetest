@@ -1,0 +1,13 @@
+[build]
+command = "npm run build"
+src = "public"
+entry-point = "index.html"
+
+[env.production]
+kv_namespaces = [
+  { binding = "SESSIONS", id = "your-kv-namespace-id" }
+]
+
+[env.production.vars]
+CF_ACCOUNT_ID = "your-account-id"
+CF_ZONE_ID = "your-zone-id"
