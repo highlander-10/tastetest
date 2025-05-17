@@ -4,11 +4,11 @@ const DEFAULT_RATING_CRITERIA_TEXT = [
     'Taste', 'Sweetness', 'Spiciness (if any)', 'Overall Quality',
     'Service Efficiency', 'Atmosphere', 'Value for Cost'
 ];
-const PHILL_ADMIN_ID = 'phill_the_admin'; // Ensure this matches your client-side constant
-const APP_PREFIX = 'margaritaTrackerV2_'; // Consistent prefix
-const LAST_SESSION_NUM_KEY_KV = `${APP_PREFIX}lastSessionNumericId_KV`; // KV specific key for the counter
+const PHILL_ADMIN_ID = 'phill_the_admin';
+const APP_PREFIX = 'margaritaTrackerV2_'; // To keep key names consistent
+const LAST_SESSION_NUM_KEY_KV = `${APP_PREFIX}lastSessionNumericId_KV`; // Key for the global counter
 
-// Helper to generate unique IDs (though primary session ID is numeric)
+// Helper to generate unique IDs for criteria, locations etc.
 const generateInternalId = (length = 6) => crypto.randomUUID().replace(/-/g, '').slice(0, length);
 
 export async function onRequestPost({ env }) {
@@ -21,7 +21,7 @@ export async function onRequestPost({ env }) {
         }
 
         let lastNumericIdStr = await env.SESSION_KV.get(LAST_SESSION_NUM_KEY_KV);
-        let lastNumericId = parseInt(lastNumericIdStr, 10) || 0;
+        let lastNumericId = parseInt(lastNumericIdStr, 10) || 0; // Default to 0 if not found or invalid
         const newNumericSessionId = lastNumericId + 1;
         await env.SESSION_KV.put(LAST_SESSION_NUM_KEY_KV, newNumericSessionId.toString());
         const currentSessionIdStr = String(newNumericSessionId);
@@ -34,16 +34,15 @@ export async function onRequestPost({ env }) {
 
         const sessionData = {
             sessionId: currentSessionIdStr,
-            adminId: PHILL_ADMIN_ID, // Set the admin for this session
+            adminId: PHILL_ADMIN_ID,
             players: [{ id: PHILL_ADMIN_ID, name: "Phill (Admin)", isAdmin: true }],
             locations: [],
             ratingCriteria: defaultCriteria,
-            state: 'active', // 'active', 'ended', etc.
+            state: 'active',
             createdAt: new Date().toISOString(),
             lastUpdatedAt: new Date().toISOString(),
         };
 
-        // Store the main session data under a key like "session-1", "session-2", etc.
         await env.SESSION_KV.put(`session-${currentSessionIdStr}`, JSON.stringify(sessionData));
         console.log("FUNCTIONS: Session data created and saved to KV for session:", currentSessionIdStr);
 

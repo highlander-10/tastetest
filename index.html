@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            overscroll-behavior-y: contain; /* Prevents pull-to-refresh on some mobile browsers */
+            overscroll-behavior-y: contain; 
         }
         .hidden { display: none; }
         ul { list-style: none; padding-left: 0; }
@@ -16,23 +16,15 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
         .criterion-winner {
-            background-color: #fffbeb; /* Light yellow highlight for winners */
-            border-left: 3px solid #f59e0b; /* Amber border */
+            background-color: #fffbeb; 
+            border-left: 3px solid #f59e0b; 
         }
         .winner-badge {
-            display: inline-block;
-            padding: 0.1rem 0.4rem;
-            font-size: 0.65rem;
-            font-weight: bold;
-            color: #92400e; /* Darker amber text */
-            background-color: #fde68a; /* Lighter amber background */
-            border-radius: 0.25rem;
-            margin-left: 0.5rem;
+            display: inline-block; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold;
+            color: #92400e; background-color: #fde68a; border-radius: 0.25rem; margin-left: 0.5rem;
         }
         button:disabled {
-            background-color: #d1d5db !important; /* Tailwind gray-300 */
-            color: #6b7280 !important; /* Tailwind gray-500 */
-            cursor: not-allowed !important;
+            background-color: #d1d5db !important; color: #6b7280 !important; cursor: not-allowed !important;
         }
     </style>
 </head>
@@ -84,7 +76,6 @@
                 <button id="copy-session-link-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg text-sm mt-2 mb-2 transition duration-150 shadow-sm">Copy Session Link</button>
                 <button id="refresh-admin-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg text-sm mb-4 transition duration-150 shadow-sm">Refresh Session Data</button>
 
-
                 <div class="space-y-3 my-4">
                     <button id="admin-rate-locations-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm"> Rate Locations (As Phill) </button>
                     <button id="admin-customize-questions-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm"> Customize Rating Questions </button>
@@ -132,7 +123,8 @@
                     </div>
                 <img id="winner-image" src="https://m.media-amazon.com/images/I/71X5QUUPTGL._AC_SY741_.jpg" alt="Margarita Celebration" class="mx-auto my-6 rounded-lg shadow-md max-w-xs h-auto object-contain" style="max-height: 200px;">
                 <div id="winner-trophy-fallback" class="text-6xl text-center py-6 text-yellow-500 hidden">🏆</div>
-                <p id="winner-trivia" class="text-xs text-gray-500 italic mt-4"></p>
+                <p id="admin-appreciation-message" class="text-sm text-gray-700 mt-4 mb-2"></p> <p id="winner-trivia" class="text-xs text-gray-500 italic"></p>
+
 
                 <button id="winner-back-to-results-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm"> Back to Results </button>
                 <button id="winner-new-session-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm"> Start New Session (Welcome) </button>
@@ -189,11 +181,9 @@
     const winnerScreen = document.getElementById('winner-screen');
     const screens = [welcomeScreen, adminCriteriaSetupScreen, adminScreen, playerScreen, resultsScreen, winnerScreen].filter(s => s);
     const phillStartsSessionBtn = document.getElementById('phill-starts-session-btn');
-    console.log("SCRIPT START: phillStartsSessionBtn DOM element check:", phillStartsSessionBtn);
     const joinSessionIdInput = document.getElementById('join-session-id-input');
     const playerNameJoinInput = document.getElementById('player-name-join-input');
     const joinSessionBtn = document.getElementById('join-session-btn');
-    console.log("SCRIPT START: joinSessionBtn DOM element check:", joinSessionBtn);
     const criteriaListEditor = document.getElementById('criteria-list-editor');
     const newCriterionInput = document.getElementById('new-criterion-input');
     const addCriterionBtn = document.getElementById('add-criterion-btn');
@@ -205,7 +195,6 @@
     const adminCustomizeQuestionsBtn = document.getElementById('admin-customize-questions-btn');
     const locationNameInput = document.getElementById('location-name-input');
     const addLocationBtn = document.getElementById('add-location-btn');
-    console.log("SCRIPT START: addLocationBtn DOM element check:", addLocationBtn);
     const adminLocationsList = document.getElementById('admin-locations-list');
     const adminPlayersList = document.getElementById('admin-players-list');
     const resetSessionBtn = document.getElementById('reset-session-btn');
@@ -224,6 +213,7 @@
     const winningLocationDetails = document.getElementById('winning-location-details');
     const winnerImageElement = document.getElementById('winner-image');
     const winnerTrophyFallback = document.getElementById('winner-trophy-fallback');
+    const adminAppreciationMessage = document.getElementById('admin-appreciation-message'); // New
     const winnerTriviaElement = document.getElementById('winner-trivia');
     const winnerBackToResultsBtn = document.getElementById('winner-back-to-results-btn');
     const winnerNewSessionBtn = document.getElementById('winner-new-session-btn');
@@ -234,7 +224,8 @@
     const refreshWelcomeBtn = document.getElementById('refresh-welcome-btn');
     const refreshAdminBtn = document.getElementById('refresh-admin-btn');
     const refreshPlayerBtn = document.getElementById('refresh-player-btn');
-    console.log("SCRIPT START: Finished getting DOM elements.");
+    console.log("SCRIPT START: DOM element checks completed.");
+
 
     // --- STATE VARIABLES ---
     let currentSessionId = null;
@@ -298,7 +289,10 @@
                             if (winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
                         };
                     } else { console.error("winnerImageElement is null"); if(winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');}
-                    if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia(); else console.error("winnerTriviaElement for winner screen is null");
+                    if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia();
+                    if (adminAppreciationMessage) { // New message for Phill
+                         adminAppreciationMessage.textContent = "Cheers to Phill for leading the margarita quest!";
+                    }
                 }
 
                 if(headerTitle) headerTitle.textContent = currentHeaderText; else console.error("headerTitle element is null");
@@ -356,7 +350,7 @@
 
     // --- API HELPER ---
     async function fetchApi(endpoint, options = {}) {
-        console.log(`CLIENT: API Call Start - ${options.method || 'GET'} ${endpoint}`, options.body ? (typeof options.body === 'string' ? options.body.substring(0,100) + "..." : options.body ): '');
+        console.log(`CLIENT: API Call Start - ${options.method || 'GET'} ${endpoint}`, options.body ? (typeof options.body === 'string' ? options.body.substring(0,100) + "..." : "Contains Body" ): '');
         try {
             const response = await fetch(endpoint, options);
             if (!response.ok) {
@@ -374,11 +368,12 @@
                 return jsonData;
             } else {
                 console.log(`CLIENT: API Call Success (Non-JSON) - Status ${response.status} for ${endpoint}`);
-                return { success: true, status: response.status };
+                return { success: true, status: response.status }; // For non-JSON success responses like a 204 No Content
             }
         } catch (error) {
             console.error(`CLIENT: Fetch API call failed for ${endpoint}:`, error);
-            throw error;
+            // utils.showAlert(`Network error or API call failed for ${endpoint}. Check console.`, "Network Error");
+            throw error; // Re-throw for calling function to handle
         }
     }
 
@@ -409,11 +404,11 @@
             const validCriteria = tempRatingCriteria.filter(c => c.text.trim() !== "");
             if (validCriteria.length === 0) { utils.showAlert("Please ensure there's at least one valid rating criterion."); return; }
             try {
-                const payload = { action: 'updateCriteria', payload: { criteria: validCriteria, adminId: currentPlayerId } }; // Ensure adminId is sent for server verification
+                const payload = { action: 'updateCriteria', payload: { criteria: validCriteria, adminId: currentPlayerId } };
                 const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                 });
-                sessionData = updatedSessionData; // Update client's sessionData with the response
+                sessionData = updatedSessionData;
                 utils.showAlert("Rating questions updated successfully!", "Questions Updated");
                 ui.renderAdminScreen();
             } catch (error) { console.error("session.confirmCriteriaChanges: Failed to update criteria:", error); }
@@ -435,7 +430,7 @@
                     const updatedSessionAfterPlayerAdd = await fetchApi(`/api/session/${currentSessionId}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(joinPayload)
                     });
-                    sessionData = updatedSessionAfterPlayerAdd; // Use the potentially updated session data
+                    sessionData = updatedSessionAfterPlayerAdd;
                     history.pushState({ sessionId: currentSessionId }, "", `?session=${currentSessionId}`);
                     ui.renderPlayerScreen();
                     utils.showAlert(`Welcome, ${currentPlayerName}! You've joined session #${currentSessionId}.`, "Joined!");
@@ -445,6 +440,7 @@
         fetchAndUpdateCurrentSession: async () => {
             if (!currentSessionId) {
                 console.log("fetchAndUpdateCurrentSession: No current session ID to refresh.");
+                utils.showAlert("No active session to refresh. Try starting or joining one.", "Info");
                 return false;
             }
             console.log(`WorkspaceAndUpdateCurrentSession: Refreshing session #${currentSessionId}`);
@@ -458,15 +454,19 @@
                         if (activeScreenElement === adminScreen && isAdmin) ui.renderAdminScreen();
                         else if (activeScreenElement === playerScreen) ui.renderPlayerScreen();
                         else if (activeScreenElement === resultsScreen) ui.renderResultsScreen();
+                         // No specific refresh action for welcome, criteria setup or winner screen directly from here
                     }
                     utils.showAlert("Session data refreshed!", "Refreshed");
                     return true;
                 } else {
+                    // This case might be hit if fetchApi returns successfully but without expected data (e.g. 404 parsed as JSON error)
+                    // The alert in fetchApi for !response.ok should ideally cover "not found"
                     utils.showAlert(`Could not refresh session #${currentSessionId}. It may no longer exist or there was a server error.`, "Refresh Error");
                     return false;
                 }
             } catch (error) {
                 console.error(`WorkspaceAndUpdateCurrentSession: Failed for session #${currentSessionId}:`, error);
+                // Alert is usually shown by fetchApi
                 return false;
             }
         },
@@ -474,23 +474,25 @@
             console.log("session.leaveSession: Called");
             const wasAdmin = isAdmin; currentSessionId = null; isAdmin = false; sessionData = null; currentPlayerName = null; 
             history.pushState({}, "", window.location.pathname); utils.showScreen(welcomeScreen);
-            if(joinSessionIdInput) joinSessionIdInput.value = ""; else console.warn("leaveSession: joinSessionIdInput is null");
-            if(playerNameJoinInput) playerNameJoinInput.value = store.loadGlobalPlayerName() || ""; else console.warn("leaveSession: playerNameJoinInput is null");
+            if(joinSessionIdInput) joinSessionIdInput.value = "";
+            if(playerNameJoinInput) playerNameJoinInput.value = store.loadGlobalPlayerName() || "";
             utils.showAlert(wasAdmin ? "Admin session ended." : "You have left the session.", "Session Left");
         },
         resetSession: async () => {
             console.log("session.resetSession: Called");
             if (!isAdmin || !currentSessionId) { utils.showAlert("Only admin can reset an active session.", "Action Denied"); return; }
-            utils.showAlert("Are you sure you want to reset the entire session? This will delete all locations and ratings.", "Confirm Reset")
+            utils.showAlert("Are you sure you want to reset the entire session? This will delete all locations and ratings, and the session ID counter will be reset.", "Confirm Reset")
             .then(async (confirmed) => {
-                if (confirmed && confirm("FINAL CONFIRMATION: Reset all session data?")) {
+                if (confirmed && confirm("FINAL CONFIRMATION: Reset all session data and the ID counter?")) {
                     try {
-                        const payload = { action: 'resetSession', payload: { adminId: currentPlayerId } }; // Send adminId for verification
+                        const payload = { action: 'resetSession', payload: { adminId: currentPlayerId } }; // adminId for server verification
                         const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                         });
-                        sessionData = updatedSessionData; ui.renderAdminScreen();
-                        utils.showAlert("Session has been reset.", "Session Reset");
+                        // After reset, the current session ID might effectively be invalid if the server deleted it or fully reset.
+                        // It's safer to treat this as leaving the session and requiring a new one to be started.
+                        utils.showAlert("Session has been reset. The next session will start from ID #1.", "Session Reset");
+                        session.leaveSession(); // Go back to welcome screen
                     } catch (error) { console.error("session.resetSession: Failed", error); }
                 }
             });
@@ -510,7 +512,7 @@
                     const loadedData = await fetchApi(`/api/session/${sessionIdFromUrl}`);
                     if (loadedData && loadedData.sessionId) {
                         sessionData = loadedData; currentSessionId = sessionData.sessionId;
-                        currentPlayerId = globalPlayerId; // Set client's global ID
+                        currentPlayerId = globalPlayerId;
                         if (joinSessionIdInput) joinSessionIdInput.value = currentSessionId;
 
                         if (sessionData.adminId === PHILL_ADMIN_ID && currentPlayerId === PHILL_ADMIN_ID) {
@@ -534,8 +536,6 @@
                             }
                         }
                     } else {
-                        // This case is often hit if the API returns a 404 and fetchApi shows an alert.
-                        // We might not need another alert here, or we can make it more specific.
                         console.warn(`session.checkUrlParams: Session ID #${sessionIdFromUrl} not found via API or data invalid.`);
                         if(!document.getElementById('alert-modal') || document.getElementById('alert-modal').classList.contains('hidden')){
                              utils.showAlert(`Session ID #${sessionIdFromUrl} not found.`, "Error");
@@ -604,7 +604,7 @@
                         locElement.innerHTML = `
                             <div class="flex justify-between items-start">
                                 <h3 class="text-lg font-semibold text-gray-800">${loc.name}</h3>
-                                <button data-location-id="${loc.id}" class="remove-location-btn text-red-500 hover:text-red-700 text-xs font-medium p-1 rounded-full hover:bg-red-100">&times; Remove</button>
+                                <button data-location-id="${loc.id}" data-location-name="${loc.name}" class="remove-location-btn text-red-500 hover:text-red-700 text-xs font-medium p-1 rounded-full hover:bg-red-100">&times; Remove</button>
                             </div>
                             <p class="text-xs text-gray-600 mt-1">Ratings: ${totalRatings} | Avg Score: ${avgOverallScore ? avgOverallScore.toFixed(1) + '/5' : 'N/A'}</p>
                         `;
@@ -615,10 +615,8 @@
                         btn.parentNode.replaceChild(newBtn, btn);
                         newBtn.addEventListener('click', (e) => {
                              const locId = e.currentTarget.dataset.locationId;
-                             if (!sessionData || !sessionData.locations) return;
-                             const locData = sessionData.locations.find(l=>l.id === locId);
-                             const locName = locData ? locData.name : 'this location';
-                             actions.removeLocation(locId, locName); // Pass name for confirm dialog inside action
+                             const locName = e.currentTarget.dataset.locationName || 'this location';
+                             actions.removeLocation(locId, locName);
                         });
                     });
                 }
@@ -870,12 +868,13 @@
                 if(winnerImageElement) winnerImageElement.classList.add('hidden');
                 if(winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
             }
+            if (adminAppreciationMessage) {
+                 adminAppreciationMessage.textContent = "Cheers to Phill for leading the margarita quest!";
+            } else { console.error("adminAppreciationMessage element is null for winner screen");}
             if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia(); else console.error("winnerTriviaElement for winner screen is null");
             utils.showScreen(winnerScreen);
         },
         handleStorageChange: (event) => {
-            // This function is no longer used for primary data sync with KV store.
-            // Could be used for other client-side cross-tab communication if needed.
             console.log("ui.handleStorageChange: Storage event detected (not used for session data sync):", event.key);
         }
     };
@@ -899,7 +898,7 @@
             try {
                 const payload = {
                     action: 'addLocation',
-                    payload: { name: name.trim(), addedBy: currentPlayerId } // currentPlayerId is PHILL_ADMIN_ID here
+                    payload: { name: name.trim(), addedBy: currentPlayerId }
                 };
                 const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
                     method: 'POST',
@@ -914,7 +913,7 @@
         removeLocation: async (locationId, locationName) => {
             console.log("actions.removeLocation: Called for ID:", locationId, "Name:", locationName);
             if (!isAdmin || !sessionData || !currentSessionId) { utils.showAlert("Only admin can remove locations.", "Action Denied"); return; }
-            // Confirmation is now handled by the event listener in ui.renderAdminScreen which then calls this.
+            // Confirmation moved to event listener in ui.renderAdminScreen
 
             try {
                  const payload = {
@@ -953,8 +952,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                sessionData = updatedSessionData;
-                ui.renderPlayerScreen();
+                sessionData = updatedSessionData; // Update client's view of session
+                ui.renderPlayerScreen(); // Re-render to reflect changes (e.g., "Update Rating" button text)
             } catch (error) {
                 console.error("actions.submitRating: Failed", error);
             }
@@ -1021,7 +1020,6 @@
         if (!adminCustomizeQuestionsBtn) { console.error("adminCustomizeQuestionsBtn is null in its own listener setup!"); return;}
         if (adminCustomizeQuestionsBtn.disabled) { utils.showAlert("Rating questions cannot be changed after ratings have started.", "Customization Locked"); return; }
         if (!sessionData) { utils.showAlert("No active session.", "Error"); return; }
-        // tempRatingCriteria should be a deep copy of the current session criteria for editing
         tempRatingCriteria = sessionData.ratingCriteria ? JSON.parse(JSON.stringify(sessionData.ratingCriteria)) : [];
         if (ui.renderCriteriaEditor) ui.renderCriteriaEditor(); else console.error("adminCustomizeQuestionsBtn: ui.renderCriteriaEditor missing");
         utils.showScreen(adminCriteriaSetupScreen);
@@ -1066,7 +1064,6 @@
     safeAddEventListener(winnerBackToResultsBtn, 'click', () => utils.showScreen(resultsScreen), 'winnerBackToResultsBtn');
     safeAddEventListener(winnerNewSessionBtn, 'click', () => { session.leaveSession(); utils.showScreen(welcomeScreen); }, 'winnerNewSessionBtn');
     
-    // Refresh Button Listeners
     safeAddEventListener(refreshWelcomeBtn, 'click', async () => {
         utils.showAlert("Checking for session in URL...", "Refreshing");
         await session.checkUrlParams();
@@ -1074,7 +1071,7 @@
     safeAddEventListener(refreshAdminBtn, 'click', session.fetchAndUpdateCurrentSession, 'refreshAdminBtn');
     safeAddEventListener(refreshPlayerBtn, 'click', session.fetchAndUpdateCurrentSession, 'refreshPlayerBtn');
 
-    // Remove: window.addEventListener('storage', ui.handleStorageChange); // No longer used for session data
+    // Removed: window.addEventListener('storage', ui.handleStorageChange);
 
     const initApp = () => {
         console.log("App initializing...");
@@ -1089,7 +1086,7 @@
             return;
         }
         session.checkUrlParams();
-        if (!currentSessionId && welcomeScreen) { // If no session after check, ensure welcome is shown
+        if (!currentSessionId && welcomeScreen) {
              utils.showScreen(welcomeScreen);
         }
         console.log("App initialized successfully.");
