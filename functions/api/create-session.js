@@ -8,7 +8,7 @@ const PHILL_ADMIN_ID = 'phill_the_admin'; // Ensure this matches your client-sid
 const APP_PREFIX = 'margaritaTrackerV2_'; // Consistent prefix
 const LAST_SESSION_NUM_KEY_KV = `${APP_PREFIX}lastSessionNumericId_KV`; // KV specific key for the counter
 
-// Helper to generate unique IDs for criteria, locations etc.
+// Helper to generate unique IDs (though primary session ID is numeric)
 const generateInternalId = (length = 6) => crypto.randomUUID().replace(/-/g, '').slice(0, length);
 
 export async function onRequestPost({ env }) {
@@ -26,7 +26,7 @@ export async function onRequestPost({ env }) {
         await env.SESSION_KV.put(LAST_SESSION_NUM_KEY_KV, newNumericSessionId.toString());
         const currentSessionIdStr = String(newNumericSessionId);
 
-        console.log("FUNCTIONS: New Numeric Session ID:", currentSessionIdStr);
+        console.log("FUNCTIONS: New Numeric Session ID generated:", currentSessionIdStr);
 
         const defaultCriteria = DEFAULT_RATING_CRITERIA_TEXT.map((text, index) => ({
             id: `crit_${generateInternalId(4)}_${index}`, text: text
@@ -34,11 +34,11 @@ export async function onRequestPost({ env }) {
 
         const sessionData = {
             sessionId: currentSessionIdStr,
-            adminId: PHILL_ADMIN_ID,
+            adminId: PHILL_ADMIN_ID, // Set the admin for this session
             players: [{ id: PHILL_ADMIN_ID, name: "Phill (Admin)", isAdmin: true }],
             locations: [],
             ratingCriteria: defaultCriteria,
-            state: 'active',
+            state: 'active', // 'active', 'ended', etc.
             createdAt: new Date().toISOString(),
             lastUpdatedAt: new Date().toISOString(),
         };

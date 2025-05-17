@@ -236,7 +236,6 @@
     const refreshPlayerBtn = document.getElementById('refresh-player-btn');
     console.log("SCRIPT START: Finished getting DOM elements.");
 
-
     // --- STATE VARIABLES ---
     let currentSessionId = null;
     let currentPlayerId = null;
@@ -410,11 +409,11 @@
             const validCriteria = tempRatingCriteria.filter(c => c.text.trim() !== "");
             if (validCriteria.length === 0) { utils.showAlert("Please ensure there's at least one valid rating criterion."); return; }
             try {
-                const payload = { action: 'updateCriteria', payload: { criteria: validCriteria, adminId: currentPlayerId } };
+                const payload = { action: 'updateCriteria', payload: { criteria: validCriteria, adminId: currentPlayerId } }; // Ensure adminId is sent for server verification
                 const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                 });
-                sessionData = updatedSessionData;
+                sessionData = updatedSessionData; // Update client's sessionData with the response
                 utils.showAlert("Rating questions updated successfully!", "Questions Updated");
                 ui.renderAdminScreen();
             } catch (error) { console.error("session.confirmCriteriaChanges: Failed to update criteria:", error); }
@@ -436,7 +435,7 @@
                     const updatedSessionAfterPlayerAdd = await fetchApi(`/api/session/${currentSessionId}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(joinPayload)
                     });
-                    sessionData = updatedSessionAfterPlayerAdd;
+                    sessionData = updatedSessionAfterPlayerAdd; // Use the potentially updated session data
                     history.pushState({ sessionId: currentSessionId }, "", `?session=${currentSessionId}`);
                     ui.renderPlayerScreen();
                     utils.showAlert(`Welcome, ${currentPlayerName}! You've joined session #${currentSessionId}.`, "Joined!");
@@ -468,7 +467,6 @@
                 }
             } catch (error) {
                 console.error(`WorkspaceAndUpdateCurrentSession: Failed for session #${currentSessionId}:`, error);
-                // Alert is usually shown by fetchApi
                 return false;
             }
         },
@@ -476,8 +474,8 @@
             console.log("session.leaveSession: Called");
             const wasAdmin = isAdmin; currentSessionId = null; isAdmin = false; sessionData = null; currentPlayerName = null; 
             history.pushState({}, "", window.location.pathname); utils.showScreen(welcomeScreen);
-            if(joinSessionIdInput) joinSessionIdInput.value = "";
-            if(playerNameJoinInput) playerNameJoinInput.value = store.loadGlobalPlayerName() || "";
+            if(joinSessionIdInput) joinSessionIdInput.value = ""; else console.warn("leaveSession: joinSessionIdInput is null");
+            if(playerNameJoinInput) playerNameJoinInput.value = store.loadGlobalPlayerName() || ""; else console.warn("leaveSession: playerNameJoinInput is null");
             utils.showAlert(wasAdmin ? "Admin session ended." : "You have left the session.", "Session Left");
         },
         resetSession: async () => {
@@ -487,7 +485,7 @@
             .then(async (confirmed) => {
                 if (confirmed && confirm("FINAL CONFIRMATION: Reset all session data?")) {
                     try {
-                        const payload = { action: 'resetSession', payload: { adminId: currentPlayerId } };
+                        const payload = { action: 'resetSession', payload: { adminId: currentPlayerId } }; // Send adminId for verification
                         const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                         });
@@ -512,7 +510,7 @@
                     const loadedData = await fetchApi(`/api/session/${sessionIdFromUrl}`);
                     if (loadedData && loadedData.sessionId) {
                         sessionData = loadedData; currentSessionId = sessionData.sessionId;
-                        currentPlayerId = globalPlayerId;
+                        currentPlayerId = globalPlayerId; // Set client's global ID
                         if (joinSessionIdInput) joinSessionIdInput.value = currentSessionId;
 
                         if (sessionData.adminId === PHILL_ADMIN_ID && currentPlayerId === PHILL_ADMIN_ID) {
@@ -536,10 +534,18 @@
                             }
                         }
                     } else {
-                        utils.showAlert(`Session ID #${sessionIdFromUrl} not found.`);
+                        // This case is often hit if the API returns a 404 and fetchApi shows an alert.
+                        // We might not need another alert here, or we can make it more specific.
+                        console.warn(`session.checkUrlParams: Session ID #${sessionIdFromUrl} not found via API or data invalid.`);
+                        if(!document.getElementById('alert-modal') || document.getElementById('alert-modal').classList.contains('hidden')){
+                             utils.showAlert(`Session ID #${sessionIdFromUrl} not found.`, "Error");
+                        }
                         history.pushState({}, "", window.location.pathname); utils.showScreen(welcomeScreen);
                     }
-                } catch (error) { history.pushState({}, "", window.location.pathname); utils.showScreen(welcomeScreen); }
+                } catch (error) { 
+                    console.error("session.checkUrlParams: Error fetching session from URL", error);
+                    history.pushState({}, "", window.location.pathname); utils.showScreen(welcomeScreen); 
+                }
             } else { utils.showScreen(welcomeScreen); }
         }
     };
@@ -612,8 +618,7 @@
                              if (!sessionData || !sessionData.locations) return;
                              const locData = sessionData.locations.find(l=>l.id === locId);
                              const locName = locData ? locData.name : 'this location';
-                             // actions.removeLocation will handle confirm
-                             actions.removeLocation(locId, locName);
+                             actions.removeLocation(locId, locName); // Pass name for confirm dialog inside action
                         });
                     });
                 }
@@ -869,9 +874,9 @@
             utils.showScreen(winnerScreen);
         },
         handleStorageChange: (event) => {
-            // This function is no longer used for primary data sync as data is on server.
-            // Could be used for other cross-tab client-side flags if needed in future.
-            console.log("ui.handleStorageChange: Storage event detected (not used for session data):", event.key);
+            // This function is no longer used for primary data sync with KV store.
+            // Could be used for other client-side cross-tab communication if needed.
+            console.log("ui.handleStorageChange: Storage event detected (not used for session data sync):", event.key);
         }
     };
 
@@ -906,24 +911,24 @@
                 if (locationNameInput) locationNameInput.value = '';
             } catch (error) { console.error("actions.addLocation: Failed", error); }
         },
-        removeLocation: async (locationId, locationName) => { // Added locationName for confirm message
-            console.log("actions.removeLocation: Called for ID:", locationId);
+        removeLocation: async (locationId, locationName) => {
+            console.log("actions.removeLocation: Called for ID:", locationId, "Name:", locationName);
             if (!isAdmin || !sessionData || !currentSessionId) { utils.showAlert("Only admin can remove locations.", "Action Denied"); return; }
-            if (!confirm(`Are you sure you want to remove "${locationName || 'this location'}" and all its ratings?`)) return;
+            // Confirmation is now handled by the event listener in ui.renderAdminScreen which then calls this.
 
             try {
                  const payload = {
-                    action: 'removeLocation', // Server-side function needs to handle this
+                    action: 'removeLocation',
                     payload: { locationId: locationId, adminId: currentPlayerId }
                 };
                 const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
-                    method: 'POST', // Or a DELETE method if your server function handles it differently
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 sessionData = updatedSessionData;
                 ui.renderAdminScreen();
-                 utils.showAlert("Location removed.", "Success");
+                 utils.showAlert(`Location "${locationName || locationId}" removed.`, "Success");
             } catch (error) {
                 console.error("actions.removeLocation: Failed", error);
             }
@@ -1016,7 +1021,8 @@
         if (!adminCustomizeQuestionsBtn) { console.error("adminCustomizeQuestionsBtn is null in its own listener setup!"); return;}
         if (adminCustomizeQuestionsBtn.disabled) { utils.showAlert("Rating questions cannot be changed after ratings have started.", "Customization Locked"); return; }
         if (!sessionData) { utils.showAlert("No active session.", "Error"); return; }
-        tempRatingCriteria = JSON.parse(JSON.stringify(sessionData.ratingCriteria));
+        // tempRatingCriteria should be a deep copy of the current session criteria for editing
+        tempRatingCriteria = sessionData.ratingCriteria ? JSON.parse(JSON.stringify(sessionData.ratingCriteria)) : [];
         if (ui.renderCriteriaEditor) ui.renderCriteriaEditor(); else console.error("adminCustomizeQuestionsBtn: ui.renderCriteriaEditor missing");
         utils.showScreen(adminCriteriaSetupScreen);
     }, 'adminCustomizeQuestionsBtn');
@@ -1063,14 +1069,12 @@
     // Refresh Button Listeners
     safeAddEventListener(refreshWelcomeBtn, 'click', async () => {
         utils.showAlert("Checking for session in URL...", "Refreshing");
-        await session.checkUrlParams(); // This attempts to load session if in URL
-        // If still no session, user stays on welcome. If session loaded, UI changes.
+        await session.checkUrlParams();
     }, 'refreshWelcomeBtn');
     safeAddEventListener(refreshAdminBtn, 'click', session.fetchAndUpdateCurrentSession, 'refreshAdminBtn');
     safeAddEventListener(refreshPlayerBtn, 'click', session.fetchAndUpdateCurrentSession, 'refreshPlayerBtn');
 
-
-    // Remove: window.addEventListener('storage', ui.handleStorageChange); // No longer used
+    // Remove: window.addEventListener('storage', ui.handleStorageChange); // No longer used for session data
 
     const initApp = () => {
         console.log("App initializing...");
@@ -1084,9 +1088,8 @@
             }
             return;
         }
-        session.checkUrlParams(); // This will try to load session from URL or show welcome
-        // If no session ID after checkUrlParams, show welcome (already handled by checkUrlParams or by showScreen default)
-        if (!currentSessionId && welcomeScreen) {
+        session.checkUrlParams();
+        if (!currentSessionId && welcomeScreen) { // If no session after check, ensure welcome is shown
              utils.showScreen(welcomeScreen);
         }
         console.log("App initialized successfully.");
