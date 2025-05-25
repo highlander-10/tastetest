@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            overscroll-behavior-y: contain; /* Prevents pull-to-refresh on some mobile browsers */
+            overscroll-behavior-y: contain; 
         }
         .hidden { display: none; }
         ul { list-style: none; padding-left: 0; }
@@ -16,23 +16,15 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
         .criterion-winner {
-            background-color: #fffbeb; /* Light yellow highlight for winners */
-            border-left: 3px solid #f59e0b; /* Amber border */
+            background-color: #fffbeb; 
+            border-left: 3px solid #f59e0b; 
         }
         .winner-badge {
-            display: inline-block;
-            padding: 0.1rem 0.4rem;
-            font-size: 0.65rem;
-            font-weight: bold;
-            color: #92400e; /* Darker amber text */
-            background-color: #fde68a; /* Lighter amber background */
-            border-radius: 0.25rem;
-            margin-left: 0.5rem;
+            display: inline-block; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold;
+            color: #92400e; background-color: #fde68a; border-radius: 0.25rem; margin-left: 0.5rem;
         }
         button:disabled {
-            background-color: #d1d5db !important; /* Tailwind gray-300 */
-            color: #6b7280 !important; /* Tailwind gray-500 */
-            cursor: not-allowed !important;
+            background-color: #d1d5db !important; color: #6b7280 !important; cursor: not-allowed !important;
         }
     </style>
 </head>
@@ -240,7 +232,8 @@
     const refreshWelcomeBtn = document.getElementById('refresh-welcome-btn');
     const refreshAdminBtn = document.getElementById('refresh-admin-btn');
     const refreshPlayerBtn = document.getElementById('refresh-player-btn');
-    console.log("SCRIPT START: DOM element checks completed.");
+    console.log("SCRIPT START: Finished getting DOM elements. phillStartsSessionBtn:", phillStartsSessionBtn);
+
 
     // --- STATE VARIABLES ---
     let currentSessionId = null;
@@ -254,7 +247,7 @@
     // --- UTILITY FUNCTIONS ---
     const utils = {
         generateId: (length = 6) => crypto.randomUUID().replace(/-/g, '').slice(0, length),
-        showScreen: (screenToShow, options = { isInviteFlow: false }) => { // Added options with default
+        showScreen: (screenToShow, options = { isInviteFlow: false }) => {
             console.log("utils.showScreen called for:", screenToShow ? screenToShow.id : 'null screen element', "Options:", options);
             let allScreensFound = true;
             screens.forEach(screen => {
@@ -284,7 +277,6 @@
                     } else console.error("welcomeImage element is null for welcome screen");
                     if (welcomeTrivia) welcomeTrivia.textContent = utils.getRandomTrivia(); else console.error("welcomeTrivia element for welcome screen is null");
                     
-                    // Control admin button visibility based on options
                     if (phillStartsSessionBtn) {
                         if (options.isInviteFlow) {
                             phillStartsSessionBtn.classList.add('hidden');
@@ -329,7 +321,7 @@
                 } else {console.error("appHeader element is null");}
             } else {
                 console.error("utils.showScreen: screenToShow argument is null!");
-                if(welcomeScreen) utils.showScreen(welcomeScreen, { isInviteFlow: false }); // Show default welcome
+                if(welcomeScreen) utils.showScreen(welcomeScreen, { isInviteFlow: false });
                 else console.error("Fallback welcomeScreen is also null!");
             }
             window.scrollTo(0,0);
@@ -392,13 +384,13 @@
                 const jsonData = await response.json();
                 console.log(`CLIENT: API Call Success (JSON) - ${options.method || 'GET'} ${endpoint}. Response snippet:`, JSON.stringify(jsonData).substring(0,200) + "...");
                 return jsonData;
-            } else if (response.status === 204 || response.status === 201 && !contentType) { // Handle 204 No Content or 201 with no body
+            } else if (response.status === 204 || (response.status === 201 && !contentType) ) {
                  console.log(`CLIENT: API Call Success (Empty Body) - Status ${response.status} for ${endpoint}`);
                  return { success: true, status: response.status };
-            }
-             else {
-                console.log(`CLIENT: API Call Success (Non-JSON or unexpected) - Status ${response.status} for ${endpoint}`);
-                return { success: true, status: response.status, text: await response.text() }; // Return text if not JSON
+            } else {
+                const responseText = await response.text();
+                console.log(`CLIENT: API Call Success (Non-JSON or unexpected) - Status ${response.status} for ${endpoint}. Text:`, responseText.substring(0,100) + "...");
+                return { success: true, status: response.status, text: responseText };
             }
         } catch (error) {
             console.error(`CLIENT: Fetch API call failed for ${endpoint}:`, error);
@@ -409,9 +401,11 @@
     // --- SESSION MANAGEMENT ---
     const session = {
         startPhillAsAdmin: async () => {
-            console.log("session.startPhillAsAdmin: Called");
+            console.log("session.startPhillAsAdmin: Called"); // Log entry
             try {
                 const newSessionDataFromServer = await fetchApi('/api/create-session', { method: 'POST' });
+                console.log("session.startPhillAsAdmin: Response from API:", newSessionDataFromServer); // Log the raw response
+
                 if (newSessionDataFromServer && newSessionDataFromServer.sessionId) {
                     isAdmin = true;
                     currentPlayerId = PHILL_ADMIN_ID;
@@ -419,11 +413,15 @@
                     currentSessionId = newSessionDataFromServer.sessionId;
                     sessionData = newSessionDataFromServer;
                     history.pushState({ sessionId: currentSessionId, admin: true }, "", `?session=${currentSessionId}&admin=true`);
-                    ui.renderAdminScreen();
+                    
+                    console.log("session.startPhillAsAdmin: About to call ui.renderAdminScreen(). Current Session ID:", currentSessionId, "isAdmin:", isAdmin, "sessionData valid:", !!sessionData);
+                    ui.renderAdminScreen(); 
+                    console.log("session.startPhillAsAdmin: ui.renderAdminScreen() call IS NOW complete.");
+
                     utils.showAlert(`New session #${currentSessionId} started! Share link or ID.`, "Session Started");
                 } else {
-                    console.error("session.startPhillAsAdmin: create-session API did not return valid session data.");
-                    utils.showAlert("Failed to start session. Server error or invalid response.", "Error");
+                    console.error("session.startPhillAsAdmin: create-session API did NOT return valid session data. Response was:", newSessionDataFromServer);
+                    utils.showAlert("Failed to start session. Server response was invalid.", "Error");
                 }
             } catch (error) { console.error("session.startPhillAsAdmin: Failed to create session via API:", error); }
         },
@@ -512,7 +510,7 @@
                 if (confirmed && confirm("FINAL CONFIRMATION: Reset all session data and the ID counter?")) {
                     try {
                         const payload = { action: 'resetSession', payload: { adminId: currentPlayerId } };
-                        await fetchApi(`/api/session/${currentSessionId}`, { // Server handles reset & returns updated (empty) or success
+                        await fetchApi(`/api/session/${currentSessionId}`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                         });
                         utils.showAlert("Session has been reset. The next session will start from ID #1.", "Session Reset");
@@ -530,15 +528,10 @@
 
             if(playerNameJoinInput) playerNameJoinInput.value = globalPlayerNameSuggestion || "";
 
-            let showWelcomeOptions = { isInviteFlow: false }; // Default: not an invite flow
+            let showWelcomeOptions = { isInviteFlow: false };
 
             if (sessionIdFromUrl) {
-                 if (!/^\d+$/.test(sessionIdFromUrl)) { 
-                     utils.showAlert(`Invalid Session ID "${sessionIdFromUrl}" in URL.`, "Error"); 
-                     history.pushState({}, "", window.location.pathname); 
-                     utils.showScreen(welcomeScreen, showWelcomeOptions); 
-                     return; 
-                }
+                 if (!/^\d+$/.test(sessionIdFromUrl)) { utils.showAlert(`Invalid Session ID "${sessionIdFromUrl}" in URL.`, "Error"); history.pushState({}, "", window.location.pathname); utils.showScreen(welcomeScreen, showWelcomeOptions); return; }
                 try {
                     console.log(`session.checkUrlParams: Loading session ${sessionIdFromUrl} from URL`);
                     const loadedData = await fetchApi(`/api/session/${sessionIdFromUrl}`);
@@ -559,7 +552,7 @@
                                 store.saveGlobalPlayerName(currentPlayerName);
                                 ui.renderPlayerScreen();
                             } else { 
-                                showWelcomeOptions.isInviteFlow = true; // This is an invite flow
+                                showWelcomeOptions.isInviteFlow = true; 
                                 if (sessionData.pendingPlayerSuggestion) {
                                     globalPlayerNameSuggestion = sessionData.pendingPlayerSuggestion;
                                     console.log("session.checkUrlParams: Using admin's suggested name:", globalPlayerNameSuggestion);
@@ -569,8 +562,6 @@
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ action: 'consumePlayerSuggestion', payload: {} })
                                         });
-                                        // No need to update local sessionData.pendingPlayerSuggestion here,
-                                        // as the main sessionData will be fetched upon actual join.
                                     } catch (consumeError) {
                                         console.error("session.checkUrlParams: Failed to consume player suggestion on server", consumeError);
                                     }
@@ -597,7 +588,7 @@
                     utils.showScreen(welcomeScreen, showWelcomeOptions); 
                 }
             } else { 
-                utils.showScreen(welcomeScreen, showWelcomeOptions); // No session in URL, show default welcome
+                utils.showScreen(welcomeScreen, showWelcomeOptions);
             }
         }
     };
@@ -609,10 +600,10 @@
         renderPlayerScreen: () => { /* ... (Full implementation from previous correct block, including default middle rating logic) ... */ },
         calculateAverageOverallScoreForLocation: (locationId) => { /* ... (Full implementation from previous correct block) ... */ },
         renderResultsScreen: () => { /* ... (Full implementation from previous correct block, with no-ratings message and per-criterion winner) ... */ },
-        renderWinnerScreen: () => { /* ... (Full implementation from previous correct block, with MARGARITA_IMAGE_URL and trivia) ... */ },
-        handleStorageChange: (event) => { /* This function is no longer used with server-side state, can be removed or left empty */ console.log("Storage event (no longer primary data source):", event.key);}
+        renderWinnerScreen: () => { /* ... (Full implementation from previous correct block, with MARGARITA_IMAGE_URL and trivia and admin appreciation) ... */ },
+        handleStorageChange: (event) => { console.log("Storage event (not used for session data sync):", event.key);}
     };
-    // To ensure these are complete, you'd copy the full bodies of these functions from the prior complete HTML block.
+    // To ensure these are complete, copy the full bodies of these functions from the prior complete HTML block where they were last correct.
 
     // --- ACTIONS (client-side that call API) ---
     const actions = {
@@ -626,7 +617,6 @@
                 await fetchApi(`/api/session/${currentSessionId}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                 });
-                // sessionData will be updated on next fetch/refresh if needed, or rely on server success
                 utils.showAlert(`Suggested name "${name.trim()}" set for the next joining player.`, "Name Suggested");
                 if(suggestedPlayerNameInput) suggestedPlayerNameInput.value = "";
             } catch (error) { console.error("actions.suggestPlayerName: Failed", error); }
@@ -635,7 +625,7 @@
         removeLocation: async (locationId, locationName) => { /* ... (Full implementation from previous correct block, using fetchApi) ... */ },
         submitRating: async (locationId, criteriaRatings, comments) => { /* ... (Full implementation from previous correct block, using fetchApi) ... */ }
     };
-    // To ensure these are complete, you'd copy the full bodies of these functions from the prior complete HTML block.
+    // To ensure these are complete, copy the full bodies of these functions from the prior complete HTML block.
 
 
     // --- EVENT LISTENERS ---
@@ -746,7 +736,7 @@
     }, 'backToRoleScreenBtn');
 
     safeAddEventListener(winnerBackToResultsBtn, 'click', () => utils.showScreen(resultsScreen), 'winnerBackToResultsBtn');
-    safeAddEventListener(winnerNewSessionBtn, 'click', () => { session.leaveSession(); utils.showScreen(welcomeScreen, {isInviteFlow: false }); }, 'winnerNewSessionBtn');
+    safeAddEventListener(winnerNewSessionBtn, 'click', () => { session.leaveSession(); }, 'winnerNewSessionBtn');
     
     safeAddEventListener(refreshWelcomeBtn, 'click', async () => {
         utils.showAlert("Checking for session in URL...", "Refreshing");
@@ -759,16 +749,16 @@
 
     const initApp = () => {
         console.log("App initializing...");
-        if (!welcomeScreen || !adminScreen || !playerScreen || !resultsScreen || !adminCriteriaSetupScreen || !winnerScreen || !alertModal || !appHeader || !headerTitle || !headerSessionInfo) {
-            console.error("CRITICAL: One or more core screen/modal/header elements are missing from the DOM! Check HTML IDs.");
-            const bodyContent = document.body;
-            if (bodyContent) {
-                bodyContent.innerHTML = "<p style='color:red; font-size:20px; padding:20px;'>App Initialization Error: Core screen elements not found. Please check the HTML IDs and ensure they match the JavaScript variables. Open the browser console (F12) for more details.</p>";
-            } else {
-                alert("Critical App Error: Core DOM structure seems to be missing. Cannot initialize the application.");
+        // Initial check of all essential DOM elements
+        const essentialElements = { welcomeScreen, adminScreen, playerScreen, resultsScreen, adminCriteriaSetupScreen, winnerScreen, alertModal, appHeader, headerTitle, headerSessionInfo, phillStartsSessionBtn, joinSessionBtn, addLocationBtn };
+        for (const [name, el] of Object.entries(essentialElements)) {
+            if (!el) {
+                console.error(`CRITICAL INIT ERROR: Element "${name}" not found. Check HTML ID.`);
+                document.body.innerHTML = `<p style='color:red; font-size:18px; padding:20px;'>App Critical Error: Element "${name}" missing. Check console and HTML.</p>`;
+                return; // Halt initialization
             }
-            return;
         }
+
         session.checkUrlParams(); // This will show welcome screen with appropriate options
         console.log("App initialized successfully.");
     };
