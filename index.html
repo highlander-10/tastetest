@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Margarita Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -30,6 +31,18 @@
             position: fixed; bottom: 0; left: 0; width: 100%;
             padding: 2px 8px; background-color: rgba(200, 200, 200, 0.7);
             font-size: 0.65rem; color: #333; text-align: center; z-index: 3000;
+        }
+        /* Subtle fade-in animation for winner details card */
+        #winning-location-details-card.fade-in-winner {
+            animation: fadeInSlideUp 0.7s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        @keyframes fadeInSlideUp {
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -132,12 +145,17 @@
             </div>
 
             <div id="winner-screen" class="hidden text-center">
-                <h1 class="text-3xl font-bold mb-6 text-red-500">🎉 And the Ultimate Winner Is... 🎉</h1>
-                <div id="winning-location-details" class="p-6 bg-yellow-100 border-2 border-yellow-400 rounded-lg shadow-lg">
-                    </div>
-                <img id="winner-image" src="https://m.media-amazon.com/images/I/71X5QUUPTGL._AC_SY741_.jpg" alt="Margarita Celebration" class="mx-auto my-6 rounded-lg shadow-md max-w-xs h-auto object-contain" style="max-height: 200px;">
-                <div id="winner-trophy-fallback" class="text-6xl text-center py-6 text-yellow-500 hidden">🏆</div>
-                <p id="admin-appreciation-message" class="text-sm text-gray-700 mt-4 mb-2 font-medium"></p>
+                <h1 class="text-4xl font-bold mb-4 text-red-500 animate-pulse">🎉 WINNER! 🎉</h1>
+                <div id="winning-location-details-card" class="p-6 bg-yellow-100 border-2 border-yellow-500 rounded-lg shadow-xl mb-6 opacity-0">
+                    <h2 id="winning-location-name" class="text-3xl font-bold text-green-700 mb-2"></h2>
+                    <p class="text-lg text-gray-800">Overall Score: <strong id="winning-location-score" class="text-2xl text-green-600"></strong> / 5</p>
+                    <p id="winning-location-num-ratings" class="text-sm text-gray-600 mt-1"></p>
+                    <div id="winning-location-criteria-summary" class="mt-4 text-sm text-left space-y-1">
+                        </div>
+                </div>
+                <img id="winner-image" src="https://m.media-amazon.com/images/I/71X5QUUPTGL._AC_SY741_.jpg" alt="Margarita Celebration" class="mx-auto my-4 rounded-lg shadow-md max-w-xs h-auto object-contain" style="max-height: 180px;">
+                <div id="winner-trophy-fallback" class="text-6xl text-center py-4 text-yellow-500 hidden">🏆</div>
+                <p id="admin-appreciation-message" class="text-sm text-gray-700 mt-3 mb-1 font-medium"></p>
                 <p id="winner-trivia" class="text-xs text-gray-500 italic"></p>
 
                 <button id="winner-back-to-results-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm"> Back to Results </button>
@@ -158,7 +176,7 @@
 
 <script>
     // --- CONFIGURATION ---
-    const APP_VERSION = "v1.4.1 - Client Focus"; // Updated version
+    const APP_VERSION = "v1.5.0 - Winner Screen Enhancements"; // Updated version
     const APP_PREFIX = 'margaritaTrackerV2_';
     const DEFAULT_RATING_CRITERIA_TEXT = [
         'Taste', 'Sweetness', 'Spiciness (if any)', 'Overall Quality',
@@ -181,7 +199,7 @@
     console.log(`SCRIPT START: Margarita Tracker ${APP_VERSION} script is loading...`);
 
     // --- DOM ELEMENTS ---
-    console.log("SCRIPT START: Getting DOM elements...");
+    // (All const declarations for DOM elements are here as in the previous full version)
     const appHeader = document.getElementById('app-header');
     const headerTitle = document.getElementById('header-title');
     const headerSessionInfo = document.getElementById('header-session-info');
@@ -229,7 +247,12 @@
     const resultsSummary = document.getElementById('results-summary');
     const viewWinnerBtn = document.getElementById('view-winner-btn');
     const backToRoleScreenBtn = document.getElementById('back-to-role-screen-btn');
+    const winningLocationDetailsCard = document.getElementById('winning-location-details-card'); // For animation
     const winningLocationDetails = document.getElementById('winning-location-details');
+    const winningLocationName = document.getElementById('winning-location-name');
+    const winningLocationScore = document.getElementById('winning-location-score');
+    const winningLocationNumRatings = document.getElementById('winning-location-num-ratings');
+    const winningLocationCriteriaSummary = document.getElementById('winning-location-criteria-summary');
     const winnerImageElement = document.getElementById('winner-image');
     const winnerTrophyFallback = document.getElementById('winner-trophy-fallback');
     const adminAppreciationMessage = document.getElementById('admin-appreciation-message');
@@ -291,10 +314,8 @@
                     if (phillStartsSessionBtn) {
                         if (options.isInviteFlow) {
                             phillStartsSessionBtn.classList.add('hidden');
-                            console.log("utils.showScreen: Hiding admin start button for invite flow.");
                         } else {
                             phillStartsSessionBtn.classList.remove('hidden');
-                            console.log("utils.showScreen: Showing admin start button for non-invite flow.");
                         }
                     } else { console.error("phillStartsSessionBtn is null in showScreen") }
 
@@ -323,6 +344,14 @@
                          adminAppreciationMessage.textContent = "Cheers to Phill for leading the margarita quest!";
                     } else { console.error("adminAppreciationMessage element is null for winner screen");}
                     if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia(); else console.error("winnerTriviaElement for winner screen is null");
+                    
+                    // Trigger confetti
+                    if (typeof confetti === 'function') {
+                        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+                    }
+                    // Animate winner card
+                    if(winningLocationDetailsCard) winningLocationDetailsCard.classList.add('fade-in-winner');
+
                 }
 
                 if(headerTitle) headerTitle.textContent = currentHeaderText; else console.error("headerTitle element is null");
@@ -334,7 +363,7 @@
                 } else {console.error("appHeader element is null");}
             } else {
                 console.error("utils.showScreen: screenToShow argument is null!");
-                if(welcomeScreen) utils.showScreen(welcomeScreen, { isInviteFlow: false }); // Show default welcome
+                if(welcomeScreen) utils.showScreen(welcomeScreen, { isInviteFlow: false });
                 else console.error("Fallback welcomeScreen is also null!");
             }
             window.scrollTo(0,0);
@@ -510,7 +539,7 @@
             console.log("session.leaveSession: Called");
             const wasAdmin = isAdmin; currentSessionId = null; isAdmin = false; sessionData = null; currentPlayerName = null; 
             history.pushState({}, "", window.location.pathname);
-            utils.showScreen(welcomeScreen, {isInviteFlow: false }); // Show default welcome
+            utils.showScreen(welcomeScreen, {isInviteFlow: false }); 
             if(joinSessionIdInput) joinSessionIdInput.value = "";
             if(playerNameJoinInput) playerNameJoinInput.value = store.loadGlobalPlayerName() || "";
             utils.showAlert(wasAdmin ? "Admin session ended." : "You have left the session.", "Session Left");
@@ -582,7 +611,6 @@
                                  currentPlayerName = globalPlayerNameSuggestion || ""; 
                                  if(playerNameJoinInput) playerNameJoinInput.value = currentPlayerName;
                                 
-                                // REMOVED ALERT: No longer show "Joining session... Confirm/enter your name."
                                 console.log(`session.checkUrlParams: New player joining session #${currentSessionId}. Name field pre-filled with: "${currentPlayerName}" (isInviteFlow: true)`);
                                 utils.showScreen(welcomeScreen, showWelcomeOptions);
                                 if(joinSessionSection) joinSessionSection.scrollIntoView({ behavior: 'smooth' });
@@ -649,7 +677,6 @@
                 adminCustomizeQuestionsBtn.disabled = hasRatings;
                 adminCustomizeQuestionsBtn.title = hasRatings ? "Questions cannot be changed after ratings have started." : "Customize rating questions.";
             } else { console.error("adminCustomizeQuestionsBtn is null!"); }
-
 
             if (adminLocationsList) {
                 adminLocationsList.innerHTML = '';
@@ -724,7 +751,6 @@
                     const form = document.createElement('form');
                     form.dataset.locationId = loc.id; form.className = 'space-y-4';
                     const existingRating = loc.ratings && Array.isArray(loc.ratings) ? loc.ratings.find(r => r.playerId === currentPlayerId) : undefined;
-
 
                     sessionData.ratingCriteria.forEach(criterion => {
                         const critDiv = document.createElement('div'); critDiv.className = 'flex flex-col';
@@ -909,30 +935,75 @@
                 else if (avgScore !== null && avgScore === highestAvgScore) { if (winningLocation && loc.name < winningLocation.name) winningLocation = loc; else if (!winningLocation) winningLocation = loc; }
             });
 
-            if (!winningLocationDetails || !winnerImageElement || !winnerTrophyFallback) {
-                console.error("ui.renderWinnerScreen: One or more winner screen elements are null!");
-                return;
+            if (!winningLocationDetailsCard || !winningLocationDetails || !winningLocationName || !winningLocationScore || !winningLocationNumRatings || !winningLocationCriteriaSummary || !winnerImageElement || !winnerTrophyFallback) {
+                console.error("ui.renderWinnerScreen: One or more winner screen detail elements are null!");
+                // Attempt to show a basic winner message if main details card is missing
+                if(winningLocationDetailsCard === null && winningLocationDetails) {
+                    winningLocationDetails.innerHTML = winningLocation ? `<h2 class="text-2xl font-bold text-green-600">${winningLocation.name} is the winner!</h2>` : "<p>Could not determine winner details.</p>";
+                }
+                // return; // Don't return, try to show what we can
             }
+            
+            winningLocationDetailsCard.classList.remove('fade-in-winner'); // Reset animation
+            void winningLocationDetailsCard.offsetWidth; // Trigger reflow
+
             if (winningLocation) {
-                winningLocationDetails.innerHTML = `<h2 class="text-2xl font-bold text-green-600 mb-2">${winningLocation.name}</h2><p class="text-lg text-gray-700">With an average score of <strong class="text-xl">${highestAvgScore.toFixed(2)} / 5</strong> stars!</p><p class="mt-3 text-sm text-gray-500">Based on ${winningLocation.ratings ? winningLocation.ratings.length : 0} rating(s).</p>`;
-                winnerImageElement.src = MARGARITA_IMAGE_URL;
-                winnerImageElement.classList.remove('hidden');
+                if(winningLocationName) winningLocationName.textContent = winningLocation.name;
+                if(winningLocationScore) winningLocationScore.textContent = highestAvgScore.toFixed(2);
+                if(winningLocationNumRatings) winningLocationNumRatings.textContent = `Based on ${winningLocation.ratings ? winningLocation.ratings.length : 0} rating(s).`;
+
+                if (winningLocationCriteriaSummary && sessionData.ratingCriteria) {
+                    winningLocationCriteriaSummary.innerHTML = '<p class="font-semibold text-gray-700 mb-1">Top Scores:</p>';
+                    let summaryList = '<ul class="list-disc list-inside text-gray-600">';
+                    sessionData.ratingCriteria.forEach(c => {
+                        let critSum = 0; let critCount = 0;
+                        if (winningLocation.ratings && Array.isArray(winningLocation.ratings)) {
+                            winningLocation.ratings.forEach(r => { if (r.criteria && r.criteria[c.id] !== undefined) { critSum += Number(r.criteria[c.id]); critCount++; }});
+                        }
+                        const avg = critCount > 0 ? (critSum / critCount).toFixed(1) : 'N/A';
+                        if (avg !== 'N/A' && parseFloat(avg) >= 4.0) { // Highlight scores 4.0 and above
+                           summaryList += `<li>${c.text}: <strong class="text-green-600">${avg}/5</strong></li>`;
+                        } else if (avg !== 'N/A') {
+                           summaryList += `<li>${c.text}: ${avg}/5</li>`;
+                        }
+                    });
+                    summaryList += '</ul>';
+                    winningLocationCriteriaSummary.innerHTML += summaryList;
+                }
+
+
+                if(winnerImageElement) {
+                    winnerImageElement.src = MARGARITA_IMAGE_URL;
+                    winnerImageElement.classList.remove('hidden');
+                }
                 if (winnerTrophyFallback) winnerTrophyFallback.classList.add('hidden');
-                winnerImageElement.onerror = () => {
+                if(winnerImageElement) winnerImageElement.onerror = () => {
                     console.warn("Winner image (user-provided) failed to load. Showing fallback trophy.");
                     if(winnerImageElement) winnerImageElement.classList.add('hidden');
                     if (winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
                 };
             } else {
-                winningLocationDetails.innerHTML = `<p class="text-lg text-gray-700">It's inconclusive... no clear winner from the ratings!</p>`;
+                if(winningLocationName) winningLocationName.textContent = "No Clear Winner!";
+                if(winningLocationDetails) winningLocationDetails.innerHTML = `<p class="text-lg text-gray-700">It's inconclusive... no clear winner from the ratings!</p>`;
                 if(winnerImageElement) winnerImageElement.classList.add('hidden');
                 if(winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
             }
+
             if (adminAppreciationMessage) {
                  adminAppreciationMessage.textContent = "Cheers to Phill for leading the margarita quest!";
-            } else { console.error("adminAppreciationMessage element is null for winner screen");}
-            if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia(); else console.error("winnerTriviaElement for winner screen is null");
+            }
+            if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia();
+            
             utils.showScreen(winnerScreen);
+            if(winningLocationDetailsCard) winningLocationDetailsCard.classList.add('fade-in-winner'); // Start animation
+
+            // Trigger confetti
+            if (typeof confetti === 'function') {
+                console.log("Triggering confetti!");
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 3000 });
+            } else {
+                console.warn("Confetti function not found.");
+            }
         },
         handleStorageChange: (event) => {
             console.log("ui.handleStorageChange: Storage event detected (not used for session data sync):", event.key);
@@ -986,9 +1057,7 @@
         removeLocation: async (locationId, locationName) => {
             console.log("actions.removeLocation: Called for ID:", locationId, "Name:", locationName);
             if (!isAdmin || !sessionData || !currentSessionId) { utils.showAlert("Only admin can remove locations.", "Action Denied"); return; }
-            // Confirmation is now handled by the event listener in ui.renderAdminScreen which then calls this.
-            // The event listener itself calls confirm() before calling this action.
-
+            // The confirm() is now handled by the event listener that calls this.
             try {
                  const payload = {
                     action: 'removeLocation',
@@ -999,7 +1068,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                sessionData = updatedSessionData; // Update local data with response from server
+                sessionData = updatedSessionData;
                 ui.renderAdminScreen();
                 utils.showAlert(`Location "${locationName || locationId}" removed.`, "Success");
             } catch (error) {
@@ -1124,7 +1193,13 @@
 
     safeAddEventListener(adminViewResultsBtn, 'click', ui.renderResultsScreen, 'adminViewResultsBtn');
     safeAddEventListener(playerViewResultsBtn, 'click', ui.renderResultsScreen, 'playerViewResultsBtn');
-    safeAddEventListener(viewWinnerBtn, 'click', ui.renderWinnerScreen, 'viewWinnerBtn');
+    
+    safeAddEventListener(viewWinnerBtn, 'click', () => {
+        // Play sound effect here before showing the screen if you add one.
+        // For now, just show screen which will trigger confetti.
+        ui.renderWinnerScreen();
+    }, 'viewWinnerBtn');
+
 
     safeAddEventListener(backToRoleScreenBtn, 'click', () => {
         const currentlyAdmin = (isAdmin && currentPlayerId === PHILL_ADMIN_ID);
