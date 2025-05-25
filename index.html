@@ -82,6 +82,12 @@
                 </div>
 
                 <div class="my-6 p-4 border border-gray-200 rounded-lg bg-gray-50 shadow">
+                    <h2 class="text-xl font-semibold mb-3 text-purple-600">Suggest Name for Next Player</h2>
+                    <input type="text" id="suggested-player-name-input" placeholder="Enter suggested name" class="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:ring-purple-500 focus:border-purple-500 shadow-sm">
+                    <button id="suggest-player-name-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm">Suggest Name</button>
+                </div>
+
+                <div class="my-6 p-4 border border-gray-200 rounded-lg bg-gray-50 shadow">
                     <h2 class="text-xl font-semibold mb-3 text-green-600">Add New Margarita Location</h2>
                     <input type="text" id="location-name-input" placeholder="Location Name" class="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:ring-green-500 focus:border-green-500 shadow-sm">
                     <button id="add-location-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm"> Add Location </button>
@@ -123,8 +129,8 @@
                     </div>
                 <img id="winner-image" src="https://m.media-amazon.com/images/I/71X5QUUPTGL._AC_SY741_.jpg" alt="Margarita Celebration" class="mx-auto my-6 rounded-lg shadow-md max-w-xs h-auto object-contain" style="max-height: 200px;">
                 <div id="winner-trophy-fallback" class="text-6xl text-center py-6 text-yellow-500 hidden">🏆</div>
-                <p id="admin-appreciation-message" class="text-sm text-gray-700 mt-4 mb-2"></p> <p id="winner-trivia" class="text-xs text-gray-500 italic"></p>
-
+                <p id="admin-appreciation-message" class="text-sm text-gray-700 mt-4 mb-2 font-medium"></p>
+                <p id="winner-trivia" class="text-xs text-gray-500 italic"></p>
 
                 <button id="winner-back-to-results-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm"> Back to Results </button>
                 <button id="winner-new-session-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm"> Start New Session (Welcome) </button>
@@ -193,6 +199,8 @@
     const copySessionLinkBtn = document.getElementById('copy-session-link-btn');
     const adminRateLocationsBtn = document.getElementById('admin-rate-locations-btn');
     const adminCustomizeQuestionsBtn = document.getElementById('admin-customize-questions-btn');
+    const suggestedPlayerNameInput = document.getElementById('suggested-player-name-input'); // New
+    const suggestPlayerNameBtn = document.getElementById('suggest-player-name-btn'); // New
     const locationNameInput = document.getElementById('location-name-input');
     const addLocationBtn = document.getElementById('add-location-btn');
     const adminLocationsList = document.getElementById('admin-locations-list');
@@ -213,7 +221,7 @@
     const winningLocationDetails = document.getElementById('winning-location-details');
     const winnerImageElement = document.getElementById('winner-image');
     const winnerTrophyFallback = document.getElementById('winner-trophy-fallback');
-    const adminAppreciationMessage = document.getElementById('admin-appreciation-message'); // New
+    const adminAppreciationMessage = document.getElementById('admin-appreciation-message');
     const winnerTriviaElement = document.getElementById('winner-trivia');
     const winnerBackToResultsBtn = document.getElementById('winner-back-to-results-btn');
     const winnerNewSessionBtn = document.getElementById('winner-new-session-btn');
@@ -224,8 +232,7 @@
     const refreshWelcomeBtn = document.getElementById('refresh-welcome-btn');
     const refreshAdminBtn = document.getElementById('refresh-admin-btn');
     const refreshPlayerBtn = document.getElementById('refresh-player-btn');
-    console.log("SCRIPT START: DOM element checks completed.");
-
+    console.log("SCRIPT START: Finished getting DOM elements.");
 
     // --- STATE VARIABLES ---
     let currentSessionId = null;
@@ -289,10 +296,10 @@
                             if (winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
                         };
                     } else { console.error("winnerImageElement is null"); if(winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');}
-                    if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia();
                     if (adminAppreciationMessage) { // New message for Phill
-                         adminAppreciationMessage.textContent = "I think Phillip deserves a reward - maybe a kiss?";
-                    }
+                         adminAppreciationMessage.textContent = "Cheers to Phill for leading the margarita quest!";
+                    } else { console.error("adminAppreciationMessage element is null for winner screen");}
+                    if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia(); else console.error("winnerTriviaElement for winner screen is null");
                 }
 
                 if(headerTitle) headerTitle.textContent = currentHeaderText; else console.error("headerTitle element is null");
@@ -368,12 +375,11 @@
                 return jsonData;
             } else {
                 console.log(`CLIENT: API Call Success (Non-JSON) - Status ${response.status} for ${endpoint}`);
-                return { success: true, status: response.status }; // For non-JSON success responses like a 204 No Content
+                return { success: true, status: response.status };
             }
         } catch (error) {
             console.error(`CLIENT: Fetch API call failed for ${endpoint}:`, error);
-            // utils.showAlert(`Network error or API call failed for ${endpoint}. Check console.`, "Network Error");
-            throw error; // Re-throw for calling function to handle
+            throw error;
         }
     }
 
@@ -454,19 +460,15 @@
                         if (activeScreenElement === adminScreen && isAdmin) ui.renderAdminScreen();
                         else if (activeScreenElement === playerScreen) ui.renderPlayerScreen();
                         else if (activeScreenElement === resultsScreen) ui.renderResultsScreen();
-                         // No specific refresh action for welcome, criteria setup or winner screen directly from here
                     }
                     utils.showAlert("Session data refreshed!", "Refreshed");
                     return true;
                 } else {
-                    // This case might be hit if fetchApi returns successfully but without expected data (e.g. 404 parsed as JSON error)
-                    // The alert in fetchApi for !response.ok should ideally cover "not found"
                     utils.showAlert(`Could not refresh session #${currentSessionId}. It may no longer exist or there was a server error.`, "Refresh Error");
                     return false;
                 }
             } catch (error) {
                 console.error(`WorkspaceAndUpdateCurrentSession: Failed for session #${currentSessionId}:`, error);
-                // Alert is usually shown by fetchApi
                 return false;
             }
         },
@@ -485,14 +487,12 @@
             .then(async (confirmed) => {
                 if (confirmed && confirm("FINAL CONFIRMATION: Reset all session data and the ID counter?")) {
                     try {
-                        const payload = { action: 'resetSession', payload: { adminId: currentPlayerId } }; // adminId for server verification
+                        const payload = { action: 'resetSession', payload: { adminId: currentPlayerId } };
                         const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                         });
-                        // After reset, the current session ID might effectively be invalid if the server deleted it or fully reset.
-                        // It's safer to treat this as leaving the session and requiring a new one to be started.
                         utils.showAlert("Session has been reset. The next session will start from ID #1.", "Session Reset");
-                        session.leaveSession(); // Go back to welcome screen
+                        session.leaveSession(); // Go back to welcome screen, effectively ending current session view
                     } catch (error) { console.error("session.resetSession: Failed", error); }
                 }
             });
@@ -502,7 +502,8 @@
             const params = new URLSearchParams(window.location.search);
             const sessionIdFromUrl = params.get('session')?.trim();
             const globalPlayerId = store.getOrCreateGlobalPlayerId();
-            const globalPlayerNameSuggestion = store.loadGlobalPlayerName();
+            let globalPlayerNameSuggestion = store.loadGlobalPlayerName(); // Use let to allow modification by server suggestion
+
             if(playerNameJoinInput) playerNameJoinInput.value = globalPlayerNameSuggestion || "";
 
             if (sessionIdFromUrl) {
@@ -527,7 +528,23 @@
                                 store.saveGlobalPlayerName(currentPlayerName);
                                 ui.renderPlayerScreen();
                             } else {
-                                 currentPlayerName = globalPlayerNameSuggestion || "";
+                                 // Check for admin's suggested name for the next player
+                                if (sessionData.pendingPlayerSuggestion) {
+                                    globalPlayerNameSuggestion = sessionData.pendingPlayerSuggestion;
+                                    console.log("session.checkUrlParams: Using admin's suggested name:", globalPlayerNameSuggestion);
+                                    // Consume the suggestion
+                                    try {
+                                        await fetchApi(`/api/session/${currentSessionId}`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ action: 'consumePlayerSuggestion', payload: {} })
+                                        });
+                                        sessionData.pendingPlayerSuggestion = null; // Reflect consumption locally
+                                    } catch (consumeError) {
+                                        console.error("session.checkUrlParams: Failed to consume player suggestion on server", consumeError);
+                                    }
+                                }
+                                 currentPlayerName = globalPlayerNameSuggestion || ""; // Use suggestion or fallback
                                  if(playerNameJoinInput) playerNameJoinInput.value = currentPlayerName;
                                 utils.showAlert(`Joining session #${currentSessionId}. Confirm/enter your name.`, "Join Session");
                                 utils.showScreen(welcomeScreen);
@@ -584,6 +601,7 @@
 
             if (adminSessionIdDisplay) adminSessionIdDisplay.textContent = currentSessionId; else console.error("adminSessionIdDisplay is null!");
             if (locationNameInput) locationNameInput.value = ""; else console.error("locationNameInput is null!");
+            if (suggestedPlayerNameInput) suggestedPlayerNameInput.value = ""; // Clear suggest name input
             
             if (adminCustomizeQuestionsBtn) {
                 const hasRatings = sessionData.locations.some(loc => loc.ratings && loc.ratings.length > 0);
@@ -868,13 +886,14 @@
                 if(winnerImageElement) winnerImageElement.classList.add('hidden');
                 if(winnerTrophyFallback) winnerTrophyFallback.classList.remove('hidden');
             }
-            if (adminAppreciationMessage) {
+            if (adminAppreciationMessage) { // New message for Phill
                  adminAppreciationMessage.textContent = "Cheers to Phill for leading the margarita quest!";
             } else { console.error("adminAppreciationMessage element is null for winner screen");}
             if (winnerTriviaElement) winnerTriviaElement.textContent = utils.getRandomTrivia(); else console.error("winnerTriviaElement for winner screen is null");
             utils.showScreen(winnerScreen);
         },
         handleStorageChange: (event) => {
+            // This function is no longer used for primary data sync as data is on server.
             console.log("ui.handleStorageChange: Storage event detected (not used for session data sync):", event.key);
         }
     };
@@ -890,6 +909,20 @@
                 newCriterionInput.value = '';
                 if (ui.renderCriteriaEditor) ui.renderCriteriaEditor(); else console.error("actions.addCriterion: ui.renderCriteriaEditor is undefined!");
             } else utils.showAlert("Criterion text cannot be empty.");
+        },
+        suggestPlayerName: async (name) => {
+            console.log("actions.suggestPlayerName: Called with name -", `"${name}"`);
+            if (!isAdmin || !sessionData || !currentSessionId) { utils.showAlert("Only admin can suggest names.", "Action Denied"); return; }
+            if (!utils.validateInput(name, 'text', 50, false)) { utils.showAlert("Invalid suggested name.", "Validation Error"); return; }
+            try {
+                const payload = { action: 'suggestPlayerName', payload: { suggestedName: name.trim(), adminId: currentPlayerId }};
+                const updatedSessionData = await fetchApi(`/api/session/${currentSessionId}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                sessionData = updatedSessionData; // Update local state if server confirms
+                utils.showAlert(`Suggested name "${name.trim()}" set for the next joining player.`, "Name Suggested");
+                if(suggestedPlayerNameInput) suggestedPlayerNameInput.value = "";
+            } catch (error) { console.error("actions.suggestPlayerName: Failed", error); }
         },
         addLocation: async (name) => {
             console.log("actions.addLocation: Called with name -", `"${name}"`);
@@ -913,7 +946,7 @@
         removeLocation: async (locationId, locationName) => {
             console.log("actions.removeLocation: Called for ID:", locationId, "Name:", locationName);
             if (!isAdmin || !sessionData || !currentSessionId) { utils.showAlert("Only admin can remove locations.", "Action Denied"); return; }
-            // Confirmation moved to event listener in ui.renderAdminScreen
+            // Confirmation is now handled by the event listener in ui.renderAdminScreen which then calls this.
 
             try {
                  const payload = {
@@ -952,8 +985,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                sessionData = updatedSessionData; // Update client's view of session
-                ui.renderPlayerScreen(); // Re-render to reflect changes (e.g., "Update Rating" button text)
+                sessionData = updatedSessionData;
+                ui.renderPlayerScreen();
             } catch (error) {
                 console.error("actions.submitRating: Failed", error);
             }
@@ -998,6 +1031,16 @@
             else console.error("Add Location via Enter: locationNameInput is null.");
         }
     }, 'locationNameInput');
+    
+    safeAddEventListener(suggestPlayerNameBtn, 'click', () => {
+        if (suggestedPlayerNameInput) {
+            const nameToSuggest = suggestedPlayerNameInput.value;
+            actions.suggestPlayerName(nameToSuggest);
+        } else {
+            console.error("Suggest player name button clicked, but input field not found.");
+        }
+    }, 'suggestPlayerNameBtn');
+
 
     safeAddEventListener(resetSessionBtn, 'click', session.resetSession, 'resetSessionBtn');
     safeAddEventListener(copySessionLinkBtn, 'click', () => {
@@ -1071,7 +1114,7 @@
     safeAddEventListener(refreshAdminBtn, 'click', session.fetchAndUpdateCurrentSession, 'refreshAdminBtn');
     safeAddEventListener(refreshPlayerBtn, 'click', session.fetchAndUpdateCurrentSession, 'refreshPlayerBtn');
 
-    // Removed: window.addEventListener('storage', ui.handleStorageChange);
+    // window.addEventListener('storage', ui.handleStorageChange); // Not used for session data with KV
 
     const initApp = () => {
         console.log("App initializing...");
