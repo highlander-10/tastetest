@@ -26,9 +26,14 @@
         button:disabled {
             background-color: #d1d5db !important; color: #6b7280 !important; cursor: not-allowed !important;
         }
+        #app-version-display {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            padding: 2px 8px; background-color: rgba(200, 200, 200, 0.7);
+            font-size: 0.65rem; color: #333; text-align: center; z-index: 3000;
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 pb-8"> 
 
     <div id="app-container" class="max-w-md mx-auto bg-white min-h-screen shadow-md">
         <header id="app-header" class="bg-green-500 text-white p-4 text-center sticky top-0 z-50 shadow">
@@ -103,6 +108,9 @@
             <div id="player-screen" class="hidden">
                  <div class="flex justify-between items-center mb-2"> <h1 id="player-screen-title" class="text-2xl font-bold text-blue-700">Rate Margaritas!</h1> <p class="text-sm text-gray-600">Hi, <strong id="player-name-display"></strong>!</p> </div>
                 <p class="mb-4 text-xs">Session ID: <strong id="player-session-id" class="text-purple-600 break-all"></strong></p>
+                <p class="text-xs text-gray-600 mb-4 italic px-1">
+                    Hint: For subjective ratings (like Sweetness, Spiciness), score 1-5 based on how well it matches <strong>your personal preference</strong> (5 = perfect for you, 1 = not for you).
+                </p>
                 <button id="refresh-player-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg text-sm mb-4 transition duration-150 shadow-sm">Refresh Locations & Ratings</button>
                 <div id="player-locations-list" class="space-y-6"></div>
                 <p id="player-no-locations-msg" class="text-gray-500 italic hidden">No locations added by Admin yet. Click refresh to check for updates.</p>
@@ -146,8 +154,11 @@
         </div>
     </div>
 
+    <div id="app-version-display"></div>
+
 <script>
     // --- CONFIGURATION ---
+    const APP_VERSION = "v1.4.1 - Client Focus"; // Updated version
     const APP_PREFIX = 'margaritaTrackerV2_';
     const DEFAULT_RATING_CRITERIA_TEXT = [
         'Taste', 'Sweetness', 'Spiciness (if any)', 'Overall Quality',
@@ -167,7 +178,7 @@
         "Margaritas: because no great story ever started with someone eating a salad."
     ];
 
-    console.log("SCRIPT START: Margarita Tracker script is loading...");
+    console.log(`SCRIPT START: Margarita Tracker ${APP_VERSION} script is loading...`);
 
     // --- DOM ELEMENTS ---
     console.log("SCRIPT START: Getting DOM elements...");
@@ -232,6 +243,7 @@
     const refreshWelcomeBtn = document.getElementById('refresh-welcome-btn');
     const refreshAdminBtn = document.getElementById('refresh-admin-btn');
     const refreshPlayerBtn = document.getElementById('refresh-player-btn');
+    const appVersionDisplay = document.getElementById('app-version-display');
     console.log("SCRIPT START: Finished getting DOM elements. phillStartsSessionBtn:", phillStartsSessionBtn);
 
     // --- STATE VARIABLES ---
@@ -279,8 +291,10 @@
                     if (phillStartsSessionBtn) {
                         if (options.isInviteFlow) {
                             phillStartsSessionBtn.classList.add('hidden');
+                            console.log("utils.showScreen: Hiding admin start button for invite flow.");
                         } else {
                             phillStartsSessionBtn.classList.remove('hidden');
+                            console.log("utils.showScreen: Showing admin start button for non-invite flow.");
                         }
                     } else { console.error("phillStartsSessionBtn is null in showScreen") }
 
@@ -320,7 +334,7 @@
                 } else {console.error("appHeader element is null");}
             } else {
                 console.error("utils.showScreen: screenToShow argument is null!");
-                if(welcomeScreen) utils.showScreen(welcomeScreen, { isInviteFlow: false });
+                if(welcomeScreen) utils.showScreen(welcomeScreen, { isInviteFlow: false }); // Show default welcome
                 else console.error("Fallback welcomeScreen is also null!");
             }
             window.scrollTo(0,0);
@@ -567,7 +581,9 @@
                                 }
                                  currentPlayerName = globalPlayerNameSuggestion || ""; 
                                  if(playerNameJoinInput) playerNameJoinInput.value = currentPlayerName;
-                                utils.showAlert(`Joining session #${currentSessionId}. Confirm/enter your name.`, "Join Session");
+                                
+                                // REMOVED ALERT: No longer show "Joining session... Confirm/enter your name."
+                                console.log(`session.checkUrlParams: New player joining session #${currentSessionId}. Name field pre-filled with: "${currentPlayerName}" (isInviteFlow: true)`);
                                 utils.showScreen(welcomeScreen, showWelcomeOptions);
                                 if(joinSessionSection) joinSessionSection.scrollIntoView({ behavior: 'smooth' });
                                 if(playerNameJoinInput) playerNameJoinInput.focus();
@@ -790,7 +806,7 @@
         calculateAverageOverallScoreForLocation: (locationId) => {
             if (!sessionData || !sessionData.locations) return null;
             const location = sessionData.locations.find(loc => loc.id === locationId);
-            if (!location || !location.ratings || location.ratings.length === 0) return null;
+            if (!location || !location.ratings || !Array.isArray(location.ratings) || location.ratings.length === 0) return null;
             let totalScoreSum = 0; let numRatingsCounted = 0;
             location.ratings.forEach(rating => {
                 if (!rating.criteria) return;
@@ -829,7 +845,7 @@
                     let bestScore = -1; let winnerLocs = [];
                     sessionData.locations.forEach(loc => {
                         let critSum = 0; let critCount = 0;
-                        if (loc.ratings) {
+                        if (loc.ratings && Array.isArray(loc.ratings)) {
                             loc.ratings.forEach(r => { if (r.criteria && r.criteria[criterion.id] !== undefined) { critSum += Number(r.criteria[criterion.id]); critCount++; }});
                         }
                         const avgCritScore = critCount > 0 ? critSum / critCount : -1;
@@ -849,7 +865,7 @@
                 if (sessionData.ratingCriteria) {
                     sessionData.ratingCriteria.forEach(c => {
                         let critSum = 0; let critCount = 0;
-                        if (loc.ratings) {
+                        if (loc.ratings && Array.isArray(loc.ratings)) {
                             loc.ratings.forEach(r => { if (r.criteria && r.criteria[c.id] !== undefined) { critSum += Number(r.criteria[c.id]); critCount++; }});
                         }
                         const avg = critCount > 0 ? (critSum / critCount).toFixed(1) : 'N/A';
@@ -970,7 +986,8 @@
         removeLocation: async (locationId, locationName) => {
             console.log("actions.removeLocation: Called for ID:", locationId, "Name:", locationName);
             if (!isAdmin || !sessionData || !currentSessionId) { utils.showAlert("Only admin can remove locations.", "Action Denied"); return; }
-            // Confirmation dialog is now handled by the event listener that calls this function.
+            // Confirmation is now handled by the event listener in ui.renderAdminScreen which then calls this.
+            // The event listener itself calls confirm() before calling this action.
 
             try {
                  const payload = {
@@ -1140,9 +1157,9 @@
     // window.addEventListener('storage', ui.handleStorageChange); // No longer used
 
     const initApp = () => {
-        console.log("App initializing...");
+        console.log(`App initializing... Version: ${APP_VERSION}`);
         if (!welcomeScreen || !adminScreen || !playerScreen || !resultsScreen || !adminCriteriaSetupScreen || !winnerScreen || !alertModal || !appHeader || !headerTitle || !headerSessionInfo) {
-            console.error("CRITICAL: One or more core screen/modal/header elements are missing from the DOM! Check HTML IDs.");
+            console.error("CRITICAL: One or more core screen/modal/header elements are missing! Check HTML IDs.");
             const bodyContent = document.body;
             if (bodyContent) {
                 bodyContent.innerHTML = "<p style='color:red; font-size:20px; padding:20px;'>App Initialization Error: Core screen elements not found. Please check the HTML IDs and ensure they match the JavaScript variables. Open the browser console (F12) for more details.</p>";
@@ -1151,9 +1168,9 @@
             }
             return;
         }
+        if(appVersionDisplay) appVersionDisplay.textContent = APP_VERSION;
+
         session.checkUrlParams();
-        // checkUrlParams will call showScreen with appropriate options.
-        // If no session in URL, it defaults to showing welcome screen with admin button visible.
         console.log("App initialized successfully.");
     };
 
