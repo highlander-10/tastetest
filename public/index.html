@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taste Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style id="themeStyle">
+        /* Default theme variables - will be overridden by JS */
+        :root {
+            --primary-color: #4F46E5; /* Indigo */
+            --secondary-color: #EC4899; /* Pink */
+            --background-color: #F3F4F6; /* Gray 100 */
+            --text-color: #1F2937; /* Gray 800 */
+            --card-background-color: #FFFFFF;
+            --font-family: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+        .themed-background { background-color: var(--background-color); }
+        .themed-text { color: var(--text-color); }
+        .themed-primary-text { color: var(--primary-color); }
+        .themed-primary-bg { background-color: var(--primary-color); }
+        .themed-secondary-text { color: var(--secondary-color); }
+        .themed-secondary-bg { background-color: var(--secondary-color); }
+        .themed-card-bg { background-color: var(--card-background-color); }
+        .themed-button { background-color: var(--primary-color); color: white; }
+        .themed-button:hover { filter: brightness(110%); }
+        .themed-input { border-color: var(--primary-color); }
+        .themed-input:focus { border-color: var(--secondary-color); box-shadow: 0 0 0 2px var(--secondary-color); }
+        input[type="radio"].themed-primary-text, input[type="checkbox"].themed-primary-text {
+            color: var(--primary-color);
+        }
+         input[type="radio"].themed-primary-text:focus, input[type="checkbox"].themed-primary-text:focus {
+            ring-color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 themed-background transition-colors duration-500">
+
+    <div id="loadingIndicator" class="fixed inset-0 bg-slate-500 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
+        <p class="ml-4 text-white text-xl">Loading...</p>
+    </div>
+
+    <div id="appContainer" class="w-full max-w-2xl">
+        <div class="themed-card-bg shadow-xl rounded-lg p-6 md:p-10">
+            <header class="mb-8 text-center">
+                <h1 id="testTitle" class="text-3xl md:text-4xl font-bold themed-primary-text">Taste Test</h1>
+            </header>
+
+            <div id="messageArea" class="hidden p-3 rounded-md text-sm mb-6"></div>
+
+            <form id="submissionForm">
+                <div id="formContainer" class="space-y-6">
+                    <!-- Questions will be rendered here by JavaScript -->
+                </div>
+
+                <div class="mt-10 text-center">
+                    <button type="submit" id="submitButton" class="themed-button font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-75 hidden">
+                        Submit Feedback
+                    </button>
+                </div>
+            </form>
+        </div>
+        <footer class="text-center mt-8">
+            <p class="text-sm themed-text opacity-70">Taste Testing App</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        const appContainer = document.getElementById('appContainer');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const testTitleElement = document.getElementById('testTitle');
+        const formContainer = document.getElementById('formContainer');
+        const submissionForm = document.getElementById('submissionForm');
+        const submitButton = document.getElementById('submitButton');
+        const messageArea = document.getElementById('messageArea');
+
+        let currentTestConfig = null;
+
+        const API_BASE_URL = '/api';
+        const GET_ACTIVE_TEST_CONFIG_ENDPOINT = `${API_BASE_URL}/get-active-test-config`;
+        const SUBMIT_FEEDBACK_ENDPOINT = `${API_BASE_URL}/submit-feedback`;
+
+        async function initializeApp() {
+            showLoading(true);
+            try {
+                const response = await fetch(GET_ACTIVE_TEST_CONFIG_ENDPOINT);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: "Failed to load test configuration. Server returned an unexpected response." }));
+                    throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                // Crucially, the worker returns the active config under a 'config' key
+                if (data && data.config) {
+                    currentTestConfig = data.config;
+                    console.log("Current test config:", currentTestConfig);
+                    applyTheme();
+                    renderForm();
+                } else if (data && data.message) {
+                     displayMessage(data.message, "info");
+                     currentTestConfig = null;
+                     renderForm();
+                } else {
+                    displayMessage("No active taste test is currently configured or the configuration is invalid.", "info");
+                    currentTestConfig = null;
+                    renderForm();
+                }
+            } catch (error) {
+                console.error("Initialization error:", error);
+                displayMessage(`Error initializing application: ${error.message}`, "error");
+                currentTestConfig = null;
+                renderForm();
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function applyTheme() {
+            const defaultTheme = {
+                primaryColor: '#4F46E5', primaryColor: '#4F46E5',
+                secondaryColor: '#EC4899',
+                backgroundColor: '#F3F4F6',
+                textColor: '#1F2937',
+                cardBackgroundColor: '#FFFFFF',
+                fontFamily: "'Inter', sans-serif",
+                backgroundImage: ''
+            };
+            const theme = (currentTestConfig && currentTestConfig.theme) ? { ...defaultTheme, ...currentTestConfig.theme } : defaultTheme;
+
+            document.documentElement.style.setProperty('--primary-color', theme.primaryColor);
+            document.documentElement.style.setProperty('--secondary-color', theme.secondaryColor);
+            document.documentElement.style.setProperty('--background-color', theme.backgroundColor);
+            document.documentElement.style.setProperty('--text-color', theme.textColor);
+            document.documentElement.style.setProperty('--card-background-color', theme.cardBackgroundColor);
+            document.documentElement.style.setProperty('--font-family', theme.fontFamily);
+            
+            document.body.style.backgroundImage = theme.backgroundImage ? `url('${theme.backgroundImage}')` : '';
+            document.body.style.backgroundSize = theme.backgroundImage ? 'cover' : '';
+            document.body.style.backgroundPosition = theme.backgroundImage ? 'center' : '';
+            document.body.style.backgroundAttachment = theme.backgroundImage ? 'fixed' : '';
+        }
+
+        function renderForm() {
+            if (!currentTestConfig || !currentTestConfig.questions || currentTestConfig.questions.length === 0) {
+                testTitleElement.textContent = currentTestConfig?.displayName || "Taste Test";
+                if (currentTestConfig && currentTestConfig.message && (!currentTestConfig.questions || currentTestConfig.questions.length === 0)) {
+                     formContainer.innerHTML = `<p class="text-center themed-text">${currentTestConfig.message}</p>`;
+                } else {
+                    formContainer.innerHTML = '<p class="text-center themed-text">No test is currently active, or the configuration is missing questions.</p>';
+                }
+                submitButton.classList.add('hidden');
+                return;
+            }
+
+            testTitleElement.textContent = currentTestConfig.displayName || "Taste Test";
+            formContainer.innerHTML = '';
+
+            currentTestConfig.questions.forEach(q => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'mb-6';
+                const label = document.createElement('label');
+                label.className = 'block text-sm font-medium themed-text mb-1';
+                label.htmlFor = q.id;
+                label.textContent = q.text + (q.required ? ' *' : '');
+                questionDiv.appendChild(label);
+
+                if (q.type === 'text_short' || q.type === 'text_medium') {
+                    const input = document.createElement('input');
+                    input.type = 'text'; input.id = q.id; input.name = q.id;
+                    input.className = 'mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm themed-input themed-card-bg themed-text';
+                    if (q.required) input.required = true;
+                    questionDiv.appendChild(input);
+                } else if (q.type === 'text_long') {
+                    const textarea = document.createElement('textarea');
+                    textarea.id = q.id; textarea.name = q.id; textarea.rows = 4;
+                    textarea.className = 'mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm themed-input themed-card-bg themed-text';
+                    if (q.required) textarea.required = true;
+                    questionDiv.appendChild(textarea);
+                } else if (q.type === 'rating_1_5' || q.type === 'rating_1_10') {
+                    const maxRating = q.type === 'rating_1_5' ? 5 : 10;
+                    const ratingContainer = document.createElement('div');
+                    ratingContainer.className = 'flex space-x-2 mt-2 flex-wrap';
+                    for (let i = 1; i <= maxRating; i++) {
+                        const radioDiv = document.createElement('div');
+                        radioDiv.className = 'flex items-center mr-2 mb-1';
+                        const radio = document.createElement('input');
+                        radio.type = 'radio'; radio.id = `${q.id}_${i}`; radio.name = q.id; radio.value = i;
+                        radio.className = 'h-4 w-4 themed-primary-text focus:ring-secondary-color border-gray-300';
+                        if (q.required) radio.required = true;
+                        const radioLabel = document.createElement('label');
+                        radioLabel.htmlFor = `${q.id}_${i}`; radioLabel.textContent = i;
+                        radioLabel.className = 'ml-1.5 text-sm themed-text';
+                        radioDiv.appendChild(radio); radioDiv.appendChild(radioLabel);
+                        ratingContainer.appendChild(radioDiv);
+                    }
+                    questionDiv.appendChild(ratingContainer);
+                } else if (q.type === 'rating_1_5_custom_labels') {
+                    const ratingContainer = document.createElement('div');
+                    ratingContainer.className = 'flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-2 flex-wrap';
+                    if (q.labels && Array.isArray(q.labels)) {
+                        q.labels.forEach((labelText, index) => {
+                            const value = index + 1;
+                            const radioDiv = document.createElement('div');
+                            radioDiv.className = 'flex items-center mr-2 mb-1';
+                            const radio = document.createElement('input');
+                            radio.type = 'radio'; radio.id = `${q.id}_${value}`; radio.name = q.id; radio.value = value;
+                            radio.className = 'h-4 w-4 themed-primary-text focus:ring-secondary-color border-gray-300';
+                            if (q.required) radio.required = true;
+                            const radioLabel = document.createElement('label');
+                            radioLabel.htmlFor = `${q.id}_${value}`; radioLabel.textContent = labelText;
+                            radioLabel.className = 'ml-1.5 text-sm themed-text';
+                            radioDiv.appendChild(radio); radioDiv.appendChild(radioLabel);
+                            ratingContainer.appendChild(radioDiv);
+                        });
+                    } else {
+                        console.warn(`Question ${q.id} of type 'rating_1_5_custom_labels' is missing a valid 'labels' array.`);
+                        const errorText = document.createElement('p');
+                        errorText.className = 'text-red-500 text-xs italic';
+                        errorText.textContent = 'Configuration error: Labels not found for this question.';
+                        ratingContainer.appendChild(errorText);
+                    }
+                    questionDiv.appendChild(ratingContainer);
+                } else if (q.type === 'yes_no') {
+                    const options = ['Yes', 'No'];
+                    const ynContainer = document.createElement('div');
+                    ynContainer.className = 'flex space-x-4 mt-2';
+                     options.forEach(opt => {
+                        const radioDiv = document.createElement('div');
+                        radioDiv.className = 'flex items-center';
+                        const radio = document.createElement('input');
+                        radio.type = 'radio'; radio.id = `${q.id}_${opt.toLowerCase()}`; radio.name = q.id; radio.value = opt;
+                        radio.className = 'h-4 w-4 themed-primary-text focus:ring-secondary-color border-gray-300';
+                         if (q.required) radio.required = true;
+                        const radioLabel = document.createElement('label');
+                        radioLabel.htmlFor = `${q.id}_${opt.toLowerCase()}`; radioLabel.textContent = opt;
+                        radioLabel.className = 'ml-1.5 text-sm themed-text';
+                        radioDiv.appendChild(radio); radioDiv.appendChild(radioLabel);
+                        ynContainer.appendChild(radioDiv);
+                    });
+                    questionDiv.appendChild(ynContainer);
+                } else if (q.type === 'dropdown') {
+                    const select = document.createElement('select');
+                    select.id = q.id; select.name = q.id;
+                    select.className = 'mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-secondary-color focus:border-secondary-color sm:text-sm rounded-md themed-input themed-card-bg themed-text';
+                    if (q.required) select.required = true;
+                    const placeholderOption = document.createElement('option');
+                    placeholderOption.value = "";
+                    const cleanQuestionText = q.text.endsWith(':') ? q.text.slice(0, -1) : q.text;
+                    placeholderOption.textContent = q.required ? `Select ${cleanQuestionText} *` : `Select ${cleanQuestionText} (optional)`;
+                    placeholderOption.selected = true;
+                    if (q.required) placeholderOption.disabled = true;
+                    select.appendChild(placeholderOption);
+                    if (q.options && Array.isArray(q.options)) {
+                        q.options.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt; option.textContent = opt;
+                            select.appendChild(option);
+                        });
+                    } else {
+                         console.warn(`Question ${q.id} of type 'dropdown' is missing a valid 'options' array.`);
+                    }
+                    questionDiv.appendChild(select);
+                }
+                formContainer.appendChild(questionDiv);
+            });
+            submitButton.classList.remove('hidden');
+        }
+
+        submissionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentTestConfig) {
+                displayMessage("Cannot submit: No active test configuration.", "error"); return;
+            }
+            showLoading(true);
+            submitButton.disabled = true;
+            const formData = new FormData(submissionForm);
+            const answers = {};
+            let allRequiredFilled = true;
+            let firstMissingFieldLabel = "";
+
+            currentTestConfig.questions.forEach(q => {
+                const fieldElement = document.getElementById(q.id);
+                if (fieldElement) {
+                    fieldElement.classList.remove('border-red-500');
+                    const parentLabel = fieldElement.closest('div.mb-6')?.querySelector('label');
+                    if(parentLabel) parentLabel.classList.remove('text-red-500');
+                }
+            });
+
+            currentTestConfig.questions.forEach(q => {
+                const value = formData.get(q.id);
+                answers[q.id] = value;
+                if (q.required && (value === null || String(value).trim() === "")) {
+                    allRequiredFilled = false;
+                    if (!firstMissingFieldLabel) firstMissingFieldLabel = q.text;
+                    const fieldElement = document.getElementById(q.id);
+                    if (fieldElement) {
+                        fieldElement.classList.add('border-red-500');
+                        const parentLabel = fieldElement.closest('div.mb-6')?.querySelector('label');
+                        if(parentLabel) parentLabel.classList.add('text-red-500');
+                    }
+                }
+            });
+
+            if (!allRequiredFilled) {
+                displayMessage(`Please fill out all required fields. '${firstMissingFieldLabel}' is missing or invalid.`, "error");
+                showLoading(false); submitButton.disabled = false; return;
+            }
+
+            const submissionData = {
+                testId: currentTestConfig.id,
+                testDisplayName: currentTestConfig.displayName,
+                answers: answers,
+                submittedAt: new Date().toISOString() // Client-side timestamp
+            };
+
+            try {
+                const response = await fetch(SUBMIT_FEEDBACK_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(submissionData),
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: "Failed to submit feedback. Server returned an unexpected response." }));
+                    throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+                }
+                const result = await response.json();
+                displayMessage(result.message || "Thank you! Your feedback has been submitted.", "success");
+                submissionForm.reset();
+                currentTestConfig.questions.forEach(q => {
+                    if (q.type === 'dropdown' && q.required) {
+                        const selectElement = document.getElementById(q.id);
+                        if (selectElement) selectElement.selectedIndex = 0;
+                    }
+                });
+            } catch (error) {
+                console.error("Error submitting feedback:", error);
+                displayMessage(`Error submitting feedback: ${error.message}`, "error");
+            } finally {
+                showLoading(false); submitButton.disabled = false;
+            }
+        });
+
+        function showLoading(isLoading) {
+            if (isLoading) {
+                loadingIndicator.classList.remove('hidden');
+                appContainer.classList.add('opacity-50', 'pointer-events-none');
+            } else {
+                loadingIndicator.classList.add('hidden');
+                appContainer.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        function displayMessage(message, type = "info") {
+            messageArea.textContent = message;
+            messageArea.className = 'p-3 rounded-md text-sm mb-4 text-center';
+            if (type === "success") messageArea.classList.add('bg-green-100', 'text-green-700');
+            else if (type === "error") messageArea.classList.add('bg-red-100', 'text-red-700');
+            else messageArea.classList.add('bg-blue-100', 'text-blue-700');
+            messageArea.classList.remove('hidden');
+            setTimeout(() => {
+                messageArea.classList.add('hidden'); messageArea.textContent = '';
+            }, 7000);
+        }
+        initializeApp();
+    </script>
+</body>
+</html>
