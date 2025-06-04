@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Taste Test Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .section-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #1F2937; }
+        .subsection-title { font-size: 1.25rem; font-weight: 500; margin-bottom: 0.75rem; color: #374151; }
+        .card { background-color: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.25rem; font-weight: 500; color: #4B5563; }
+        input[type="text"], select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.375rem;
+            margin-bottom: 0.75rem;
+            box-shadow: inset 0 1px 2px 0 rgba(0,0,0,0.05);
+        }
+        button {
+            background-color: #4F46E5; /* Indigo 600 */
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        button:hover { background-color: #4338CA; /* Indigo 700 */ }
+        button:disabled { background-color: #A5B4FC; cursor: not-allowed; }
+        .list-item { padding: 0.5rem; border-bottom: 1px solid #E5E7EB; }
+        .list-item:last-child { border-bottom: none; }
+        .status-message { padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.375rem; }
+        .status-success { background-color: #D1FAE5; color: #065F46; }
+        .status-error { background-color: #FEE2E2; color: #991B1B; }
+        .status-info { background-color: #DBEAFE; color: #1E40AF; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen p-4 md:p-8">
+
+    <div id="loadingIndicatorAdmin" class="fixed inset-0 bg-slate-500 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
+        <p class="ml-4 text-white text-xl">Processing...</p>
+    </div>
+
+    <header class="mb-8 text-center">
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-800">Taste Test Admin Panel</h1>
+    </header>
+
+    <div id="adminMessageArea" class="status-message hidden"></div>
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Global Status Section -->
+        <div class="card">
+            <h2 class="section-title">Current Status</h2>
+            <p><strong>Active Event ID:</strong> <span id="currentActiveEventIdDisplay">Loading...</span></p>
+            <p><strong>Active Event Name:</strong> <span id="currentActiveEventNameDisplay">Loading...</span></p>
+            <p><strong>Active Location ID:</strong> <span id="currentActiveLocationIdDisplay">Loading...</span></p>
+            <p><strong>Active Location Name:</strong> <span id="currentActiveLocationNameDisplay">Loading...</span></p>
+        </div>
+
+        <!-- Event Management Section -->
+        <div class="card">
+            <h2 class="section-title">Event Management</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="newEventName">New Event Name:</label>
+                    <input type="text" id="newEventName" placeholder="e.g., Downtown Margarita Crawl">
+                </div>
+                <div>
+                    <label for="newEventTestType">Base Test Type:</label>
+                    <select id="newEventTestType">
+                        <option value="">-- Select Base Test Type --</option>
+                        <!-- Populated by JS from TEST_DEFINITIONS -->
+                    </select>
+                </div>
+            </div>
+            <button id="createEventButton">Create New Event</button>
+
+            <hr class="my-6">
+
+            <label for="selectEvent">Manage Existing Event:</label>
+            <select id="selectEvent" class="mb-2">
+                <option value="">-- Select Event to Manage or Set Active --</option>
+                <!-- Populated by JS from EVENTS_DEFINITIONS -->
+            </select>
+            <button id="loadEventButton" class="mr-2">Load Selected Event Details</button>
+            <button id="setActiveEventButton">Set Selected Event as Active</button>
+        </div>
+
+        <!-- Location & Item Management Section (shown when an event is loaded) -->
+        <div id="locationManagementSection" class="card hidden">
+            <h2 class="section-title">Location & Item Management for: <span id="managingEventName" class="themed-primary-text"></span></h2>
+            
+            <div class="mb-6">
+                <h3 class="subsection-title">Add New Location</h3>
+                <label for="newLocationName">Location Name:</label>
+                <input type="text" id="newLocationName" placeholder="e.g., Las Perlas">
+                <button id="addLocationButton">Add Location to This Event</button>
+            </div>
+
+            <hr class="my-6">
+
+            <h3 class="subsection-title">Manage Locations in This Event</h3>
+            <div id="locationsList" class="space-y-4">
+                <!-- Locations will be listed here by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // UI Elements
+        const loadingIndicatorAdmin = document.getElementById('loadingIndicatorAdmin');
+        const adminMessageArea = document.getElementById('adminMessageArea');
+
+        // Status Display
+        const currentActiveEventIdDisplay = document.getElementById('currentActiveEventIdDisplay');
+        const currentActiveEventNameDisplay = document.getElementById('currentActiveEventNameDisplay');
+        const currentActiveLocationIdDisplay = document.getElementById('currentActiveLocationIdDisplay');
+        const currentActiveLocationNameDisplay = document.getElementById('currentActiveLocationNameDisplay');
+
+        // Event Management
+        const newEventNameInput = document.getElementById('newEventName');
+        const newEventTestTypeSelect = document.getElementById('newEventTestType');
+        const createEventButton = document.getElementById('createEventButton');
+        const selectEventDropdown = document.getElementById('selectEvent');
+        const loadEventButton = document.getElementById('loadEventButton');
+        const setActiveEventButton = document.getElementById('setActiveEventButton');
+
+        // Location & Item Management
+        const locationManagementSection = document.getElementById('locationManagementSection');
+        const managingEventNameDisplay = document.getElementById('managingEventName');
+        const newLocationNameInput = document.getElementById('newLocationName');
+        const addLocationButton = document.getElementById('addLocationButton');
+        const locationsListDiv = document.getElementById('locationsList');
+
+        let allTestTypeDefinitions = {}; // To store base test types (margaritas, fries, etc.)
+        let allEventsDefinitions = {};    // To store all created events
+        let currentlyManagingEventId = null;
+        let currentGlobalActiveEventConfig = null; // Stores the full config of the globally active event
+
+        // API Endpoints for Admin
+        const API_ADMIN_BASE_URL = '/api/admin'; // Assuming admin routes are under /api/admin
+        const GET_TEST_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/get-test-definitions`;
+        const GET_EVENTS_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/get-events-definitions`;
+        const CREATE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/create-event`;
+        const SET_ACTIVE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/set-active-event`; // Sets ACTIVE_EVENT_ID
+        const ADD_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/add-location`;
+        const SET_ACTIVE_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/set-active-location`; // Sets activeLocationId within an event
+        const ADD_ITEM_TO_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/add-item-to-location`;
+        const GET_ACTIVE_EVENT_CONFIG_FOR_USER_APP_ENDPOINT = `/api/get-active-event-config`; // To fetch current status
+
+        // --- Initialization ---
+        async function initializeAdminPanel() {
+            showAdminLoading(true);
+            await Promise.all([
+                fetchTestTypeDefinitions(),
+                fetchEventsDefinitions(),
+                fetchCurrentGlobalStatus()
+            ]);
+            populateEventSelectDropdown();
+            showAdminLoading(false);
+        }
+
+        async function fetchTestTypeDefinitions() {
+            try {
+                const response = await fetch(GET_TEST_DEFINITIONS_ENDPOINT);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                allTestTypeDefinitions = data.definitions || {};
+                populateTestTypeSelect();
+            } catch (error) {
+                console.error("Error fetching test type definitions:", error);
+                displayAdminMessage("Failed to load base test types.", "error");
+                allTestTypeDefinitions = {}; // Ensure it's an object
+            }
+        }
+
+        async function fetchEventsDefinitions() {
+            try {
+                const response = await fetch(GET_EVENTS_DEFINITIONS_ENDPOINT);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                allEventsDefinitions = data.events || {};
+                populateEventSelectDropdown();
+            } catch (error) {
+                console.error("Error fetching events definitions:", error);
+                displayAdminMessage("Failed to load existing events.", "error");
+                 allEventsDefinitions = {}; // Ensure it's an object
+            }
+        }
+        
+        async function fetchCurrentGlobalStatus() {
+            try {
+                const response = await fetch(GET_ACTIVE_EVENT_CONFIG_FOR_USER_APP_ENDPOINT);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    currentActiveEventIdDisplay.textContent = errorData?.message || "Not set or error";
+                    currentActiveEventNameDisplay.textContent = "N/A";
+                    currentActiveLocationIdDisplay.textContent = "N/A";
+                    currentActiveLocationNameDisplay.textContent = "N/A";
+                    currentGlobalActiveEventConfig = null;
+                    return;
+                }
+                const data = await response.json();
+                if (data && data.config) {
+                    currentGlobalActiveEventConfig = data.config;
+                    currentActiveEventIdDisplay.textContent = currentGlobalActiveEventConfig.eventId || "Not set";
+                    currentActiveEventNameDisplay.textContent = currentGlobalActiveEventConfig.eventName || "N/A";
+                    currentActiveLocationIdDisplay.textContent = currentGlobalActiveEventConfig.activeLocation?.locationId || "Not set";
+                    currentActiveLocationNameDisplay.textContent = currentGlobalActiveEventConfig.activeLocation?.locationName || "N/A";
+                } else {
+                    currentActiveEventIdDisplay.textContent = data.message || "Not set";
+                    currentActiveEventNameDisplay.textContent = "N/A";
+                    currentActiveLocationIdDisplay.textContent = "N/A";
+                    currentActiveLocationNameDisplay.textContent = "N/A";
+                    currentGlobalActiveEventConfig = null;
+                }
+            } catch (error) {
+                console.error("Error fetching current global status:", error);
+                currentActiveEventIdDisplay.textContent = "Error loading status";
+            }
+        }
+
+
+        function populateTestTypeSelect() {
+            newEventTestTypeSelect.innerHTML = '<option value="">-- Select Base Test Type --</option>';
+            for (const typeId in allTestTypeDefinitions) {
+                const option = document.createElement('option');
+                option.value = typeId;
+                option.textContent = allTestTypeDefinitions[typeId].displayName || typeId;
+                newEventTestTypeSelect.appendChild(option);
+            }
+        }
+
+        function populateEventSelectDropdown() {
+            selectEventDropdown.innerHTML = '<option value="">-- Select Event --</option>';
+            for (const eventId in allEventsDefinitions) {
+                const event = allEventsDefinitions[eventId];
+                const option = document.createElement('option');
+                option.value = eventId;
+                option.textContent = event.eventName || eventId;
+                selectEventDropdown.appendChild(option);
+            }
+        }
+
+        // --- Event Creation ---
+        createEventButton.addEventListener('click', async () => {
+            const eventName = newEventNameInput.value.trim();
+            const testTypeId = newEventTestTypeSelect.value;
+
+            if (!eventName || !testTypeId) {
+                displayAdminMessage("Please provide an event name and select a base test type.", "error");
+                return;
+            }
+
+            const newEventData = {
+                eventName: eventName,
+                testTypeId: testTypeId,
+                // eventId will be generated by the backend or can be generated here
+            };
+
+            showAdminLoading(true);
+            try {
+                const response = await fetch(CREATE_EVENT_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newEventData)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || "Failed to create event.");
+                
+                displayAdminMessage(result.message || "Event created successfully!", "success");
+                newEventNameInput.value = '';
+                newEventTestTypeSelect.value = '';
+                await fetchEventsDefinitions(); // Refresh event list
+            } catch (error) {
+                console.error("Error creating event:", error);
+                displayAdminMessage(error.message, "error");
+            } finally {
+                showAdminLoading(false);
+            }
+        });
+
+        // --- Event Loading & Setting Active ---
+        loadEventButton.addEventListener('click', () => {
+            const selectedEventId = selectEventDropdown.value;
+            if (!selectedEventId) {
+                displayAdminMessage("Please select an event to load.", "info");
+                locationManagementSection.classList.add('hidden');
+                currentlyManagingEventId = null;
+                return;
+            }
+            currentlyManagingEventId = selectedEventId;
+            const eventData = allEventsDefinitions[selectedEventId];
+            if (eventData) {
+                managingEventNameDisplay.textContent = eventData.eventName;
+                locationManagementSection.classList.remove('hidden');
+                renderLocationsForEvent(selectedEventId);
+            } else {
+                 displayAdminMessage("Could not find selected event data.", "error");
+                 locationManagementSection.classList.add('hidden');
+            }
+        });
+        
+        setActiveEventButton.addEventListener('click', async () => {
+            const eventIdToActivate = selectEventDropdown.value;
+            if (!eventIdToActivate) {
+                displayAdminMessage("Please select an event to set as active.", "error");
+                return;
+            }
+            showAdminLoading(true);
+            try {
+                const response = await fetch(SET_ACTIVE_EVENT_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ activeEventId: eventIdToActivate })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || "Failed to set active event.");
+                displayAdminMessage(result.message || "Active event set successfully!", "success");
+                await fetchCurrentGlobalStatus(); // Refresh global status display
+            } catch (error) {
+                console.error("Error setting active event:", error);
+                displayAdminMessage(error.message, "error");
+            } finally {
+                showAdminLoading(false);
+            }
+        });
+
+        // --- Location & Item Management ---
+        addLocationButton.addEventListener('click', async () => {
+            if (!currentlyManagingEventId) {
+                displayAdminMessage("No event selected to add a location to.", "error");
+                return;
+            }
+            const locationName = newLocationNameInput.value.trim();
+            if (!locationName) {
+                displayAdminMessage("Please enter a location name.", "error");
+                return;
+            }
+
+            showAdminLoading(true);
+            try {
+                const response = await fetch(ADD_LOCATION_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventId: currentlyManagingEventId, locationName: locationName })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || "Failed to add location.");
+                
+                displayAdminMessage(result.message || "Location added successfully!", "success");
+                newLocationNameInput.value = '';
+                // Refresh event definitions and re-render locations
+                await fetchEventsDefinitions(); 
+                if (allEventsDefinitions[currentlyManagingEventId]) { // Check if event still exists
+                    renderLocationsForEvent(currentlyManagingEventId);
+                } else { // Event might have been deleted or an error occurred
+                    locationManagementSection.classList.add('hidden');
+                    currentlyManagingEventId = null;
+                }
+
+            } catch (error) {
+                console.error("Error adding location:", error);
+                displayAdminMessage(error.message, "error");
+            } finally {
+                showAdminLoading(false);
+            }
+        });
+
+        function renderLocationsForEvent(eventId) {
+            locationsListDiv.innerHTML = ''; // Clear previous list
+            const eventData = allEventsDefinitions[eventId];
+            if (!eventData || !eventData.locations || eventData.locations.length === 0) {
+                locationsListDiv.innerHTML = '<p class="text-slate-500 italic">No locations added to this event yet.</p>';
+                return;
+            }
+
+            eventData.locations.forEach(location => {
+                const locDiv = document.createElement('div');
+                locDiv.className = 'list-item p-4 border rounded-md bg-slate-50';
+                
+                const locHeader = document.createElement('div');
+                locHeader.className = 'flex justify-between items-center mb-2';
+                const locName = document.createElement('h4');
+                locName.className = 'text-lg font-semibold themed-secondary-text';
+                locName.textContent = location.locationName + (location.locationId === eventData.activeLocationId ? " (Currently Active Location)" : "");
+                locHeader.appendChild(locName);
+
+                const setActiveLocButton = document.createElement('button');
+                setActiveLocButton.textContent = 'Set as Active Location';
+                setActiveLocButton.className = 'text-xs py-1 px-2';
+                if (location.locationId === eventData.activeLocationId) {
+                    setActiveLocButton.disabled = true;
+                    setActiveLocButton.classList.add('opacity-50');
+                }
+                setActiveLocButton.onclick = () => handleSetActiveLocation(eventId, location.locationId);
+                locHeader.appendChild(setActiveLocButton);
+                locDiv.appendChild(locHeader);
+
+                // Item Management for this location
+                const itemsTitle = document.createElement('p');
+                itemsTitle.className = 'text-sm font-medium text-slate-600 mb-1';
+                itemsTitle.textContent = 'Items at this location:';
+                locDiv.appendChild(itemsTitle);
+
+                const itemsList = document.createElement('ul');
+                itemsList.className = 'list-disc list-inside text-sm text-slate-700 mb-3';
+                if (location.items && location.items.length > 0) {
+                    location.items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item.itemName;
+                        itemsList.appendChild(li);
+                    });
+                } else {
+                    itemsList.innerHTML = '<li class="italic">No items added yet.</li>';
+                }
+                locDiv.appendChild(itemsList);
+                
+                if (location.allowCustomItem) {
+                    const customAllowed = document.createElement('p');
+                    customAllowed.className = 'text-xs text-green-600 italic';
+                    customAllowed.textContent = 'Users can add custom items at this location.';
+                    locDiv.appendChild(customAllowed);
+                }
+
+
+                const addItemDiv = document.createElement('div');
+                addItemDiv.className = 'mt-3 pt-3 border-t';
+                const newItemNameInput = document.createElement('input');
+                newItemNameInput.type = 'text';
+                newItemNameInput.placeholder = 'New Item Name (e.g., Classic Margarita)';
+                newItemNameInput.className = 'text-sm mb-2';
+                addItemDiv.appendChild(newItemNameInput);
+
+                const allowCustomToggleLabel = document.createElement('label');
+                allowCustomToggleLabel.className = 'text-xs flex items-center mb-2';
+                const allowCustomCheckbox = document.createElement('input');
+                allowCustomCheckbox.type = 'checkbox';
+                allowCustomCheckbox.checked = location.allowCustomItem || false; // Default to false if not set
+                allowCustomCheckbox.className = 'mr-1 h-3 w-3';
+                allowCustomToggleLabel.appendChild(allowCustomCheckbox);
+                allowCustomToggleLabel.appendChild(document.createTextNode('Allow users to add custom items here?'));
+                addItemDiv.appendChild(allowCustomToggleLabel);
+
+
+                const addItemButton = document.createElement('button');
+                addItemButton.textContent = 'Add Item';
+                addItemButton.className = 'text-xs py-1 px-2 mr-1';
+                addItemButton.onclick = () => handleAddItemToLocation(eventId, location.locationId, newItemNameInput.value.trim(), allowCustomCheckbox.checked);
+                addItemDiv.appendChild(addItemButton);
+
+                locDiv.appendChild(addItemDiv);
+                locationsListDiv.appendChild(locDiv);
+            });
+        }
+
+        async function handleSetActiveLocation(eventId, locationId) {
+            showAdminLoading(true);
+            try {
+                const response = await fetch(SET_ACTIVE_LOCATION_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventId: eventId, activeLocationId: locationId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || "Failed to set active location.");
+                
+                displayAdminMessage(result.message || "Active location set successfully!", "success");
+                await fetchEventsDefinitions(); // Refresh event data to update UI
+                await fetchCurrentGlobalStatus(); // Refresh global status
+                if (allEventsDefinitions[eventId]) {
+                     renderLocationsForEvent(eventId); // Re-render locations for current event
+                }
+            } catch (error) {
+                console.error("Error setting active location:", error);
+                displayAdminMessage(error.message, "error");
+            } finally {
+                showAdminLoading(false);
+            }
+        }
+        
+        async function handleAddItemToLocation(eventId, locationId, itemName, allowCustom) {
+            if (!itemName) {
+                displayAdminMessage("Please enter an item name.", "error");
+                return;
+            }
+            showAdminLoading(true);
+            try {
+                const response = await fetch(ADD_ITEM_TO_LOCATION_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventId, locationId, itemName, allowCustomItemForLocation: allowCustom }) // Pass allowCustom state for the location
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || "Failed to add item.");
+                
+                displayAdminMessage(result.message || "Item added successfully!", "success");
+                await fetchEventsDefinitions(); // Refresh data
+                if (allEventsDefinitions[eventId]) {
+                    renderLocationsForEvent(eventId); // Re-render
+                }
+            } catch (error) {
+                console.error("Error adding item:", error);
+                displayAdminMessage(error.message, "error");
+            } finally {
+                showAdminLoading(false);
+            }
+        }
+
+
+        // --- UI Helpers ---
+        function showAdminLoading(isLoading) {
+            loadingIndicatorAdmin.classList.toggle('hidden', !isLoading);
+        }
+
+        function displayAdminMessage(message, type = "info") {
+            adminMessageArea.textContent = message;
+            adminMessageArea.className = 'status-message text-center'; // Base classes
+            if (type === "success") adminMessageArea.classList.add('status-success');
+            else if (type === "error") adminMessageArea.classList.add('status-error');
+            else adminMessageArea.classList.add('status-info');
+            adminMessageArea.classList.remove('hidden');
+            setTimeout(() => {
+                adminMessageArea.classList.add('hidden');
+            }, 5000);
+        }
+
+        // --- Initialize Admin Panel ---
+        initializeAdminPanel();
+    </script>
+</body>
+</html>
