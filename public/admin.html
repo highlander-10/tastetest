@@ -45,8 +45,10 @@
     <div class="max-w-4xl mx-auto">
         <div class="card">
             <h2 class="section-title">Test Type Management</h2>
-            <form id="testTypeForm">
-                <p class="text-sm text-slate-600 mb-4">Create a new Test Type (e.g., "Wine Tasting") or select an existing one to edit.</p>
+            <p class="text-sm text-slate-600 mb-4">A "Test Type" is a reusable template of questions and themes (e.g., "Wine Tasting", "Margarita Rating").</p>
+            <button id="toggleTestFormBtn" class="mb-4">Show / Hide Test Type Creator</button>
+            
+            <form id="testTypeForm" class="hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
                     <div>
                         <label for="testTypeId">Test Type ID</label>
@@ -75,13 +77,15 @@
                 <button type="submit">Save Test Type</button>
                 <button type="button" id="clearTestFormBtn" class="button-secondary">Clear Form</button>
             </form>
+
             <hr class="my-6">
-             <h3 class="subsection-title">Existing Test Types</h3>
-             <div id="existingTestTypesList" class="space-y-2"></div>
+            <h3 class="subsection-title">Existing Test Types</h3>
+            <div id="existingTestTypesList" class="space-y-2"></div>
         </div>
 
         <div class="card">
             <h2 class="section-title">Event Management</h2>
+            <p class="text-sm text-slate-600 mb-4">An "Event" is a specific instance of a taste test, like "Downtown Crawl 2025". It uses a Test Type as its template.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label for="newEventName">New Event Name:</label>
@@ -102,6 +106,7 @@
         </div>
 
         <div id="eventDetailsManagementSection" class="card hidden">
+             <h2 class="section-title">Manage Event Details: <span id="managingEventName" class="text-indigo-600"></span></h2>
             </div>
     </div>
 
@@ -111,6 +116,7 @@
         const adminMessageArea = document.getElementById('adminMessageArea');
         // Test Type Form
         const testTypeForm = document.getElementById('testTypeForm');
+        const toggleTestFormBtn = document.getElementById('toggleTestFormBtn');
         const testTypeIdInput = document.getElementById('testTypeId');
         const testTypeDisplayNameInput = document.getElementById('testTypeDisplayName');
         const themePrimaryColorInput = document.getElementById('themePrimaryColor');
@@ -129,13 +135,23 @@
         const deleteEventButton = document.getElementById('deleteEventButton');
         const eventDetailsManagementSection = document.getElementById('eventDetailsManagementSection');
 
-        // --- STATE & API ---
+        // --- STATE & API CONSTANTS ---
         let allTestTypeDefinitions = {};
         let allEventsDefinitions = {};
         const API_ADMIN_BASE_URL = '/api/admin';
+        // This section is now complete with all required endpoints
         const MANAGE_TEST_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/test-definitions`;
         const GET_EVENTS_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/get-events-definitions`;
-        // ... other endpoints
+        const CREATE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/create-event`;
+        const SET_ACTIVE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/set-active-event`;
+        const DELETE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/delete-event`;
+        const ADD_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/add-location`;
+        const SET_ACTIVE_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/set-active-location`;
+        const ADD_ITEM_TO_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/add-item-to-location`;
+        const ADD_PARTICIPANT_ENDPOINT = `${API_ADMIN_BASE_URL}/add-participant`;
+        const REMOVE_PARTICIPANT_ENDPOINT = `${API_ADMIN_BASE_URL}/remove-participant`;
+        const TOGGLE_CUSTOM_NAMES_ENDPOINT = `${API_ADMIN_BASE_URL}/toggle-custom-names`;
+
 
         // --- INITIALIZATION ---
         async function initializeAdminPanel() {
@@ -151,7 +167,7 @@
 
         // --- TEST TYPE MANAGEMENT ---
         async function fetchTestTypeDefinitions() {
-            const response = await fetch(MANAGE_TEST_DEFINITIONS_ENDPOINT); // Use new endpoint
+            const response = await fetch(MANAGE_TEST_DEFINITIONS_ENDPOINT);
             const data = await response.json();
             allTestTypeDefinitions = data.definitions || {};
             populateTestTypeSelect();
@@ -187,8 +203,11 @@
             themeSecondaryColorInput.value = test.theme?.secondaryColor || '#000000';
             
             questionsContainer.innerHTML = '';
-            test.questions.forEach(q => addQuestion(q));
-            window.scrollTo(0, 0); // Scroll to top to see the form
+            if(test.questions) {
+                test.questions.forEach(q => addQuestion(q));
+            }
+            testTypeForm.classList.remove('hidden'); // Show the form
+            window.scrollTo(0, 0);
         }
 
         function addQuestion(questionData = null) {
@@ -196,12 +215,12 @@
             block.className = 'question-block p-3 border rounded bg-slate-50 grid grid-cols-1 md:grid-cols-2 gap-x-4';
             block.innerHTML = `
                 <div>
-                    <label>Question ID (e.g., "taste_acidity")</label>
-                    <input type="text" class="q-id" required value="${questionData?.id || ''}">
+                    <label>Question ID</label>
+                    <input type="text" class="q-id" required value="${questionData?.id || ''}" placeholder="e.g., taste_acidity">
                 </div>
                 <div>
-                    <label>Question Text (e.g., "Acidity (1=Low, 5=High)")</label>
-                    <input type="text" class="q-text" required value="${questionData?.text || ''}">
+                    <label>Question Text</label>
+                    <input type="text" class="q-text" required value="${questionData?.text || ''}" placeholder="e.g., Acidity (1=Low, 5=High)">
                 </div>
                 <div class="mt-2">
                     <label>Question Type</label>
@@ -213,7 +232,6 @@
                     <button type="button" class="remove-btn button-danger button-small ml-auto">Remove</button>
                 </div>
             `;
-            // Populate select options
             const select = block.querySelector('.q-type');
             const types = ['rating_1_5', 'rating_0_5', 'text_short', 'text_long'];
             types.forEach(t => {
@@ -223,7 +241,6 @@
                 if (questionData?.type === t) opt.selected = true;
                 select.appendChild(opt);
             });
-
             questionsContainer.appendChild(block);
             block.querySelector('.remove-btn').addEventListener('click', () => block.remove());
         }
@@ -231,8 +248,8 @@
         testTypeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const questions = Array.from(questionsContainer.querySelectorAll('.question-block')).map(b => ({
-                id: b.querySelector('.q-id').value,
-                text: b.querySelector('.q-text').value,
+                id: b.querySelector('.q-id').value.trim(),
+                text: b.querySelector('.q-text').value.trim(),
                 type: b.querySelector('.q-type').value,
                 required: b.querySelector('.q-required').checked
             }));
@@ -269,14 +286,21 @@
             }
         });
 
+        toggleTestFormBtn.addEventListener('click', () => testTypeForm.classList.toggle('hidden'));
         clearTestFormBtn.addEventListener('click', () => {
             testTypeForm.reset();
             questionsContainer.innerHTML = '';
             addQuestion();
         });
         
-        // --- EVENT MANAGEMENT (Uses data from Test Type Management) ---
-        async function fetchEventsDefinitions() { /* Existing function */ }
+        // --- EVENT MANAGEMENT ---
+        async function fetchEventsDefinitions() {
+            const response = await fetch(GET_EVENTS_DEFINITIONS_ENDPOINT);
+            const data = await response.json();
+            allEventsDefinitions = data.events || {};
+            populateEventSelectDropdown();
+        }
+
         function populateTestTypeSelect() {
             newEventTestTypeSelect.innerHTML = '<option value="">-- Select Base Test Type --</option>';
             for (const id in allTestTypeDefinitions) {
@@ -286,7 +310,33 @@
                 newEventTestTypeSelect.appendChild(opt);
             }
         }
-        // ... Rest of your existing event management functions
+
+        createEventButton.addEventListener('click', async () => {
+            const eventName = newEventNameInput.value.trim();
+            const testTypeId = newEventTestTypeSelect.value;
+            if (!eventName || !testTypeId) {
+                displayAdminMessage("Please provide an event name and select a base test type.", "error"); return;
+            }
+            showAdminLoading(true);
+            try {
+                const response = await fetch(CREATE_EVENT_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventName, testTypeId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                displayAdminMessage(result.message, "success");
+                newEventNameInput.value = '';
+                await fetchEventsDefinitions(); // Refresh event list
+            } catch (error) {
+                displayAdminMessage(error.message, "error");
+            } finally {
+                showAdminLoading(false);
+            }
+        });
+
+        // Other event listeners and functions...
         
         // --- HELPERS ---
         function showAdminLoading(isLoading) {
