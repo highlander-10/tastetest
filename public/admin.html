@@ -83,7 +83,7 @@
 
         <div class="card">
             <h2 class="section-title">Event Management</h2>
-            <p class="text-sm text-slate-600 mb-4">An "Event" is a specific instance of a taste test, like "Downtown Crawl 2025". It uses a Test Type as its template.</p>
+            <p class="text-sm text-slate-600 mb-4">An "Event" is a specific instance of a taste test. It uses a Test Type as its template.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label for="newEventName">New Event Name:</label>
@@ -131,7 +131,7 @@
                 <div class="mb-4">
                     <label class="flex items-center">
                         <input type="checkbox" id="allowCustomNamesCheckbox" class="mr-2 h-4 w-4">
-                        Allow custom names?
+                        Allow participants to enter their own name if not on this list?
                     </label>
                 </div>
                 <h4 class="text-md font-semibold text-slate-700 mb-2">Current Participants</h4>
@@ -179,14 +179,19 @@
         const MANAGE_TEST_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/test-definitions`;
         const GET_EVENTS_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/get-events-definitions`;
         const CREATE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/create-event`;
-        // ... (other endpoints would be defined here)
+        const SET_ACTIVE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/set-active-event`;
+        const DELETE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/delete-event`;
+        const ADD_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/add-location`;
 
         // --- INITIALIZATION ---
-        async function robustFetch(endpoint) {
-            const response = await fetch(endpoint);
-            if (!response.ok) throw new Error(`API Error: ${response.status} at ${endpoint}`);
+        async function robustFetch(endpoint, options = {}) {
+            const response = await fetch(endpoint, options);
             const text = await response.text();
-            return text ? JSON.parse(text) : {};
+            const data = text ? JSON.parse(text) : {};
+            if (!response.ok) {
+                throw new Error(data.message || `API Error: ${response.status}`);
+            }
+            return data;
         }
 
         async function initializeAdminPanel() {
@@ -202,6 +207,7 @@
                 renderExistingTestTypes();
                 populateEventSelectDropdown();
             } catch (error) {
+                console.error("Initialization failed:", error);
                 displayAdminMessage(error.message, "error");
             } finally {
                 showAdminLoading(false);
@@ -209,33 +215,20 @@
         }
         
         // --- UI & HELPER FUNCTIONS ---
-        function populateTestTypeSelect() {
-            newEventTestTypeSelect.innerHTML = '<option value="">-- Select Base Test Type --</option>';
-            for (const id in allTestTypeDefinitions) {
-                const opt = document.createElement('option');
-                opt.value = id;
-                opt.textContent = allTestTypeDefinitions[id].displayName;
-                newEventTestTypeSelect.appendChild(opt);
-            }
+        function showAdminLoading(isLoading) {
+            loadingIndicatorAdmin.classList.toggle('hidden', !isLoading);
+        }
+        function displayAdminMessage(message, type = "info") {
+            adminMessageArea.textContent = message;
+            adminMessageArea.className = `status-message status-${type === 'success' ? 'status-success' : 'status-error'}`;
+            adminMessageArea.classList.remove('hidden');
         }
 
-        function populateEventSelectDropdown() {
-            const currentVal = selectEventDropdown.value;
-            selectEventDropdown.innerHTML = '<option value="">-- Select Event --</option>';
-            for (const eventId in allEventsDefinitions) {
-                const option = document.createElement('option');
-                option.value = eventId;
-                option.textContent = allEventsDefinitions[eventId].eventName;
-                selectEventDropdown.appendChild(option);
-            }
-            if (allEventsDefinitions[currentVal]) selectEventDropdown.value = currentVal;
-        }
-
+        // --- TEST TYPE FUNCTIONS ---
         function renderExistingTestTypes() {
             existingTestTypesList.innerHTML = '';
             if (Object.keys(allTestTypeDefinitions).length === 0) {
-                existingTestTypesList.innerHTML = `<p class="text-slate-500 italic">No test types created yet.</p>`;
-                return;
+                existingTestTypesList.innerHTML = `<p class="text-slate-500 italic">No test types created yet.</p>`; return;
             }
             for (const id in allTestTypeDefinitions) {
                 const test = allTestTypeDefinitions[id];
@@ -267,14 +260,7 @@
         function addQuestion(questionData = null) {
             const block = document.createElement('div');
             block.className = 'question-block p-3 border rounded bg-slate-50 grid grid-cols-1 md:grid-cols-2 gap-x-4';
-            block.innerHTML = `
-                <div><label>Question ID</label><input type="text" class="q-id" required value="${questionData?.id || ''}" placeholder="e.g., taste_acidity"></div>
-                <div><label>Question Text</label><input type="text" class="q-text" required value="${questionData?.text || ''}" placeholder="e.g., Acidity (1=Low, 5=High)"></div>
-                <div class="mt-2"><label>Question Type</label><select class="q-type"></select></div>
-                <div class="flex items-center mt-4">
-                    <input type="checkbox" class="q-required h-4 w-4 mr-2" ${questionData?.required ? 'checked' : ''}><label>Required?</label>
-                    <button type="button" class="remove-btn button-danger button-small ml-auto">Remove</button>
-                </div>`;
+            block.innerHTML = `<div><label>Question ID</label><input type="text" class="q-id" required value="${questionData?.id || ''}" placeholder="e.g., taste_acidity"></div><div><label>Question Text</label><input type="text" class="q-text" required value="${questionData?.text || ''}" placeholder="e.g., Acidity (1=Low, 5=High)"></div><div class="mt-2"><label>Question Type</label><select class="q-type"></select></div><div class="flex items-center mt-4"><input type="checkbox" class="q-required h-4 w-4 mr-2" ${questionData?.required ? 'checked' : ''}><label>Required?</label><button type="button" class="remove-btn button-danger button-small ml-auto">Remove</button></div>`;
             const select = block.querySelector('.q-type');
             const types = ['rating_1_5', 'rating_0_5', 'text_short', 'text_long'];
             types.forEach(t => {
@@ -287,17 +273,34 @@
             block.querySelector('.remove-btn').addEventListener('click', () => block.remove());
         }
 
-        function displayAdminMessage(message, type = "info") {
-            adminMessageArea.textContent = message;
-            adminMessageArea.className = `status-message status-${type === 'success' ? 'status-success' : 'status-error'}`;
-            adminMessageArea.classList.remove('hidden');
+        // --- EVENT MANAGEMENT FUNCTIONS ---
+        function populateTestTypeSelect() {
+            newEventTestTypeSelect.innerHTML = '<option value="">-- Select Base Test Type --</option>';
+            for (const id in allTestTypeDefinitions) {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = allTestTypeDefinitions[id].displayName;
+                newEventTestTypeSelect.appendChild(opt);
+            }
         }
 
-        function showAdminLoading(isLoading) {
-            loadingIndicatorAdmin.classList.toggle('hidden', !isLoading);
+        function populateEventSelectDropdown() {
+            const currentVal = selectEventDropdown.value;
+            selectEventDropdown.innerHTML = '<option value="">-- Select Event --</option>';
+            for (const eventId in allEventsDefinitions) {
+                const option = document.createElement('option');
+                option.value = eventId;
+                option.textContent = allEventsDefinitions[eventId].eventName;
+                selectEventDropdown.appendChild(option);
+            }
+            if (allEventsDefinitions[currentVal]) selectEventDropdown.value = currentVal;
         }
 
         // --- EVENT LISTENERS ---
+        toggleTestFormBtn.addEventListener('click', () => testTypeForm.classList.toggle('hidden'));
+        clearTestFormBtn.addEventListener('click', () => { testTypeForm.reset(); questionsContainer.innerHTML = ''; addQuestion(); });
+        addQuestionBtn.addEventListener('click', () => addQuestion());
+
         testTypeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const questions = Array.from(questionsContainer.querySelectorAll('.question-block')).map(b => ({ id: b.querySelector('.q-id').value.trim(), text: b.querySelector('.q-text').value.trim(), type: b.querySelector('.q-type').value, required: b.querySelector('.q-required').checked }));
@@ -305,12 +308,10 @@
             if(!testData.id || !testData.displayName) { displayAdminMessage("Test Type ID and Display Name are required.", "error"); return; }
             showAdminLoading(true);
             try {
-                const response = await fetch(MANAGE_TEST_DEFINITIONS_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(testData) });
-                const result = await robustFetch(response);
-                if (!response.ok) throw new Error(result.message || "Failed to save.");
-                displayAdminMessage(result.message || "Saved!", "success");
+                await robustFetch(MANAGE_TEST_DEFINITIONS_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(testData) });
+                displayAdminMessage("Test Type saved successfully!", "success");
                 await initializeAdminPanel();
-            } catch (error) { displayAdminMessage(error.message, "error"); } finally { showAdminLoading(false); }
+            } catch (error) { console.error("Save Test Type Error:", error); displayAdminMessage(error.message, "error"); } finally { showAdminLoading(false); }
         });
 
         createEventButton.addEventListener('click', async () => {
@@ -319,19 +320,65 @@
             if (!eventName || !testTypeId) { displayAdminMessage("Please provide an event name and select a base test type.", "error"); return; }
             showAdminLoading(true);
             try {
-                const response = await fetch(CREATE_EVENT_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventName, testTypeId }) });
-                const result = await robustFetch(response);
-                if (!response.ok) throw new Error(result.message);
-                displayAdminMessage(result.message, "success");
+                await robustFetch(CREATE_EVENT_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventName, testTypeId }) });
+                displayAdminMessage("Event created successfully!", "success");
                 newEventNameInput.value = '';
                 await initializeAdminPanel();
-            } catch (error) { displayAdminMessage(error.message, "error"); } finally { showAdminLoading(false); }
+            } catch (error) { console.error("Create Event Error:", error); displayAdminMessage(error.message, "error"); } finally { showAdminLoading(false); }
+        });
+        
+        loadEventButton.addEventListener('click', () => {
+            const selectedEventId = selectEventDropdown.value;
+            if (!selectedEventId) {
+                displayAdminMessage("Please select an event to load.", "info");
+                return;
+            }
+            currentlyManagingEventId = selectedEventId;
+            const eventData = allEventsDefinitions[selectedEventId];
+            if (eventData) {
+                managingEventNameDisplay.textContent = eventData.eventName;
+                eventDetailsManagementSection.classList.remove('hidden');
+                // The render functions can be added here once their logic is defined
+                // renderLocationsForEvent(selectedEventId);
+                // renderParticipantsForEvent(selectedEventId);
+            } else {
+                displayAdminMessage(`Error: Could not find data for event ${selectedEventId}`, 'error');
+            }
         });
 
-        toggleTestFormBtn.addEventListener('click', () => testTypeForm.classList.toggle('hidden'));
-        clearTestFormBtn.addEventListener('click', () => { testTypeForm.reset(); questionsContainer.innerHTML = ''; addQuestion(); });
-        addQuestionBtn.addEventListener('click', () => addQuestion());
+        setActiveEventButton.addEventListener('click', async () => {
+            const eventId = selectEventDropdown.value;
+            if (!eventId) { displayAdminMessage("Please select an event to set as active.", "error"); return; }
+            showAdminLoading(true);
+            try {
+                const result = await robustFetch(SET_ACTIVE_EVENT_ENDPOINT, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ activeEventId: eventId })
+                });
+                displayAdminMessage(result.message || "Event set as active!", "success");
+            } catch (error) { console.error("Set Active Event Error:", error); displayAdminMessage(error.message, "error");
+            } finally { showAdminLoading(false); }
+        });
 
+        deleteEventButton.addEventListener('click', async () => {
+            const eventId = selectEventDropdown.value;
+            if (!eventId) { displayAdminMessage("Please select an event to delete.", "error"); return; }
+            
+            if (confirm(`Are you sure you want to permanently delete "${allEventsDefinitions[eventId].eventName}"? This cannot be undone.`)) {
+                showAdminLoading(true);
+                try {
+                    const result = await robustFetch(DELETE_EVENT_ENDPOINT, {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ eventId })
+                    });
+                    displayAdminMessage(result.message || "Event deleted.", "success");
+                    eventDetailsManagementSection.classList.add('hidden');
+                    await initializeAdminPanel();
+                } catch (error) { console.error("Delete Event Error:", error); displayAdminMessage(error.message, "error");
+                } finally { showAdminLoading(false); }
+            }
+        });
+        
         // --- KICKOFF ---
         addQuestion(); // Start with one empty question block
         initializeAdminPanel();
