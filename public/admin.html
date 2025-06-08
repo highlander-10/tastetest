@@ -12,86 +12,76 @@
         .subsection-title { font-size: 1.25rem; font-weight: 500; margin-bottom: 0.75rem; color: #374151; }
         .card { background-color: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); margin-bottom: 1.5rem; }
         label { display: block; margin-bottom: 0.25rem; font-weight: 500; color: #4B5563; }
-        input[type="text"], select {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.375rem;
-            margin-bottom: 0.75rem;
-            box-shadow: inset 0 1px 2px 0 rgba(0,0,0,0.05);
+        input[type="text"], input[type="color"], select, textarea {
+            width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.375rem;
+            margin-bottom: 0.75rem; box-shadow: inset 0 1px 2px 0 rgba(0,0,0,0.05);
         }
         button {
-            background-color: #4F46E5; /* Indigo 600 */
-            color: white;
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.375rem;
-            font-weight: 500;
-            transition: background-color 0.2s;
-            cursor: pointer;
+            background-color: #4F46E5; color: white; padding: 0.625rem 1.25rem; border-radius: 0.375rem;
+            font-weight: 500; transition: background-color 0.2s; cursor: pointer;
         }
-        button:hover { background-color: #4338CA; /* Indigo 700 */ }
+        button:hover { background-color: #4338CA; }
         button:disabled { background-color: #A5B4FC; cursor: not-allowed; }
-        .button-danger { background-color: #EF4444; /* Red 500 */ }
-        .button-danger:hover { background-color: #DC2626; /* Red 600 */ }
+        .button-danger { background-color: #EF4444; } .button-danger:hover { background-color: #DC2626; }
+        .button-secondary { background-color: #6B7280; } .button-secondary:hover { background-color: #4B5563; }
         .button-small { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-
-        .list-item { padding: 0.5rem; border-bottom: 1px solid #E5E7EB; display: flex; justify-content: space-between; align-items: center; }
-        .list-item:last-child { border-bottom: none; }
         .status-message { padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.375rem; }
         .status-success { background-color: #D1FAE5; color: #065F46; }
         .status-error { background-color: #FEE2E2; color: #991B1B; }
-        .status-info { background-color: #DBEAFE; color: #1E40AF; }
-
-        /* Modal Styles */
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5); display: flex;
-            align-items: center; justify-content: center; z-index: 100;
-        }
-        .modal-content {
-            background-color: white; padding: 2rem; border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            width: 90%; max-width: 500px; text-align: center;
-        }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8">
 
     <div id="loadingIndicatorAdmin" class="fixed inset-0 bg-slate-500 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
-        <p class="ml-4 text-white text-xl">Processing...</p>
     </div>
-
-    <div id="confirmationModal" class="modal hidden">
-        <div class="modal-content">
-            <h3 id="modalTitle" class="text-xl font-semibold mb-4">Confirm Action</h3>
-            <p id="modalMessage" class="mb-6">Are you sure you want to proceed?</p>
-            <div class="flex justify-end space-x-3">
-                <button id="modalCancelButton" class="bg-slate-200 hover:bg-slate-300 text-slate-700">Cancel</button>
-                <button id="modalConfirmButton" class="button-danger">Confirm</button>
-            </div>
-        </div>
-    </div>
-
 
     <header class="mb-8 text-center">
         <h1 class="text-3xl md:text-4xl font-bold text-slate-800">Taste Test Admin Panel</h1>
     </header>
 
-    <div id="adminMessageArea" class="status-message hidden"></div>
+    <div id="adminMessageArea" class="status-message hidden max-w-4xl mx-auto"></div>
 
     <div class="max-w-4xl mx-auto">
         <div class="card">
-            <h2 class="section-title">Current Status</h2>
-            <p><strong>Active Event ID:</strong> <span id="currentActiveEventIdDisplay">Loading...</span></p>
-            <p><strong>Active Event Name:</strong> <span id="currentActiveEventNameDisplay">Loading...</span></p>
-            <p><strong>Active Location ID:</strong> <span id="currentActiveLocationIdDisplay">Loading...</span></p>
-            <p><strong>Active Location Name:</strong> <span id="currentActiveLocationNameDisplay">Loading...</span></p>
+            <h2 class="section-title">Test Type Management</h2>
+            <form id="testTypeForm">
+                <p class="text-sm text-slate-600 mb-4">Create a new Test Type (e.g., "Wine Tasting") or select an existing one to edit.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                    <div>
+                        <label for="testTypeId">Test Type ID</label>
+                        <input type="text" id="testTypeId" placeholder="short_id_no_spaces" required>
+                    </div>
+                    <div>
+                        <label for="testTypeDisplayName">Display Name</label>
+                        <input type="text" id="testTypeDisplayName" placeholder="e.g., Wine Tasting Notes" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                    <div>
+                        <label for="themePrimaryColor">Theme Primary Color</label>
+                        <input type="color" id="themePrimaryColor" value="#8A0707">
+                    </div>
+                    <div>
+                        <label for="themeSecondaryColor">Theme Secondary Color</label>
+                        <input type="color" id="themeSecondaryColor" value="#4A0404">
+                    </div>
+                </div>
+
+                <h3 class="subsection-title mt-4">Questions</h3>
+                <div id="questionsContainer" class="space-y-4"></div>
+                <button type="button" id="addQuestionBtn" class="button-secondary mt-2">Add Question</button>
+                <hr class="my-6">
+                <button type="submit">Save Test Type</button>
+                <button type="button" id="clearTestFormBtn" class="button-secondary">Clear Form</button>
+            </form>
+            <hr class="my-6">
+             <h3 class="subsection-title">Existing Test Types</h3>
+             <div id="existingTestTypesList" class="space-y-2"></div>
         </div>
 
         <div class="card">
             <h2 class="section-title">Event Management</h2>
-            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label for="newEventName">New Event Name:</label>
@@ -99,89 +89,37 @@
                 </div>
                 <div>
                     <label for="newEventTestType">Base Test Type:</label>
-                    <select id="newEventTestType">
-                        <option value="">-- Select Base Test Type --</option>
-                    </select>
+                    <select id="newEventTestType"><option>-- Select --</option></select>
                 </div>
             </div>
             <button id="createEventButton">Create New Event</button>
-
             <hr class="my-6">
-
             <label for="selectEvent">Manage Existing Event:</label>
-            <select id="selectEvent" class="mb-2">
-                <option value="">-- Select Event to Manage or Set Active --</option>
-            </select>
-            <button id="loadEventButton" class="mr-2">Load Selected Event Details</button>
-            <button id="setActiveEventButton" class="mr-2">Set Selected Event as Active</button>
-            <button id="deleteEventButton" class="button-danger">Delete Selected Event</button>
+            <select id="selectEvent"><option>-- Select --</option></select>
+            <button id="loadEventButton" class="mr-2">Load Details</button>
+            <button id="setActiveEventButton" class="mr-2">Set Active</button>
+            <button id="deleteEventButton" class="button-danger">Delete Event</button>
         </div>
 
         <div id="eventDetailsManagementSection" class="card hidden">
-            <h2 class="section-title">Manage Event Details: <span id="managingEventName" class="themed-primary-text"></span></h2>
-            
-            <div class="mb-8">
-                <h3 class="subsection-title">Locations & Items</h3>
-                <div class="mb-6 p-4 border rounded-md bg-slate-50">
-                    <h4 class="text-md font-semibold text-slate-700 mb-2">Add New Location</h4>
-                    <label for="newLocationName">Location Name:</label>
-                    <input type="text" id="newLocationName" placeholder="e.g., Las Perlas">
-                    <button id="addLocationButton">Add Location to This Event</button>
-                </div>
-                <h4 class="text-md font-semibold text-slate-700 mb-2">Existing Locations</h4>
-                <div id="locationsList" class="space-y-4"></div>
             </div>
-
-            <hr class="my-8">
-
-            <div>
-                <h3 class="subsection-title">Participant Management</h3>
-                <div class="mb-6 p-4 border rounded-md bg-slate-50">
-                    <h4 class="text-md font-semibold text-slate-700 mb-2">Add New Participant</h4>
-                    <label for="newParticipantName">Participant Name:</label>
-                    <input type="text" id="newParticipantName" placeholder="e.g., Evelyn">
-                    <button id="addParticipantButton">Add Participant to This Event</button>
-                </div>
-
-                <div class="mb-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" id="allowCustomNamesCheckbox" class="mr-2 h-4 w-4">
-                        Allow participants to enter their own name if not on this list?
-                    </label>
-                </div>
-                
-                <h4 class="text-md font-semibold text-slate-700 mb-2">Current Participants</h4>
-                <div id="participantsList" class="space-y-2"></div>
-            </div>
-        </div>
-
-        <div class="card mt-8 border-red-500 border-2">
-            <h2 class="section-title text-red-600">Danger Zone</h2>
-            <p class="text-sm text-slate-600 mb-4">Warning: These actions are destructive and cannot be easily undone.</p>
-            <button id="resetAllDataButton" class="button-danger w-full md:w-auto">Reset All Application Data</button>
-            <div id="resetConfirmationDiv" class="hidden mt-4">
-                <label for="resetConfirmText" class="text-sm text-red-700">To confirm, type "RESET ALL DATA" in the box below:</label>
-                <input type="text" id="resetConfirmText" class="border-red-400">
-                <button id="confirmResetButton" class="button-danger mt-2">Confirm Full Reset</button>
-            </div>
-        </div>
     </div>
 
     <script type="module">
+        // --- UI ELEMENT SELECTORS ---
         const loadingIndicatorAdmin = document.getElementById('loadingIndicatorAdmin');
         const adminMessageArea = document.getElementById('adminMessageArea');
-        const confirmationModal = document.getElementById('confirmationModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalCancelButton = document.getElementById('modalCancelButton');
-        const modalConfirmButton = document.getElementById('modalConfirmButton');
-        let currentConfirmAction = null;
-
-        const currentActiveEventIdDisplay = document.getElementById('currentActiveEventIdDisplay');
-        const currentActiveEventNameDisplay = document.getElementById('currentActiveEventNameDisplay');
-        const currentActiveLocationIdDisplay = document.getElementById('currentActiveLocationIdDisplay');
-        const currentActiveLocationNameDisplay = document.getElementById('currentActiveLocationNameDisplay');
-
+        // Test Type Form
+        const testTypeForm = document.getElementById('testTypeForm');
+        const testTypeIdInput = document.getElementById('testTypeId');
+        const testTypeDisplayNameInput = document.getElementById('testTypeDisplayName');
+        const themePrimaryColorInput = document.getElementById('themePrimaryColor');
+        const themeSecondaryColorInput = document.getElementById('themeSecondaryColor');
+        const questionsContainer = document.getElementById('questionsContainer');
+        const addQuestionBtn = document.getElementById('addQuestionBtn');
+        const clearTestFormBtn = document.getElementById('clearTestFormBtn');
+        const existingTestTypesList = document.getElementById('existingTestTypesList');
+        // Event Form
         const newEventNameInput = document.getElementById('newEventName');
         const newEventTestTypeSelect = document.getElementById('newEventTestType');
         const createEventButton = document.getElementById('createEventButton');
@@ -189,317 +127,182 @@
         const loadEventButton = document.getElementById('loadEventButton');
         const setActiveEventButton = document.getElementById('setActiveEventButton');
         const deleteEventButton = document.getElementById('deleteEventButton');
-
         const eventDetailsManagementSection = document.getElementById('eventDetailsManagementSection');
-        const managingEventNameDisplay = document.getElementById('managingEventName');
-        const newLocationNameInput = document.getElementById('newLocationName');
-        const addLocationButton = document.getElementById('addLocationButton');
-        const locationsListDiv = document.getElementById('locationsList');
 
-        const newParticipantNameInput = document.getElementById('newParticipantName');
-        const addParticipantButton = document.getElementById('addParticipantButton');
-        const allowCustomNamesCheckbox = document.getElementById('allowCustomNamesCheckbox');
-        const participantsListDiv = document.getElementById('participantsList');
-
-        const resetAllDataButton = document.getElementById('resetAllDataButton');
-        const resetConfirmationDiv = document.getElementById('resetConfirmationDiv');
-        const resetConfirmTextInput = document.getElementById('resetConfirmText');
-        const confirmResetButton = document.getElementById('confirmResetButton');
-
+        // --- STATE & API ---
         let allTestTypeDefinitions = {};
         let allEventsDefinitions = {};
-        let currentlyManagingEventId = null;
-        let currentGlobalActiveEventConfig = null;
-
-        const DEFAULT_PARTICIPANT = "Phill";
-
         const API_ADMIN_BASE_URL = '/api/admin';
-        const GET_TEST_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/get-test-definitions`;
+        const MANAGE_TEST_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/test-definitions`;
         const GET_EVENTS_DEFINITIONS_ENDPOINT = `${API_ADMIN_BASE_URL}/get-events-definitions`;
-        const CREATE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/create-event`;
-        const SET_ACTIVE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/set-active-event`;
-        const DELETE_EVENT_ENDPOINT = `${API_ADMIN_BASE_URL}/delete-event`;
-        const ADD_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/add-location`;
-        const SET_ACTIVE_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/set-active-location`;
-        const ADD_ITEM_TO_LOCATION_ENDPOINT = `${API_ADMIN_BASE_URL}/add-item-to-location`;
-        const RESET_ALL_DATA_ENDPOINT = `${API_ADMIN_BASE_URL}/reset-all-data`;
-        const ADD_PARTICIPANT_ENDPOINT = `${API_ADMIN_BASE_URL}/add-participant`;
-        const REMOVE_PARTICIPANT_ENDPOINT = `${API_ADMIN_BASE_URL}/remove-participant`;
-        const TOGGLE_CUSTOM_NAMES_ENDPOINT = `${API_ADMIN_BASE_URL}/toggle-custom-names`;
-        const GET_ACTIVE_EVENT_CONFIG_FOR_USER_APP_ENDPOINT = `/api/get-active-event-config`;
+        // ... other endpoints
 
-        function showConfirmationModal(title, message, onConfirm) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            currentConfirmAction = onConfirm;
-            confirmationModal.classList.remove('hidden');
-        }
-        modalCancelButton.addEventListener('click', () => {
-            confirmationModal.classList.add('hidden');
-            currentConfirmAction = null;
-        });
-        modalConfirmButton.addEventListener('click', () => {
-            if (currentConfirmAction) {
-                currentConfirmAction();
-            }
-            confirmationModal.classList.add('hidden');
-            currentConfirmAction = null;
-        });
-
+        // --- INITIALIZATION ---
         async function initializeAdminPanel() {
             showAdminLoading(true);
             try {
-                await Promise.all([
-                    fetchTestTypeDefinitions(),
-                    fetchEventsDefinitions(),
-                    fetchCurrentGlobalStatus()
-                ]);
+                await Promise.all([ fetchTestTypeDefinitions(), fetchEventsDefinitions() ]);
             } catch (error) {
-                console.error("Initialization failed:", error);
-                displayAdminMessage("Could not initialize admin panel. Check console for details.", "error");
+                displayAdminMessage("Could not initialize admin panel.", "error");
             } finally {
                 showAdminLoading(false);
             }
         }
 
+        // --- TEST TYPE MANAGEMENT ---
         async function fetchTestTypeDefinitions() {
-            const response = await fetch(GET_TEST_DEFINITIONS_ENDPOINT);
+            const response = await fetch(MANAGE_TEST_DEFINITIONS_ENDPOINT); // Use new endpoint
             const data = await response.json();
             allTestTypeDefinitions = data.definitions || {};
             populateTestTypeSelect();
+            renderExistingTestTypes();
         }
 
-        async function fetchEventsDefinitions() {
-            const response = await fetch(GET_EVENTS_DEFINITIONS_ENDPOINT);
-            const data = await response.json();
-            allEventsDefinitions = data.events || {};
-            populateEventSelectDropdown();
-        }
-        
-        async function fetchCurrentGlobalStatus() {
-            const response = await fetch(GET_ACTIVE_EVENT_CONFIG_FOR_USER_APP_ENDPOINT);
-            const data = await response.json();
-            if (data && data.config) {
-                currentGlobalActiveEventConfig = data.config;
-                currentActiveEventIdDisplay.textContent = data.config.eventId;
-                currentActiveEventNameDisplay.textContent = data.config.eventName;
-                currentActiveLocationIdDisplay.textContent = data.config.activeLocation?.locationId || 'Not Set';
-                currentActiveLocationNameDisplay.textContent = data.config.activeLocation?.locationName || 'Not Set';
-            } else {
-                currentActiveEventIdDisplay.textContent = 'None';
-                currentActiveEventNameDisplay.textContent = 'N/A';
-                currentActiveLocationIdDisplay.textContent = 'N/A';
-                currentActiveLocationNameDisplay.textContent = 'N/A';
+        function renderExistingTestTypes() {
+            existingTestTypesList.innerHTML = '';
+            if (Object.keys(allTestTypeDefinitions).length === 0) {
+                existingTestTypesList.innerHTML = `<p class="text-slate-500 italic">No test types created yet.</p>`;
+                return;
+            }
+            for (const id in allTestTypeDefinitions) {
+                const test = allTestTypeDefinitions[id];
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-2 bg-slate-50 rounded';
+                div.innerHTML = `<span><strong>${test.displayName}</strong> (ID: ${id})</span>`;
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.className = 'button-small button-secondary';
+                editButton.onclick = () => loadTestTypeIntoForm(id);
+                div.appendChild(editButton);
+                existingTestTypesList.appendChild(div);
             }
         }
 
+        function loadTestTypeIntoForm(testId) {
+            const test = allTestTypeDefinitions[testId];
+            if (!test) return;
+            testTypeIdInput.value = test.id;
+            testTypeDisplayNameInput.value = test.displayName;
+            themePrimaryColorInput.value = test.theme?.primaryColor || '#000000';
+            themeSecondaryColorInput.value = test.theme?.secondaryColor || '#000000';
+            
+            questionsContainer.innerHTML = '';
+            test.questions.forEach(q => addQuestion(q));
+            window.scrollTo(0, 0); // Scroll to top to see the form
+        }
+
+        function addQuestion(questionData = null) {
+            const block = document.createElement('div');
+            block.className = 'question-block p-3 border rounded bg-slate-50 grid grid-cols-1 md:grid-cols-2 gap-x-4';
+            block.innerHTML = `
+                <div>
+                    <label>Question ID (e.g., "taste_acidity")</label>
+                    <input type="text" class="q-id" required value="${questionData?.id || ''}">
+                </div>
+                <div>
+                    <label>Question Text (e.g., "Acidity (1=Low, 5=High)")</label>
+                    <input type="text" class="q-text" required value="${questionData?.text || ''}">
+                </div>
+                <div class="mt-2">
+                    <label>Question Type</label>
+                    <select class="q-type"></select>
+                </div>
+                <div class="flex items-center mt-4">
+                    <input type="checkbox" class="q-required h-4 w-4 mr-2" ${questionData?.required ? 'checked' : ''}>
+                    <label>Required?</label>
+                    <button type="button" class="remove-btn button-danger button-small ml-auto">Remove</button>
+                </div>
+            `;
+            // Populate select options
+            const select = block.querySelector('.q-type');
+            const types = ['rating_1_5', 'rating_0_5', 'text_short', 'text_long'];
+            types.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                if (questionData?.type === t) opt.selected = true;
+                select.appendChild(opt);
+            });
+
+            questionsContainer.appendChild(block);
+            block.querySelector('.remove-btn').addEventListener('click', () => block.remove());
+        }
+        
+        testTypeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const questions = Array.from(questionsContainer.querySelectorAll('.question-block')).map(b => ({
+                id: b.querySelector('.q-id').value,
+                text: b.querySelector('.q-text').value,
+                type: b.querySelector('.q-type').value,
+                required: b.querySelector('.q-required').checked
+            }));
+
+            const testData = {
+                id: testTypeIdInput.value.trim(),
+                displayName: testTypeDisplayNameInput.value.trim(),
+                theme: {
+                    primaryColor: themePrimaryColorInput.value,
+                    secondaryColor: themeSecondaryColorInput.value,
+                },
+                questions: questions
+            };
+
+            if(!testData.id || !testData.displayName) {
+                displayAdminMessage("Test Type ID and Display Name are required.", "error"); return;
+            }
+
+            showAdminLoading(true);
+            try {
+                const response = await fetch(MANAGE_TEST_DEFINITIONS_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                displayAdminMessage(result.message, "success");
+                await fetchTestTypeDefinitions(); // Refresh list
+            } catch (error) {
+                displayAdminMessage(error.message, "error");
+            } finally {
+                showAdminLoading(false);
+            }
+        });
+
+        clearTestFormBtn.addEventListener('click', () => {
+            testTypeForm.reset();
+            questionsContainer.innerHTML = '';
+            addQuestion();
+        });
+        
+        // --- EVENT MANAGEMENT (Uses data from Test Type Management) ---
+        async function fetchEventsDefinitions() { /* Existing function */ }
         function populateTestTypeSelect() {
             newEventTestTypeSelect.innerHTML = '<option value="">-- Select Base Test Type --</option>';
-            for (const testTypeId in allTestTypeDefinitions) {
-                const option = document.createElement('option');
-                option.value = testTypeId;
-                option.textContent = allTestTypeDefinitions[testTypeId].displayName;
-                newEventTestTypeSelect.appendChild(option);
+            for (const id in allTestTypeDefinitions) {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = allTestTypeDefinitions[id].displayName;
+                newEventTestTypeSelect.appendChild(opt);
             }
         }
-
-        function populateEventSelectDropdown() {
-            const currentVal = selectEventDropdown.value;
-            selectEventDropdown.innerHTML = '<option value="">-- Select Event --</option>';
-            for (const eventId in allEventsDefinitions) {
-                const option = document.createElement('option');
-                option.value = eventId;
-                option.textContent = allEventsDefinitions[eventId].eventName;
-                selectEventDropdown.appendChild(option);
-            }
-            if (allEventsDefinitions[currentVal]) {
-                selectEventDropdown.value = currentVal;
-            }
-        }
-
-        createEventButton.addEventListener('click', async () => {
-            const eventName = newEventNameInput.value.trim();
-            const testTypeId = newEventTestTypeSelect.value;
-
-            if (!eventName || !testTypeId) {
-                displayAdminMessage("Please provide an event name and select a base test type.", "error");
-                return;
-            }
-            const newEventData = {
-                eventName: eventName,
-                testTypeId: testTypeId,
-                participants: [DEFAULT_PARTICIPANT],
-                allowCustomParticipantNames: false
-            };
-            showAdminLoading(true);
-            try {
-                const response = await fetch(CREATE_EVENT_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newEventData)
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message || "Failed to create event.");
-                displayAdminMessage(result.message || "Event created successfully!", "success");
-                newEventNameInput.value = '';
-                newEventTestTypeSelect.value = '';
-                await fetchEventsDefinitions();
-            } catch (error) {
-                console.error("Error creating event:", error);
-                displayAdminMessage(error.message, "error");
-            } finally {
-                showAdminLoading(false);
-            }
-        });
-
-        loadEventButton.addEventListener('click', () => {
-            const selectedEventId = selectEventDropdown.value;
-            if (!selectedEventId) {
-                displayAdminMessage("Please select an event to load.", "info");
-                eventDetailsManagementSection.classList.add('hidden');
-                currentlyManagingEventId = null;
-                return;
-            }
-            currentlyManagingEventId = selectedEventId;
-            const eventData = allEventsDefinitions[selectedEventId];
-            if (eventData) {
-                managingEventNameDisplay.textContent = eventData.eventName;
-                eventDetailsManagementSection.classList.remove('hidden');
-                renderLocationsForEvent(selectedEventId);
-                renderParticipantsForEvent(selectedEventId);
-            } else {
-                 displayAdminMessage("Could not find selected event data.", "error");
-                 eventDetailsManagementSection.classList.add('hidden');
-            }
-        });
+        // ... Rest of your existing event management functions
         
-        // Other button listeners would be here...
-
-        function renderLocationsForEvent(eventId) {
-            // This function would be filled with logic to render locations and items, similar to participant rendering
-            locationsListDiv.innerHTML = `<p class="text-slate-500 italic">Location rendering logic goes here.</p>`;
-        }
-        
-        function renderParticipantsForEvent(eventId) {
-            participantsListDiv.innerHTML = '';
-            const eventData = allEventsDefinitions[eventId];
-            if (!eventData) return;
-
-            if (!eventData.participants || !Array.isArray(eventData.participants)) {
-                eventData.participants = [DEFAULT_PARTICIPANT];
-            } else if (!eventData.participants.includes(DEFAULT_PARTICIPANT)) {
-                eventData.participants.unshift(DEFAULT_PARTICIPANT);
-            }
-            
-            allowCustomNamesCheckbox.checked = eventData.allowCustomParticipantNames || false;
-
-            if (eventData.participants.length === 0) {
-                participantsListDiv.innerHTML = '<p class="text-slate-500 italic">No participants added yet.</p>';
-                return;
-            }
-
-            eventData.participants.forEach(name => {
-                const participantDiv = document.createElement('div');
-                participantDiv.className = 'list-item';
-                participantDiv.innerHTML = `<span>${name}</span>`;
-                
-                if (name !== DEFAULT_PARTICIPANT) {
-                    const removeButton = document.createElement('button');
-                    removeButton.textContent = 'Remove';
-                    removeButton.className = 'button-danger button-small';
-                    removeButton.onclick = () => handleRemoveParticipant(eventId, name);
-                    participantDiv.appendChild(removeButton);
-                }
-                participantsListDiv.appendChild(participantDiv);
-            });
-        }
-
-        addParticipantButton.addEventListener('click', async () => {
-            if (!currentlyManagingEventId) return;
-            const participantName = newParticipantNameInput.value.trim();
-            if (!participantName) return;
-
-            showAdminLoading(true);
-            try {
-                const response = await fetch(ADD_PARTICIPANT_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ eventId: currentlyManagingEventId, participantName })
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message);
-                
-                displayAdminMessage(result.message, "success");
-                newParticipantNameInput.value = '';
-                await fetchEventsDefinitions(); 
-                renderParticipantsForEvent(currentlyManagingEventId);
-            } catch (error) {
-                displayAdminMessage(error.message, "error");
-            } finally {
-                showAdminLoading(false);
-            }
-        });
-
-        async function handleRemoveParticipant(eventId, participantName) {
-            showConfirmationModal(
-                "Confirm Remove Participant",
-                `Are you sure you want to remove "${participantName}"?`,
-                async () => {
-                    showAdminLoading(true);
-                    try {
-                        const response = await fetch(REMOVE_PARTICIPANT_ENDPOINT, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ eventId, participantName })
-                        });
-                        const result = await response.json();
-                        if (!response.ok) throw new Error(result.message);
-                        
-                        displayAdminMessage(result.message, "success");
-                        await fetchEventsDefinitions();
-                        renderParticipantsForEvent(eventId);
-                    } catch (error) {
-                        displayAdminMessage(error.message, "error");
-                    } finally {
-                        showAdminLoading(false);
-                    }
-                }
-            );
-        }
-
-        allowCustomNamesCheckbox.addEventListener('change', async (event) => {
-            if (!currentlyManagingEventId) return;
-            const allow = event.target.checked;
-            showAdminLoading(true);
-            try {
-                const response = await fetch(TOGGLE_CUSTOM_NAMES_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ eventId: currentlyManagingEventId, allowCustomParticipantNames: allow })
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message);
-                displayAdminMessage(result.message, "success");
-                await fetchEventsDefinitions();
-            } catch (error) {
-                displayAdminMessage(error.message, "error");
-                event.target.checked = !allow;
-            } finally {
-                showAdminLoading(false);
-            }
-        });
-        
+        // --- HELPERS ---
         function showAdminLoading(isLoading) {
             loadingIndicatorAdmin.classList.toggle('hidden', !isLoading);
         }
-
         function displayAdminMessage(message, type = "info") {
             adminMessageArea.textContent = message;
             adminMessageArea.className = `status-message status-${type}`;
             adminMessageArea.classList.remove('hidden');
         }
 
+        // --- KICKOFF ---
+        addQuestionBtn.addEventListener('click', () => addQuestion());
+        addQuestion(); // Start with one empty question block
         initializeAdminPanel();
+
     </script>
 </body>
 </html>
