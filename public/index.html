@@ -2,323 +2,777 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taste Test Challenge!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Margarita Taste Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style id="themeStyle">
-        :root {
-            --primary-color: #4F46E5;
-            --secondary-color: #EC4899;
-            --background-color: #F3F4F6;
-            --text-color: #1F2937;
-            --card-background-color: #FFFFFF;
-            --font-family: 'Inter', sans-serif;
-        }
+    <style>
         body {
-            font-family: var(--font-family);
-            background-color: var(--background-color);
-            color: var(--text-color);
-            transition: background-color 0.5s ease, color 0.5s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overscroll-behavior-y: contain;
         }
-        .themed-background { background-color: var(--background-color); }
-        .themed-text { color: var(--text-color); }
-        .themed-primary-text { color: var(--primary-color); }
-        .themed-secondary-text { color: var(--secondary-color); }
-        .themed-card-bg { background-color: var(--card-background-color); }
-        .themed-button { background-color: var(--primary-color); color: white; }
-        .themed-button:hover { filter: brightness(110%); }
-        .themed-input { border-color: #D1D5DB; }
-        .themed-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px var(--primary-color); }
-        input[type="radio"].themed-primary-text { color: var(--primary-color); }
-        input[type="radio"].themed-primary-text:focus { ring-color: var(--secondary-color); }
+        .hidden { display: none; }
+        .rating-explanation {
+            font-size: 0.85rem;
+            color: #6B7280; /* Tailwind gray-500 */
+            margin-top: 4px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: #F3F4F6; /* Tailwind gray-100 */
+            border-left: 4px solid #60A5FA; /* Tailwind blue-400 */
+            border-radius: 4px;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 themed-background transition-colors duration-500">
+<body class="bg-gray-50 text-gray-800">
 
-    <div id="loadingIndicator" class="fixed inset-0 bg-slate-500 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
-        <p class="ml-4 text-white text-xl">Loading...</p>
-    </div>
+    <div id="app-container" class="max-w-md mx-auto bg-white min-h-screen shadow-md">
+        <header id="app-header" class="bg-green-500 text-white p-4 text-center sticky top-0 z-50 shadow">
+            <h1 id="header-title" class="text-xl font-bold">Margarita Taste Test</h1>
+            <p id="header-session-info" class="text-xs"></p>
+        </header>
 
-    <div id="participantSelectionSection" class="w-full max-w-md text-center">
-        <div class="themed-card-bg shadow-xl rounded-lg p-6 md:p-10">
-            <header class="mb-6">
-                <h1 id="participantWelcomeTitle" class="text-3xl md:text-4xl font-bold themed-primary-text">Welcome Taster!</h1>
-            </header>
-            <p id="participantEventInfo" class="text-md themed-text mb-4">Loading event details...</p>
-            <div class="mb-6">
-                <label for="participantNameSelect" class="block text-sm font-medium themed-text mb-1">Select Your Name:</label>
-                <select id="participantNameSelect" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-secondary-color focus:border-secondary-color sm:text-sm rounded-md themed-input themed-card-bg themed-text">
-                    <option value="">-- Please Select --</option>
-                </select>
+        <main class="p-4 space-y-6">
+            <div id="loading-screen" class="text-center p-8">
+                <p class="text-lg text-gray-700 mb-4">Loading application...</p>
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
             </div>
-            <div id="customNameEntry" class="hidden mb-6">
-                <label for="customParticipantName" class="block text-sm font-medium themed-text mb-1">Or Enter Your Name:</label>
-                <input type="text" id="customParticipantName" class="mt-1 block w-full themed-input themed-card-bg themed-text" placeholder="Your Name">
-            </div>
-            <button id="startTastingButton" class="themed-button font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-75" disabled>
-                Start Tasting!
-            </button>
-            <div id="noActiveEventForParticipantMessage" class="hidden mt-4 p-3 bg-yellow-100 text-yellow-700 rounded-md">
-                <p>No active tasting event found. Please check with the admin.</p>
-            </div>
-        </div>
-    </div>
 
-    <div id="tasteTestSection" class="w-full max-w-2xl hidden">
-        <div id="appContainer">
-            <div class="themed-card-bg shadow-xl rounded-lg p-6 md:p-10">
-                <header class="mb-6 text-center">
-                    <h1 id="testTitle" class="text-2xl md:text-3xl font-bold themed-primary-text">Rate This Item</h1>
-                    <p id="testLocationAndItemInfo" class="text-lg themed-secondary-text"></p>
-                    <p id="ratingScaleExplanation" class="text-xs themed-text mt-2 p-2 bg-slate-100 rounded-md"></p>
-                </header>
-                <div id="messageArea" class="hidden p-3 rounded-md text-sm mb-6"></div>
-                <form id="submissionForm">
-                    <div id="formContainer" class="space-y-6"></div>
-                    <div class="mt-10 text-center">
-                        <button type="submit" id="submitButton" class="themed-button font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-75 hidden">
-                            Submit Feedback
-                        </button>
+            <div id="welcome-screen" class="hidden">
+                <img src="https://via.placeholder.com/300x100.png?text=Margarita+Fun!" alt="Margarita Banner" class="w-full h-auto rounded-lg mb-6 object-cover">
+                <h2 class="text-lg font-semibold mb-3 text-center text-blue-600">Join a Taste Test</h2>
+                <input type="text" id="player-name-input" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                <input type="text" id="session-id-input" placeholder="Enter Session ID (optional)" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                <button id="start-test-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-150 shadow-sm">
+                    Start Tasting!
+                </button>
+            </div>
+
+            <div id="taste-test-section" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-green-700" id="test-event-name"></h2>
+                <p class="text-sm text-gray-600 mb-4">You are: <strong id="current-player-name"></strong></p>
+                <p class="text-sm text-gray-600 mb-4">Session: <strong id="current-session-id-display"></strong></p>
+
+                <div id="location-picker" class="mb-6 p-4 border rounded-lg bg-gray-50 shadow-sm">
+                    <h3 class="text-xl font-semibold mb-3 text-green-600">Current Location:</h3>
+                    <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm mb-3"></select>
+                    <button id="add-location-admin-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-150 shadow-sm text-sm hidden">Add New Location (Admin)</button>
+                    <input type="text" id="new-location-name-input" placeholder="New Location Name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 shadow-sm mt-2 hidden">
+                </div>
+
+                <div id="item-picker" class="mb-6 p-4 border rounded-lg bg-gray-50 shadow-sm">
+                    <h3 class="text-xl font-semibold mb-3 text-blue-600">What are you tasting?</h3>
+                    <select id="item-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm mb-3"></select>
+                    <button id="add-item-admin-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-150 shadow-sm text-sm hidden">Add New Item (Admin)</button>
+                    <input type="text" id="new-item-name-input" placeholder="New Item Name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm mt-2 hidden">
+                </div>
+
+                <form id="rating-form" class="hidden">
+                    <div class="rating-explanation"></div>
+                    <div id="question-fields" class="space-y-4">
+                        </div>
+                    <div class="mt-6">
+                        <label for="comments" class="block text-gray-700 font-medium mb-1">Additional Comments:</label>
+                        <textarea id="comments" name="comments" rows="3" placeholder="Any other thoughts?" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"></textarea>
                     </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg text-lg mt-6 transition duration-150 shadow-sm">
+                        Submit Feedback
+                    </button>
                 </form>
+
+                <button id="view-results-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg my-6 transition duration-150 shadow-sm">
+                    View Current Results
+                </button>
+                 <button id="leave-session-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
+                    Leave Session
+                </button>
+            </div>
+
+            <div id="results-screen" class="hidden">
+                <h1 class="text-2xl font-bold mb-4 text-yellow-700">Session Results</h1>
+                <p class="mb-4 text-xs">Session ID: <strong id="results-session-id"></strong></p>
+                <div id="results-summary" class="space-y-4"></div>
+                <button id="view-winner-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg my-6 transition duration-150 shadow-sm">
+                    See Winning Item!
+                </button>
+                <button id="back-to-tasting-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
+                    Back to Tasting
+                </button>
+            </div>
+
+            <div id="winner-screen" class="hidden text-center">
+                <h1 class="text-3xl font-bold mb-6 text-red-500">🎉 And the Winner Is... 🎉</h1>
+                <div id="winning-item-details" class="p-6 bg-yellow-100 border-2 border-yellow-400 rounded-lg shadow-lg">
+                </div>
+                <img src="https://via.placeholder.com/200x150.png?text=Cheers!" alt="Celebration" class="mx-auto my-6 rounded-lg">
+                <button id="winner-back-to-results-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm">
+                    Back to Results
+                </button>
+                 <button id="winner-new-session-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
+                    Start New Session
+                </button>
+            </div>
+        </main>
+
+        <div id="alert-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center p-4 z-[2000]">
+            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm mx-auto">
+                <h3 id="alert-title" class="text-lg font-semibold leading-6 text-gray-900 mb-2">Alert</h3>
+                <div class="mt-2">
+                    <p id="alert-message" class="text-sm text-gray-700"></p>
+                </div>
+                <div class="mt-5 sm:mt-6">
+                    <button id="alert-ok-btn" type="button" class="w-full inline-flex justify-center rounded-lg border border-transparent bg-blue-500 px-4 py-2 text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm">
+                        OK
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <footer class="text-center mt-8 fixed bottom-4 w-full">
-        <p class="text-sm themed-text opacity-70">Taste Testing App</p>
-    </footer>
+<script>
+    const APP_PREFIX = 'margaritaTestApp_';
+    const MAX_RATING = 5;
+    const RATING_EXPLANATION = "For 0-5 ratings, 0 means it's the *opposite* of your ideal, and 5 means it *perfectly matches your ideal*. E.g., if you love sweet and it's sweet, that's a 5. If you hate sweet and it's sweet, that's a 0.";
 
-    <script type="module">
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const participantSelectionSection = document.getElementById('participantSelectionSection');
-        const participantWelcomeTitle = document.getElementById('participantWelcomeTitle');
-        const participantEventInfo = document.getElementById('participantEventInfo');
-        const participantNameSelect = document.getElementById('participantNameSelect');
-        const customNameEntry = document.getElementById('customNameEntry');
-        const customParticipantName = document.getElementById('customParticipantName');
-        const startTastingButton = document.getElementById('startTastingButton');
-        const noActiveEventForParticipantMessage = document.getElementById('noActiveEventForParticipantMessage');
-        
-        const tasteTestSection = document.getElementById('tasteTestSection');
-        const testTitleElement = document.getElementById('testTitle');
-        const testLocationAndItemInfo = document.getElementById('testLocationAndItemInfo');
-        const ratingScaleExplanationText = document.getElementById('ratingScaleExplanation');
-        const formContainer = document.getElementById('formContainer');
-        const submissionForm = document.getElementById('submissionForm');
-        const submitButton = document.getElementById('submitButton');
-        const messageArea = document.getElementById('messageArea');
+    // DOM Elements
+    const loadingScreen = document.getElementById('loading-screen');
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const tasteTestSection = document.getElementById('taste-test-section');
+    const resultsScreen = document.getElementById('results-screen');
+    const winnerScreen = document.getElementById('winner-screen');
+    const screens = [loadingScreen, welcomeScreen, tasteTestSection, resultsScreen, winnerScreen];
 
-        let fullEventConfig = null; 
-        let selectedParticipantName = "";
-        let currentItemForTasting = null;
+    const appHeader = document.getElementById('app-header');
+    const headerTitle = document.getElementById('header-title');
+    const headerSessionInfo = document.getElementById('header-session-info');
 
-        const API_BASE_URL = '/api';
-        const GET_ACTIVE_EVENT_CONFIG_ENDPOINT = `${API_BASE_URL}/get-active-event-config`;
-        const SUBMIT_FEEDBACK_ENDPOINT = `${API_BASE_URL}/submit-feedback`;
+    const playerNameInput = document.getElementById('player-name-input');
+    const sessionIdInput = document.getElementById('session-id-input');
+    const startTestBtn = document.getElementById('start-test-btn');
 
-        function populateParticipantNames(participants = [], allowCustom = false) {
-            participantNameSelect.innerHTML = '<option value="">-- Please Select --</option>';
-            
-            if (participants && participants.length > 0) {
-                participants.forEach(name => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    participantNameSelect.appendChild(option);
-                });
+    const testEventNameDisplay = document.getElementById('test-event-name');
+    const currentPlayerNameDisplay = document.getElementById('current-player-name');
+    const currentSessionIdDisplay = document.getElementById('current-session-id-display');
+
+    const locationSelect = document.getElementById('location-select');
+    const itemSelect = document.getElementById('item-select');
+    const ratingForm = document.getElementById('rating-form');
+    const questionFields = document.getElementById('question-fields');
+    const commentsTextarea = document.getElementById('comments');
+    const viewResultsBtn = document.getElementById('view-results-btn');
+    const leaveSessionBtn = document.getElementById('leave-session-btn');
+
+    const addLocationAdminBtn = document.getElementById('add-location-admin-btn');
+    const newLocationNameInput = document.getElementById('new-location-name-input');
+    const addItemAdminBtn = document.getElementById('add-item-admin-btn');
+    const newItemNameInput = document.getElementById('new-item-name-input');
+
+    const resultsSessionIdDisplay = document.getElementById('results-session-id');
+    const resultsSummary = document.getElementById('results-summary');
+    const viewWinnerBtn = document.getElementById('view-winner-btn');
+    const backToTastingBtn = document.getElementById('back-to-tasting-btn');
+
+    const winningItemDetails = document.getElementById('winning-item-details');
+    const winnerBackToResultsBtn = document.getElementById('winner-back-to-results-btn');
+    const winnerNewSessionBtn = document.getElementById('winner-new-session-btn');
+
+    const alertModal = document.getElementById('alert-modal');
+    const alertTitle = document.getElementById('alert-title');
+    const alertMessage = document.getElementById('alert-message');
+    const alertOkBtn = document.getElementById('alert-ok-btn');
+
+    // State Variables
+    let currentSessionId = null;
+    let currentPlayerId = null;
+    let currentPlayerName = null;
+    let isAdmin = false; // Determined by whether the player ID matches admin ID in event config
+    let fullEventConfig = null; // Stores { eventId, eventName, activeLocationId, locations: [], testTypeConfig: { questions: [], ratingScaleExplanation: "" } }
+
+    // Utility Functions
+    const utils = {
+        generateId: (length = 8) => crypto.randomUUID().slice(0, length),
+        showScreen: (screenToShow) => {
+            screens.forEach(screen => screen.classList.add('hidden'));
+            if (screenToShow) {
+                screenToShow.classList.remove('hidden');
+                // Update header based on screen
+                if (screenToShow === welcomeScreen || screenToShow === loadingScreen) {
+                    headerTitle.textContent = "Margarita Taste Test";
+                    headerSessionInfo.textContent = "";
+                    appHeader.classList.remove('bg-blue-500', 'bg-yellow-500');
+                    appHeader.classList.add('bg-green-500');
+                } else if (screenToShow === tasteTestSection) {
+                    headerTitle.textContent = fullEventConfig ? fullEventConfig.eventName : "Taste Test";
+                    headerSessionInfo.textContent = currentSessionId ? `Session: ${currentSessionId}` : "";
+                    appHeader.classList.remove('bg-green-500', 'bg-yellow-500');
+                    appHeader.classList.add('bg-blue-500');
+                } else if (screenToShow === resultsScreen || screenToShow === winnerScreen) {
+                    headerTitle.textContent = "Results";
+                    headerSessionInfo.textContent = currentSessionId ? `Session: ${currentSessionId}` : "";
+                    appHeader.classList.remove('bg-green-500', 'bg-blue-500');
+                    appHeader.classList.add('bg-yellow-500');
+                }
+            } else {
+                welcomeScreen.classList.remove('hidden');
+                headerTitle.textContent = "Margarita Taste Test";
+                headerSessionInfo.textContent = "";
             }
-            
-            if (allowCustom) {
-                const otherOption = document.createElement('option');
-                otherOption.value = 'other';
-                otherOption.textContent = 'Other (Enter Name Below)';
-                participantNameSelect.appendChild(otherOption);
-            }
+            window.scrollTo(0,0);
+        },
+        showAlert: (message, title = 'Alert') => {
+            alertTitle.textContent = title;
+            alertMessage.textContent = message;
+            alertModal.classList.remove('hidden');
+            return new Promise((resolve) => {
+                alertOkBtn.onclick = () => {
+                    alertModal.classList.add('hidden');
+                    resolve();
+                };
+            });
+        },
+        validateInput: (input, type = 'text', maxLength = 100, allowEmpty = false) => {
+            if (input === null || input === undefined) return false;
+            if (typeof input !== 'string') input = String(input);
+            const trimmedInput = input.trim();
+            if (!allowEmpty && trimmedInput.length === 0) return false;
+            if (trimmedInput.length > maxLength) return false;
+            return true;
+        },
+        savePlayerInfo: (id, name) => {
+            localStorage.setItem(`${APP_PREFIX}playerId`, id);
+            localStorage.setItem(`${APP_PREFIX}playerName`, name);
+        },
+        loadPlayerInfo: () => {
+            return {
+                id: localStorage.getItem(`${APP_PREFIX}playerId`),
+                name: localStorage.getItem(`${APP_PREFIX}playerName`)
+            };
+        },
+        clearPlayerInfo: () => {
+            localStorage.removeItem(`${APP_PREFIX}playerId`);
+            localStorage.removeItem(`${APP_PREFIX}playerName`);
         }
+    };
 
-        async function initializeParticipantWelcome() {
-            showLoading(true);
+    // API Interactions
+    const api = {
+        getActiveTestConfig: async () => {
             try {
-                const response = await fetch(GET_ACTIVE_EVENT_CONFIG_ENDPOINT);
+                const response = await fetch('/api/get-active-test-config');
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ message: "Failed to load event configuration." }));
-                    throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                if (data && data.config && data.config.eventId && data.config.activeLocation) {
-                    fullEventConfig = data.config;
-                    participantWelcomeTitle.textContent = `Welcome to ${fullEventConfig.eventName || "the Taste Test"}!`;
-                    participantEventInfo.textContent = `We're currently at: ${fullEventConfig.activeLocation.locationName}.`;
-                    
-                    populateParticipantNames(fullEventConfig.participants, fullEventConfig.allowCustomParticipantNames);
-
-                    applyTheme(fullEventConfig.testTypeConfig?.theme);
-                    noActiveEventForParticipantMessage.classList.add('hidden');
-                } else {
-                    participantEventInfo.textContent = data.message || "No active event is currently configured.";
-                    noActiveEventForParticipantMessage.classList.remove('hidden');
-                    noActiveEventForParticipantMessage.textContent = data.message || "No active event is currently configured.";
-                    startTastingButton.classList.add('hidden');
-                    applyTheme(null);
+                if (data.error) {
+                    throw new Error(data.error);
                 }
+                return data;
             } catch (error) {
-                console.error("Initialization error:", error);
-                participantEventInfo.textContent = "Error loading event details.";
-                noActiveEventForParticipantMessage.classList.remove('hidden');
-                noActiveEventForParticipantMessage.textContent = "An error occurred fetching event details.";
-                applyTheme(null);
-            } finally {
-                showLoading(false);
+                console.error("Error fetching active test config:", error);
+                utils.showAlert(`Failed to load test configuration: ${error.message}. Please try again later.`, "Error");
+                return null;
             }
-        }
-
-        participantNameSelect.addEventListener('change', (event) => {
-            const selection = event.target.value;
-            if (selection === 'other') {
-                customNameEntry.classList.remove('hidden');
-                startTastingButton.disabled = customParticipantName.value.trim() === '';
-            } else {
-                customNameEntry.classList.add('hidden');
-                startTastingButton.disabled = selection === '';
-            }
-        });
-
-        customParticipantName.addEventListener('input', () => {
-            startTastingButton.disabled = customParticipantName.value.trim() === '';
-        });
-
-        startTastingButton.addEventListener('click', () => {
-            const selection = participantNameSelect.value;
-            if (selection === 'other') {
-                selectedParticipantName = customParticipantName.value.trim();
-            } else {
-                selectedParticipantName = selection;
-            }
-
-            if (!selectedParticipantName) {
-                alert("Please select or enter your name!"); return;
-            }
-            if (!fullEventConfig || !fullEventConfig.activeLocation || !fullEventConfig.activeLocation.items || fullEventConfig.activeLocation.items.length === 0) {
-                alert("No items available for tasting at this location. Please check with the admin."); return;
-            }
-            
-            participantSelectionSection.classList.add('hidden');
-            tasteTestSection.classList.remove('hidden');
-            
-            currentItemForTasting = fullEventConfig.activeLocation.items[0]; 
-            loadAndDisplayTestForm();
-        });
-
-        function loadAndDisplayTestForm() {
-            testTitleElement.textContent = fullEventConfig.testTypeConfig.displayName || "Rate This Item";
-            testLocationAndItemInfo.textContent = `Location: ${fullEventConfig.activeLocation.locationName} | Item: ${currentItemForTasting.itemName}`;
-            ratingScaleExplanationText.textContent = fullEventConfig.testTypeConfig.ratingScaleExplanation || "Rate based on your preference.";
-            renderQuestions();
-        }
-        
-        function applyTheme(themeConfig) {
-            const defaultTheme = {
-                primaryColor: '#4F46E5', secondaryColor: '#EC4899', backgroundColor: '#F3F4F6',
-                textColor: '#1F2937', cardBackgroundColor: '#FFFFFF', fontFamily: "'Inter', sans-serif"
-            };
-            const theme = themeConfig ? { ...defaultTheme, ...themeConfig } : defaultTheme;
-            const styleRoot = document.documentElement.style;
-            styleRoot.setProperty('--primary-color', theme.primaryColor);
-            styleRoot.setProperty('--secondary-color', theme.secondaryColor);
-            styleRoot.setProperty('--background-color', theme.backgroundColor);
-            styleRoot.setProperty('--text-color', theme.textColor);
-            styleRoot.setProperty('--card-background-color', theme.cardBackgroundColor);
-            styleRoot.setProperty('--font-family', theme.fontFamily);
-        }
-
-        function renderQuestions() {
-            if (!fullEventConfig?.testTypeConfig?.questions) {
-                formContainer.innerHTML = '<p class="text-center themed-text">No questions found.</p>';
-                submitButton.classList.add('hidden'); return;
-            }
-            formContainer.innerHTML = '';
-            fullEventConfig.testTypeConfig.questions.forEach(q => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'mb-6';
-                questionDiv.innerHTML = `<label class="block text-sm font-medium themed-text mb-1" for="${q.id}">${q.text}${q.required ? ' *' : ''}</label>`;
-
-                if (q.type.startsWith('rating_')) {
-                    const [min, max] = q.type.split('_').slice(1).map(Number);
-                    const ratingContainer = document.createElement('div');
-                    ratingContainer.className = 'flex space-x-1 sm:space-x-2 mt-2 flex-wrap justify-center';
-                    for (let i = min; i <= max; i++) {
-                        ratingContainer.innerHTML += `
-                            <div class="flex flex-col items-center">
-                                <input type="radio" id="${q.id}_${i}" name="${q.id}" value="${i}" class="h-5 w-5 themed-primary-text focus:ring-secondary-color border-gray-300 mb-1" ${q.required ? 'required' : ''}>
-                                <label for="${q.id}_${i}" class="text-xs themed-text">${i}</label>
-                            </div>
-                        `;
-                    }
-                    questionDiv.appendChild(ratingContainer);
-                } else if (q.type === 'text_long') {
-                    questionDiv.innerHTML += `<textarea id="${q.id}" name="${q.id}" rows="4" class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm themed-input themed-card-bg themed-text" ${q.required ? 'required' : ''}></textarea>`;
-                }
-                 formContainer.appendChild(questionDiv);
-            });
-            submitButton.classList.remove('hidden');
-        }
-
-        submissionForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading(true);
-            submitButton.disabled = true;
-            const formData = new FormData(submissionForm);
-            const answers = Object.fromEntries(formData.entries());
-
-            const submissionData = {
-                eventId: fullEventConfig.eventId,
-                locationId: fullEventConfig.activeLocation.locationId,
-                itemId: currentItemForTasting.itemId,
-                itemName: currentItemForTasting.itemName,
-                participantName: selectedParticipantName,
-                testTypeId: fullEventConfig.testTypeConfig.id,
-                answers: answers,
-                submittedAt: new Date().toISOString()
-            };
-
+        },
+        submitFeedback: async (feedbackData) => {
             try {
-                const response = await fetch(SUBMIT_FEEDBACK_ENDPOINT, {
+                const response = await fetch('/api/submit-feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(submissionData),
+                    body: JSON.stringify(feedbackData)
                 });
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || "Failed to submit feedback.");
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
-                submissionForm.reset();
-                tasteTestSection.classList.add('hidden');
-                participantSelectionSection.classList.remove('hidden');
-                participantNameSelect.value = "";
-                customParticipantName.value = "";
-                startTastingButton.disabled = true;
-                alert("Thank you! Your feedback has been submitted.");
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                return data;
             } catch (error) {
-                displayMessage(`Error: ${error.message}`, "error");
-            } finally {
-                showLoading(false); submitButton.disabled = false;
+                console.error("Error submitting feedback:", error);
+                utils.showAlert(`Failed to submit feedback: ${error.message}.`, "Error");
+                return null;
             }
-        });
-
-        function showLoading(isLoading) {
-            loadingIndicator.classList.toggle('hidden', !isLoading);
+        },
+        updateEventData: async (eventData) => {
+             try {
+                const response = await fetch('/api/update-event-data', { // This worker would need to be created if not already
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(eventData)
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                return data;
+            } catch (error) {
+                console.error("Error updating event data:", error);
+                utils.showAlert(`Failed to update event data: ${error.message}. Only admin can add locations/items.`, "Error");
+                return null;
+            }
         }
+    };
 
-        function displayMessage(message, type = "info") {
-            messageArea.textContent = message;
-            messageArea.className = `p-3 rounded-md text-sm mb-6 ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
-            messageArea.classList.remove('hidden');
+    // Session Management and UI Rendering
+    const app = {
+        init: async () => {
+            utils.showScreen(loadingScreen);
+            const playerInfo = utils.loadPlayerInfo();
+            if (playerInfo.id && playerInfo.name) {
+                currentPlayerId = playerInfo.id;
+                currentPlayerName = playerInfo.name;
+                playerNameInput.value = currentPlayerName;
+            } else {
+                 currentPlayerId = utils.generateId(10); // Generate a new ID if not found
+            }
+
+            fullEventConfig = await api.getActiveTestConfig();
+            if (fullEventConfig) {
+                // Ensure the active location is present
+                const activeLocation = fullEventConfig.locations.find(loc => loc.locationId === fullEventConfig.activeLocationId);
+                if (!activeLocation) {
+                    utils.showAlert("The active location configured for this event was not found. Please contact the administrator.", "Configuration Error");
+                    utils.showScreen(welcomeScreen);
+                    return;
+                }
+                // Pre-populate location/item selectors if only one option or active is set
+                app.populateLocationSelect();
+                app.populateItemSelect(activeLocation.locationId);
+
+                // Check if current user is admin for this event
+                isAdmin = currentPlayerId === fullEventConfig.adminId;
+                addLocationAdminBtn.classList.toggle('hidden', !isAdmin);
+                addItemAdminBtn.classList.toggle('hidden', !isAdmin);
+                newLocationNameInput.classList.toggle('hidden', !isAdmin);
+                newItemNameInput.classList.toggle('hidden', !isAdmin);
+
+                // Show welcome screen, pre-fill player name if known
+                utils.showScreen(welcomeScreen);
+            } else {
+                // If config load failed, stay on loading or show error and allow retry
+                utils.showAlert("Could not load taste test configuration. Please refresh the page.", "Error Loading");
+                utils.showScreen(welcomeScreen); // Fallback to welcome
+            }
+        },
+
+        startTasting: async (sessionId = null) => {
+            if (!utils.validateInput(playerNameInput.value, 'text', 50)) {
+                utils.showAlert("Please enter a valid name (1-50 characters).");
+                return;
+            }
+            currentPlayerName = playerNameInput.value.trim();
+            utils.savePlayerInfo(currentPlayerId, currentPlayerName); // Save for future visits
+
+            if (!fullEventConfig) {
+                utils.showAlert("Application not configured. Please refresh.", "Error");
+                return;
+            }
+
+            // If session ID is provided, try to join it. Otherwise, assume existing event.
+            if (sessionId && sessionId.trim() !== '') {
+                // In this simplified KV model, we don't have a direct "join session"
+                // The concept of a "session" is tied to the event itself, and data is just added to it.
+                // We're essentially just starting to log data for the active event under this session ID.
+                currentSessionId = sessionId.trim();
+                // We'd load session data here if it was stored per session-ID, but for this model
+                // ratings are stored under eventId/locationId/itemId, and each user is identified by playerId.
+                // So the "session ID" becomes a way to group participants if not directly managed.
+            } else {
+                // No session ID provided, use a default linked to the event for data grouping
+                currentSessionId = `session_${fullEventConfig.eventId}_${Date.now()}`;
+                utils.showAlert(`No session ID entered. A new session ID "${currentSessionId}" will be used.`, "Info");
+            }
+
+
+            currentPlayerNameDisplay.textContent = currentPlayerName;
+            currentSessionIdDisplay.textContent = currentSessionId;
+            testEventNameDisplay.textContent = fullEventConfig.eventName;
+            appHeader.classList.remove('bg-green-500');
+            appHeader.classList.add('bg-blue-500');
+
+            app.renderRatingForm();
+            utils.showScreen(tasteTestSection);
+        },
+
+        renderRatingForm: () => {
+            questionFields.innerHTML = '';
+            ratingForm.classList.remove('hidden');
+
+            const ratingExplanationDiv = ratingForm.querySelector('.rating-explanation');
+            if (ratingExplanationDiv) {
+                ratingExplanationDiv.innerHTML = RATING_EXPLANATION;
+            }
+
+            if (!fullEventConfig || !fullEventConfig.testTypeConfig || !fullEventConfig.testTypeConfig.questions) {
+                utils.showAlert("No rating questions configured for this test type.", "Error");
+                ratingForm.classList.add('hidden');
+                return;
+            }
+
+            fullEventConfig.testTypeConfig.questions.forEach(q => {
+                if (q.type === 'rating_0_5') {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'flex flex-col sm:flex-row sm:items-center sm:justify-between';
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `question-${q.id}`;
+                    label.textContent = `${q.text} ${q.required ? '*' : ''}:`;
+                    label.className = 'mb-1 sm:mb-0 text-gray-700 font-medium';
+
+                    const select = document.createElement('select');
+                    select.id = `question-${q.id}`;
+                    select.name = q.id;
+                    select.className = 'p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto';
+                    select.required = q.required;
+
+                    for (let i = MAX_RATING; i >= 0; i--) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = `${i} star${i !== 1 ? 's' : ''}`;
+                        select.appendChild(option);
+                    }
+                    questionDiv.appendChild(label);
+                    questionDiv.appendChild(select);
+                    questionFields.appendChild(questionDiv);
+                } else if (q.type === 'text_long') {
+                    // Comments field is separate at the bottom, so no need to render here if it's explicitly 'comments'
+                } else {
+                    // For other question types, we'd need more rendering logic
+                    console.warn(`Unsupported question type: ${q.type}`);
+                }
+            });
+        },
+
+        populateLocationSelect: () => {
+            locationSelect.innerHTML = '';
+            fullEventConfig.locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc.locationId;
+                option.textContent = loc.locationName;
+                if (loc.locationId === fullEventConfig.activeLocationId) {
+                    option.selected = true;
+                }
+                locationSelect.appendChild(option);
+            });
+            locationSelect.disabled = !isAdmin; // Only admin can change active location for the group
+            locationSelect.dispatchEvent(new Event('change')); // Trigger item population
+        },
+
+        populateItemSelect: (selectedLocationId) => {
+            itemSelect.innerHTML = '';
+            const selectedLocation = fullEventConfig.locations.find(loc => loc.locationId === selectedLocationId);
+            if (selectedLocation && selectedLocation.items) {
+                selectedLocation.items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.itemId;
+                    option.textContent = item.itemName;
+                    itemSelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No items available';
+                itemSelect.appendChild(option);
+            }
+        },
+
+        submitRating: async (e) => {
+            e.preventDefault();
+
+            const locationId = locationSelect.value;
+            const itemId = itemSelect.value;
+
+            if (!locationId || !itemId) {
+                utils.showAlert("Please select both a location and an item to rate.", "Missing Information");
+                return;
+            }
+
+            const ratings = {};
+            fullEventConfig.testTypeConfig.questions.forEach(q => {
+                if (q.type === 'rating_0_5') {
+                    const selectElement = document.getElementById(`question-${q.id}`);
+                    if (selectElement) {
+                        ratings[q.id] = parseInt(selectElement.value, 10);
+                    }
+                }
+            });
+
+            const comments = commentsTextarea.value.trim();
+
+            const feedbackData = {
+                eventId: fullEventConfig.eventId,
+                locationId: locationId,
+                itemId: itemId,
+                playerId: currentPlayerId,
+                playerName: currentPlayerName,
+                sessionId: currentSessionId, // Used for grouping feedback for results
+                ratings: ratings,
+                comments: comments
+            };
+
+            const response = await api.submitFeedback(feedbackData);
+            if (response) {
+                utils.showAlert("Feedback submitted successfully!", "Success");
+                // Reset form or indicate submission
+                ratingForm.reset();
+                // Optionally re-fetch fullEventConfig to get updated rating counts for other players
+                fullEventConfig = await api.getActiveTestConfig();
+                app.renderRatingForm(); // Re-render to show updates if any
+            }
+        },
+
+        renderResults: () => {
+            utils.showScreen(resultsScreen);
+            resultsSessionIdDisplay.textContent = currentSessionId;
+            resultsSummary.innerHTML = '';
+
+            if (!fullEventConfig || !fullEventConfig.locations.length) {
+                resultsSummary.innerHTML = '<p class="text-gray-500">No locations or ratings to display results.</p>';
+                viewWinnerBtn.classList.add('hidden');
+                return;
+            }
+            viewWinnerBtn.classList.remove('hidden');
+
+            let allScores = []; // To aggregate for winner calculation
+
+            fullEventConfig.locations.forEach(location => {
+                location.items.forEach(item => {
+                    const itemResultsDiv = document.createElement('div');
+                    itemResultsDiv.className = 'p-4 border rounded-lg mb-4 bg-yellow-50 shadow';
+                    itemResultsDiv.innerHTML = `<h3 class="text-xl font-semibold mb-3 text-yellow-800">${location.locationName} - ${item.itemName}</h3>`;
+
+                    const itemRatings = fullEventConfig.feedback.filter(
+                        f => f.locationId === location.locationId && f.itemId === item.itemId
+                    );
+
+                    if (itemRatings.length === 0) {
+                        itemResultsDiv.innerHTML += '<p class="text-gray-500 italic">No ratings yet for this item.</p>';
+                        resultsSummary.appendChild(itemResultsDiv);
+                        return;
+                    }
+
+                    const averageRatings = {};
+                    const ratingCounts = {};
+                    let totalOverallScore = 0;
+                    let overallRatingCount = 0;
+
+                    fullEventConfig.testTypeConfig.questions.forEach(q => {
+                        averageRatings[q.id] = 0;
+                        ratingCounts[q.id] = 0;
+                    });
+                    const allComments = [];
+
+                    itemRatings.forEach(feedback => {
+                        Object.entries(feedback.ratings).forEach(([critId, value]) => {
+                            averageRatings[critId] += value;
+                            ratingCounts[critId]++;
+                            totalOverallScore += value;
+                            overallRatingCount++;
+                        });
+                        if (feedback.comments) {
+                            allComments.push(`<strong>${feedback.playerName}</strong>: ${feedback.comments}`);
+                        }
+                    });
+
+                    const avgTable = document.createElement('table');
+                    avgTable.className = 'min-w-full divide-y divide-gray-200 mb-3';
+                    const anthead = avgTable.createTHead();
+                    anthead.innerHTML = `<tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criterion</th><th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Rating</th></tr>`;
+                    const anbody = avgTable.createTBody();
+                    anbody.className = "bg-white divide-y divide-gray-200";
+
+                    fullEventConfig.testTypeConfig.questions.forEach(q => {
+                        const avg = ratingCounts[q.id] > 0 ? (averageRatings[q.id] / ratingCounts[q.id]).toFixed(1) : 'N/A';
+                        const row = anbody.insertRow();
+                        row.innerHTML = `<td class="px-3 py-2 whitespace-nowrap text-sm text-gray-700">${q.text}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${avg}/${MAX_RATING}</td>`;
+                    });
+                    itemResultsDiv.appendChild(avgTable);
+
+                    const overallAvg = overallRatingCount > 0 ? (totalOverallScore / overallRatingCount).toFixed(1) : 'N/A';
+                    itemResultsDiv.innerHTML += `<p class="text-sm font-semibold text-gray-700 mt-2">Overall Average Score: ${overallAvg}/${MAX_RATING} (from ${itemRatings.length} total submissions)</p>`;
+
+                    if (overallAvg !== 'N/A') {
+                        allScores.push({
+                            locationId: location.locationId,
+                            locationName: location.locationName,
+                            itemId: item.itemId,
+                            itemName: item.itemName,
+                            score: parseFloat(overallAvg)
+                        });
+                    }
+
+                    if (allComments.length > 0) {
+                        itemResultsDiv.innerHTML += `<h4 class="text-md font-semibold mt-3 mb-1 text-yellow-700">Comments:</h4><ul class="list-disc pl-5 text-xs space-y-1">${allComments.map(comment => `<li>${comment}</li>`).join('')}</ul>`;
+                    } else {
+                        itemResultsDiv.innerHTML += `<p class="text-xs text-gray-500 italic mt-2">No comments submitted for this item.</p>`;
+                    }
+                    resultsSummary.appendChild(itemResultsDiv);
+                });
+            });
+            resultsSummary.dataset.allScores = JSON.stringify(allScores);
+        },
+
+        renderWinner: () => {
+            utils.showScreen(winnerScreen);
+            const allScores = JSON.parse(resultsSummary.dataset.allScores || '[]');
+
+            if (allScores.length === 0) {
+                winningItemDetails.innerHTML = '<p class="text-lg text-gray-600">No items rated yet to determine a winner!</p>';
+                return;
+            }
+
+            allScores.sort((a, b) => b.score - a.score);
+            const topScore = allScores[0].score;
+            const winners = allScores.filter(item => item.score === topScore);
+
+            let winnerHtml = '';
+            if (winners.length === 1) {
+                winnerHtml = `
+                    <p class="text-2xl font-bold text-green-700 mb-2">${winners[0].itemName} at ${winners[0].locationName}</p>
+                    <p class="text-xl text-gray-800">With an average score of: <span class="font-bold text-green-600">${winners[0].score}/${MAX_RATING}</span></p>
+                `;
+            } else {
+                winnerHtml = `
+                    <p class="text-2xl font-bold text-purple-700 mb-2">It's a Tie!</p>
+                    <p class="text-xl text-gray-800">The winning items are:</p>
+                    <ul class="list-disc pl-8 mt-2 text-lg font-semibold text-purple-600">
+                        ${winners.map(w => `<li>${w.itemName} at ${w.locationName} (${w.score}/${MAX_RATING})</li>`).join('')}
+                    </ul>
+                `;
+            }
+             winningItemDetails.innerHTML = winnerHtml + `<p class="mt-4 text-md text-gray-700">Congratulations to all participants!</p>`;
+        },
+
+        addLocation: async () => {
+            if (!isAdmin) {
+                utils.showAlert("You must be an admin to add a new location.", "Permission Denied");
+                return;
+            }
+            const newLocName = newLocationNameInput.value.trim();
+            if (!utils.validateInput(newLocName, 'text', 100)) {
+                utils.showAlert("Please enter a valid location name (1-100 characters).", "Invalid Input");
+                return;
+            }
+
+            const newLocation = {
+                locationId: `loc_${utils.generateId(6)}`,
+                locationName: newLocName,
+                items: [], // Start with no items, admin can add later
+                allowCustomItem: true // For flexibility, can be set false later
+            };
+
+            // Update the fullEventConfig locally
+            fullEventConfig.locations.push(newLocation);
+            // Also set it as the active location for convenience
+            fullEventConfig.activeLocationId = newLocation.locationId;
+
+            // Now, send the updated event config back to KV
+            const updatedEvent = {
+                eventId: fullEventConfig.eventId,
+                eventName: fullEventConfig.eventName,
+                testTypeId: fullEventConfig.testTypeConfig.id,
+                adminId: fullEventConfig.adminId, // Ensure adminId is carried over
+                locations: fullEventConfig.locations,
+                activeLocationId: fullEventConfig.activeLocationId
+            };
+
+            const response = await api.updateEventData(updatedEvent); // Needs new API endpoint
+            if (response) {
+                utils.showAlert("Location added successfully! It is now the active location.", "Success");
+                newLocationNameInput.value = '';
+                app.populateLocationSelect(); // Re-populate to show new location
+                app.populateItemSelect(newLocation.locationId); // Populate items for new active location
+            }
+        },
+
+        addItem: async () => {
+             if (!isAdmin) {
+                utils.showAlert("You must be an admin to add a new item.", "Permission Denied");
+                return;
+            }
+            const currentLocId = locationSelect.value;
+            if (!currentLocId) {
+                utils.showAlert("Please select a location first.", "Missing Location");
+                return;
+            }
+            const newItemName = newItemNameInput.value.trim();
+            if (!utils.validateInput(newItemName, 'text', 100)) {
+                utils.showAlert("Please enter a valid item name (1-100 characters).", "Invalid Input");
+                return;
+            }
+
+            const targetLocation = fullEventConfig.locations.find(loc => loc.locationId === currentLocId);
+            if (!targetLocation) {
+                utils.showAlert("Selected location not found in configuration.", "Error");
+                return;
+            }
+
+            const newItem = {
+                itemId: `item_${utils.generateId(6)}`,
+                itemName: newItemName
+            };
+            targetLocation.items.push(newItem);
+
+            // Send updated event config back to KV
+            const updatedEvent = {
+                eventId: fullEventConfig.eventId,
+                eventName: fullEventConfig.eventName,
+                testTypeId: fullEventConfig.testTypeConfig.id,
+                adminId: fullEventConfig.adminId,
+                locations: fullEventConfig.locations,
+                activeLocationId: fullEventConfig.activeLocationId
+            };
+
+            const response = await api.updateEventData(updatedEvent);
+            if (response) {
+                utils.showAlert("Item added successfully to the current location!", "Success");
+                newItemNameInput.value = '';
+                app.populateItemSelect(currentLocId); // Re-populate items for current location
+            }
         }
-        
-        initializeParticipantWelcome();
-    </script>
+    };
+
+    // Event Listeners
+    startTestBtn.addEventListener('click', () => {
+        const sessionId = sessionIdInput.value;
+        app.startTasting(sessionId);
+    });
+
+    locationSelect.addEventListener('change', (e) => {
+        app.populateItemSelect(e.target.value);
+    });
+
+    ratingForm.addEventListener('submit', app.submitRating);
+    viewResultsBtn.addEventListener('click', app.renderResults);
+    leaveSessionBtn.addEventListener('click', () => {
+        utils.clearPlayerInfo(); // Clear player data for next login
+        currentSessionId = null; // Clear session ID
+        utils.showScreen(welcomeScreen);
+        playerNameInput.value = '';
+        sessionIdInput.value = '';
+    });
+
+    addLocationAdminBtn.addEventListener('click', app.addLocation);
+    addItemAdminBtn.addEventListener('click', app.addItem);
+
+    viewWinnerBtn.addEventListener('click', app.renderWinner);
+    backToTastingBtn.addEventListener('click', () => utils.showScreen(tasteTestSection));
+    winnerBackToResultsBtn.addEventListener('click', () => utils.showScreen(resultsScreen));
+    winnerNewSessionBtn.addEventListener('click', () => {
+        utils.clearPlayerInfo();
+        currentSessionId = null;
+        utils.showScreen(welcomeScreen);
+        playerNameInput.value = '';
+        sessionIdInput.value = '';
+    });
+
+    // Initial app load
+    app.init();
+</script>
 </body>
 </html>
