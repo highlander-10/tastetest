@@ -219,7 +219,7 @@
     const appHeader = document.getElementById('app-header');
     const headerTitle = document.getElementById('header-title');
     const headerSessionInfo = document.getElementById('header-session-info');
-    const appVersionDisplay = document.getElementById('app-version-display'); 
+    const appVersionDisplay = document.getElementById('app-version-display'); // NEW: Version Display Element
 
     const playerNameInput = document.getElementById('player-name-input');
     const sessionIdInput = document.getElementById('session-id-input');
@@ -981,37 +981,13 @@
             }
         },
 
-        // addItem from player screen is removed. Admin adds items via the admin-panel-screen
-        // Admin will add items by editing locations in KV directly or via a more complex admin UI.
-        // For now, this version focuses on adding locations by admin via UI, and items are pre-defined or manually added in KV.
-        // If an admin needs to add items via UI, it would need a feature to select location first.
-        // For simplicity: Admin will add Locations via UI, Items are managed in KV for now.
-        // However, the previous `addItem` function still exists, and we can link it for consistency.
-        // Let's bring back the addItem via Admin UI, linked to current active location.
-
         addItem: async () => {
              if (!isAdmin) {
                 utils.showAlert("Permission denied.", "Error");
                 return;
             }
-            const currentLocId = locationSelect.value; // The currently selected location in the player view dropdown
-            // Admin is now on admin panel, not necessarily seeing player view.
-            // For simplicity for now, let's assume items are added to the *currently active location in KV*
-            // Or we need a way for admin to select a location in admin panel.
-            // Let's assume addItem will act on the location currently selected in the admin UI for management.
-            // But we don't have a UI for selecting a location to add items TO in the admin panel yet.
-
-            // TEMPORARY SOLUTION: For simplicity in this iteration, admin *adds locations* via UI.
-            // Adding *items to locations* for admin via UI requires more complex UI flow (select location, then add item).
-            // For now, items are modified directly in KV (like you would for initial setup).
-            // If the request for `addItem` came from `taste-test-section` where `locationSelect` is, `currentLocId` is valid.
-            // The buttons `addItemAdminBtn` and `new-item-name-input` are on `taste-test-section` and are hidden unless `isAdmin`.
-            // So, if admin is viewing tasting section, they can add items. Let's make this consistent.
-            
-            // Re-adding the original `addItem` logic, ensuring it acts on `locationSelect.value` (from player view)
-            // This button would be shown on tasteTestSection when isAdmin.
-            const locToAddToId = locationSelect.value; 
-            if (!locToAddToId) {
+            const currentLocId = locationSelect.value; 
+            if (!currentLocId) {
                 utils.showAlert("Please select a location to add an item to.", "Missing Location");
                 return;
             }
@@ -1021,7 +997,7 @@
                 return;
             }
 
-            const targetLocation = fullEventConfig.locations.find(loc => loc.locationId === locToAddToId);
+            const targetLocation = fullEventConfig.locations.find(loc => loc.locationId === currentLocId);
             if (!targetLocation) {
                 utils.showAlert("Selected location not found in configuration.", "Error");
                 return;
@@ -1046,8 +1022,8 @@
             if (response) {
                 utils.showAlert("Item added successfully to the selected location!", "Success");
                 newItemNameInput.value = '';
-                app.populateItemSelect(locToAddToId); // Re-populate items for the selected location
-                fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to update all data
+                app.populateItemSelect(currentLocId); 
+                fullEventConfig = await api.getActiveTestConfig(); 
             }
         }
     };
@@ -1062,8 +1038,18 @@
     phillStartsSessionBtn.addEventListener('click', app.startPhillAdminSession);
     
     // ADMIN PANEL BUTTONS
-    addLocationFromAdminBtn.addEventListener('click', app.addLocation); // Use the new admin input field
+    addLocationFromAdminBtn.addEventListener('click', app.addLocation); 
     generateShareLinkBtn.addEventListener('click', app.generateShareLink);
+    adminCopySessionIdBtn.addEventListener('click', () => { // NEW Listener for admin panel copy ID
+        if (adminSessionIdDisplay.textContent) {
+            navigator.clipboard.writeText(adminSessionIdDisplay.textContent)
+                .then(() => utils.showAlert("Session ID copied to clipboard!", "Copied!"))
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    utils.showAlert("Failed to copy Session ID. Please copy it manually.", "Error");
+                });
+        }
+    });
     copyShareLinkBtn.addEventListener('click', () => {
         if (generatedShareLink.textContent) {
             navigator.clipboard.writeText(generatedShareLink.textContent)
@@ -1076,23 +1062,16 @@
     });
 
     adminViewTastingBtn.addEventListener('click', () => {
-        // Switch to the tasting view as admin
-        // Ensure that isAdmin flag is maintained
         utils.showScreen(tasteTestSection);
-        app.populateLocationSelect(); // Re-populate as view might be stale
+        app.populateLocationSelect(); 
         app.populateItemSelect(locationSelect.value);
         app.renderRatingForm();
-        // The add location/item buttons on tasteTestSection should become visible due to isAdmin flag
-        addLocationAdminBtn.classList.remove('hidden'); // Show for Admin on tasting screen
-        newLocationNameInput.classList.remove('hidden');
-        addItemAdminBtn.classList.remove('hidden'); // Show for Admin on tasting screen
-        newItemNameInput.classList.remove('hidden');
     });
     adminViewResultsBtn.addEventListener('click', app.renderResults);
     adminEndSessionBtn.addEventListener('click', () => {
         utils.clearPlayerInfo(); 
         currentSessionId = null;
-        isAdmin = false; // Reset admin status
+        isAdmin = false; 
         utils.showScreen(welcomeScreen);
         playerNameInput.value = '';
         sessionIdInput.value = '';
@@ -1127,6 +1106,7 @@
     
     // Existing Admin Add Location/Item buttons from taste-test-section are now controlled by isAdmin flag
     // and hidden by default. The primary adding is from admin panel.
+    // The `addItemAdminBtn` on the taste-test-section is now handled by `app.addItem`
     addLocationAdminBtn.addEventListener('click', async () => {
         const newLocName = newLocationNameInput.value.trim();
         if (!utils.validateInput(newLocName, 'text', 100)) {
@@ -1153,15 +1133,15 @@
         if (response) {
             utils.showAlert("Location added successfully from tasting view!", "Success");
             newLocationNameInput.value = '';
-            app.populateLocationSelect(); // Re-populate for all players
+            app.populateLocationSelect(); 
             app.populateItemSelect(newLocation.locationId);
-            fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to ensure updated config
+            fullEventConfig = await api.getActiveTestConfig(); 
         }
     });
 
-    addItemAdminBtn.addEventListener('click', app.addItem); // Re-use existing addItem function
+    addItemAdminBtn.addEventListener('click', app.addItem); 
 
-    // NEW REFRESH LOCATIONS BUTTON EVENT LISTENER
+    // REFRESH LOCATIONS BUTTON EVENT LISTENER
     refreshLocationsBtn.addEventListener('click', async () => {
         utils.showAlert("Checking for new locations/items...", "Updating...");
         fullEventConfig = await api.getActiveTestConfig(); // Re-fetch all config from KV
