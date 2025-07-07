@@ -277,7 +277,7 @@
 <script>
     const APP_PREFIX = 'margaritaTestApp_';
     const APP_VERSION = '1.0'; 
-    const ADMIN_PIN = '1234'; // **CHANGE THIS FOR PRODUCTION!**
+    const ADMIN_PIN = '2390'; // Updated PIN
     const MAX_RATING = 5;
     const RATING_EXPLANATION = "For all ratings (0-5 or sliders): Think about your ideal margarita. A rating of 5 means this aspect (e.g., sweetness, spiciness) is PERFECTLY what you like. A 0 means it's the complete opposite of what you prefer. Use the in-between values to show how close or far it is from your ideal.";
     const PHILL_ADMIN_ID = 'phill_the_admin'; 
@@ -572,11 +572,12 @@
                     return; 
                 }
 
-                // Initial population of locations if needed (only for welcome screen to display options)
+                // Only show "No locations configured" alert on welcome screen if truly empty
                 if (fullEventConfig.locations.length === 0) {
-                     utils.showAlert("No locations configured yet. Please ask Phill to set up the event in Admin Panel.", "No Locations");
+                    // But only if we are actually about to show the welcome screen, not if we're going straight to tasting
+                    // This alert logic is now handled more robustly within populateLocationSelect
+                    // and app.startTasting will also show specific alerts.
                 }
-
 
                 utils.showScreen(welcomeScreen);
             } else {
@@ -586,7 +587,7 @@
         },
 
         startTasting: async (sessionIdFromInput = null, nameFromUrl = null) => { 
-            // Handle player name: from URL, from input, or set to Phill
+            // Handle player name: For "Phill", use "Phill". For URL joins, use name from URL. Otherwise, use input field.
             if (nameFromUrl) {
                 currentPlayerName = nameFromUrl;
                 playerNameInput.value = nameFromUrl; 
@@ -599,7 +600,7 @@
 
             // Ensure player ID is set (either loaded, generated, or Phill's ID)
             if (!currentPlayerId) {
-                currentPlayerId = utils.generateId(10);
+                currentPlayerId = utils.generateId(10); 
             }
             utils.savePlayerInfo(currentPlayerId, currentPlayerName); 
 
@@ -612,15 +613,17 @@
             }
             
             // Check if current user is admin for this event (even if not starting via admin button)
-            isAdmin = (currentPlayerId === PHILL_ADMIN_ID); // Set isAdmin based on ID matching PHILL_ADMIN_ID
+            isAdmin = (currentPlayerId === PHILL_ADMIN_ID); 
 
             // Ensure Phill's name is just "Phill" when acting as player
             if (currentPlayerId === PHILL_ADMIN_ID) {
-                currentPlayerName = "Phill"; // Always display as "Phill" for consistency
+                currentPlayerName = "Phill"; 
             }
 
             // Handle currentSessionId based on join method
-            if (sessionIdFromInput && sessionIdFromInput.trim() !== '') { 
+            if (isAdmin) { // If admin, session ID is the event ID
+                currentSessionId = fullEventConfig.eventId;
+            } else if (sessionIdFromInput && sessionIdFromInput.trim() !== '') { // If player joining via URL or manual input
                 currentSessionId = sessionIdFromInput.trim();
                 // If a player joins manually or via URL, ensure they are added to the session's player list
                 const existingPlayerInSession = fullEventConfig.players.find(p => p.id === currentPlayerId);
@@ -633,7 +636,7 @@
                     existingPlayerInSession.isAdmin = isAdmin;
                     await api.updateEventData(fullEventConfig);
                 }
-            } else { // This branch should ideally not be hit with manual join button, but as fallback for existing session logic
+            } else { // Player hitting Start Tasting without session ID
                 currentSessionId = `session_${fullEventConfig.eventId}_${Date.now()}`;
                 utils.showAlert(`No Session ID entered. A new session ID "${currentSessionId}" will be used for your feedback.`, "Info");
             }
@@ -660,7 +663,7 @@
 
             isAdmin = true;
             currentPlayerId = PHILL_ADMIN_ID; 
-            currentPlayerName = "Phill (Admin)"; // Admin panel shows "(Admin)"
+            currentPlayerName = "Phill (Admin)"; // Admin panel shows "(Admin)" for clarity in admin mode
 
             utils.savePlayerInfo(currentPlayerId, currentPlayerName); 
 
@@ -772,7 +775,7 @@
                 utils.showAlert("Please enter a name for the participant.", "Invalid Input");
                 return;
             }
-            if (!fullEventConfig || !fullEventConfig.eventId) { // Ensure event is loaded
+            if (!fullEventConfig || !fullEventConfig.eventId) { 
                 utils.showAlert("Event configuration not loaded. Please try again or refresh.", "Error");
                 return;
             }
@@ -795,8 +798,7 @@
                 ratingExplanationDiv.innerHTML = RATING_EXPLANATION; 
             }
 
-            // Insert the general instruction paragraph above the question fields
-            questionFields.insertAdjacentHTML('beforebegin', '<p class="mb-4 text-gray-600 italic">Rate each aspect based on how well it matches your ideal margarita. 5 is perfect for you, 0 is the complete opposite of what you prefer.</p>');
+            questionFields.insertAdjacentHTML('beforebegin', '<p class="mb-4 text-gray-600 italic">Rate each aspect based on how well it matches your ideal margarita. 5 is perfect for you, 0 is the complete opposite of what you like.</p>');
 
 
             if (!fullEventConfig || !fullEventConfig.testTypeConfig || !fullEventConfig.testTypeConfig.questions) {
@@ -830,7 +832,6 @@
                     }
                 };
                 
-                // Auto-select first item or previously selected one if available
                 const savedSelectedItem = selectedItemForRating ? currentSelectedLocation.items.find(item => item.itemId === selectedItemForRating.itemId) : null;
                 if (savedSelectedItem) {
                     const radioToSelect = itemRadioGroup.querySelector(`input[value="${savedSelectedItem.itemId}"]`);
@@ -849,16 +850,17 @@
                     }
                 }
             } else {
-                itemRadioGroup.classList.add('hidden'); // Hide if no items
+                itemRadioGroup.classList.add('hidden'); 
                 selectedItemForRating = null; 
-                utils.showAlert("No items available for this location. Please add items via Admin Panel or select a different location.", "No Items");
-                ratingForm.classList.add('hidden'); // Hide form if no items
+                if (currentSelectedLocation && currentSelectedLocation.items && currentSelectedLocation.items.length === 0 && (document.getElementById('taste-test-section').classList.contains('hidden') === false)) {
+                     utils.showAlert("No items available for this location. Please add items via Admin Panel or select a different location.", "No Items");
+                }
+                ratingForm.classList.add('hidden'); 
                 return;
             }
 
-            // Render questions based on testTypeConfig
             fullEventConfig.testTypeConfig.questions.forEach(q => {
-                let defaultValue = Math.round(((q.min || 0) + (q.max || 5)) / 2); // Default to middle for sliders/0-5
+                let defaultValue = Math.round(((q.min || 0) + (q.max || 5)) / 2); 
 
                 if (q.type === 'rating_0_5') {
                     const questionDiv = document.createElement('div');
@@ -954,7 +956,8 @@
                  return;
             }
             locationSelect.disabled = false;
-            ratingForm.classList.remove('hidden'); 
+            // Removed direct ratingForm.classList.remove('hidden') from here.
+            // It will be handled by populateItemSelect which calls renderRatingForm.
 
             fullEventConfig.locations.forEach(loc => {
                 const option = document.createElement('option');
@@ -965,9 +968,6 @@
                 }
                 locationSelect.appendChild(option);
             });
-            // This event dispatch ensures that when the locations are populated,
-            // the item selection and form rendering logic is immediately triggered
-            // for the default/selected location.
             locationSelect.dispatchEvent(new Event('change')); 
         },
 
@@ -980,11 +980,13 @@
             } else {
                 itemRadioGroup.classList.add('hidden'); 
                 selectedItemForRating = null; 
-                // Only show this alert if not an admin AND on the tasting page, to avoid premature alerts on welcome
-                if (currentSelectedLocation && currentSelectedLocation.items && currentSelectedLocation.items.length === 0 && (document.getElementById('taste-test-section').classList.contains('hidden') === false)) {
+                // Only show this alert if the tasting section is currently visible AND there are no items.
+                // This prevents the alert from popping up on welcome/admin screens during init.
+                if (document.getElementById('taste-test-section').classList.contains('hidden') === false) {
                      utils.showAlert("No items available for this location. Please add items via Admin Panel or select a different location.", "No Items");
                 }
                 ratingForm.classList.add('hidden'); 
+                return;
             }
         },
 
