@@ -9,14 +9,6 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             overscroll-behavior-y: contain;
-            /* Dynamic background image and colors */
-            background-color: var(--background-color, #f3f4f6);
-            color: var(--text-color, #333);
-            background-image: var(--background-image, none);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
         }
         .hidden { display: none; }
         .rating-explanation {
@@ -45,122 +37,66 @@
             margin-top: 15px;
             text-align: center;
         }
-        /* Custom slider track and thumb for styling */
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            background: #d3d3d3;
-            outline: none;
-            opacity: 0.7;
-            -webkit-transition: .2s;
-            transition: opacity .2s;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary-color, #10B981); /* Use primary color */
-            cursor: pointer;
-            border: 2px solid white;
-            box-shadow: 0 0 2px rgba(0,0,0,0.3);
-        }
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary-color, #10B981); /* Use primary color */
-            cursor: pointer;
-            border: 2px solid white;
-            box-shadow: 0 0 2px rgba(0,0,0,0.3);
-        }
-        .slider-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-            font-size: 0.75rem;
-            color: #6B7280;
-        }
-        .rating-group {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            width: 100%;
-        }
-        .rating-group label {
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #4A5568;
-        }
-        .rating-input-container {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            gap: 1rem; /* Space between slider and value display */
-        }
-        .rating-value-display {
-            min-width: 60px; /* Ensure enough space for text */
-            text-align: right;
-            font-weight: bold;
-            color: var(--primary-color, #10B981);
-        }
-        /* Dynamic Header Colors */
-        #app-header.primary-color { background-color: var(--primary-color); }
-        .bg-primary { background-color: var(--primary-color); }
-        .text-primary { color: var(--primary-color); }
-        .border-primary { border-color: var(--primary-color); }
 
-        /* Styles for location list in admin */
-        .admin-location-item {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
+        /* NEW: Styling for taste-test-section background and colors */
+        #taste-test-section {
+            background-color: #f7fafc; /* Light gray */
+            background-image: url('https://placehold.co/600x400/D1FAE5/000000?text=Margarita+Background'); /* Subtle light green wave */
+            background-size: cover;
+            background-position: center bottom;
+            background-repeat: no-repeat;
+            min-height: calc(100vh - 80px); /* Adjust for header */
+            padding-bottom: 30px; /* Space for content above footer */
+        }
+        #taste-test-section h2, #taste-test-section h3 {
+            color: #10B981; /* Emerald green */
+        }
+        #taste-test-section .bg-gray-50 {
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white for cards */
+        }
+        #taste-test-section button.bg-blue-500 {
+            background-color: #3B82F6; /* Brighter blue */
+        }
+        #taste-test-section button.bg-blue-500:hover {
+            background-color: #2563EB; /* Darker blue */
+        }
+        #taste-test-section button.bg-green-600 {
+            background-color: #059669; /* Darker green */
+        }
+        #taste-test-section button.bg-green-600:hover {
+            background-color: #047857; /* Even darker green */
+        }
+        /* Styling for the item selection radio buttons */
+        .item-radio-group label {
+            display: block;
+            background-color: #E0F2F7; /* Light blue background */
+            padding: 12px;
             border-radius: 8px;
-            background-color: #ffffff;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            margin-bottom: 8px;
+            border: 2px solid #BFDBFE; /* Light blue border */
         }
-        .admin-location-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .item-radio-group label:hover {
+            background-color: #DBEEF4;
+            border-color: #93C5FD;
         }
-        .admin-location-header h5 {
-            font-weight: 600;
-            color: #1a202c;
+        .item-radio-group input[type="radio"] {
+            margin-right: 8px;
         }
-        .admin-location-controls {
-            display: flex;
-            gap: 8px;
+        .item-radio-group input[type="radio"]:checked + span {
+            font-weight: bold;
+            color: #1D4ED8; /* Darker blue text */
         }
-        .admin-item-list {
-            list-style: none;
-            padding-left: 0;
-            margin-top: 10px;
-        }
-        .admin-item-list li {
-            background-color: #f7fafc;
-            border: 1px solid #edf2f7;
-            padding: 8px;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        .admin-item-list li:last-child {
-            margin-bottom: 0;
+        .item-radio-group input[type="radio"]:checked + span::before {
+            content: "✅ "; /* Checkmark emoji */
         }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
     <div id="app-container" class="max-w-md mx-auto bg-white min-h-screen shadow-md">
-        <header id="app-header" class="bg-primary text-white p-4 text-center sticky top-0 z-50 shadow">
+        <header id="app-header" class="bg-green-500 text-white p-4 text-center sticky top-0 z-50 shadow">
             <h1 id="header-title" class="text-xl font-bold">Margarita Taste Test</h1>
             <p id="header-session-info" class="text-xs"></p>
             <p id="app-version-display" class="app-version"></p>
@@ -183,30 +119,30 @@
                 <div class="mt-6 pt-6 border-t border-gray-200">
                     <h2 class="text-lg font-semibold mb-3 text-center text-blue-600">Player: Join Existing Test</h2>
                     <input type="text" id="player-name-input" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                    <input type="text" id="session-id-input" placeholder="Enter Session ID (optional)" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
                     <button id="start-test-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-150 shadow-sm">
                         Start Tasting!
                     </button>
                 </div>
-                <div class="trivia-joke" id="welcome-trivia-joke"></div>
+                 <div class="trivia-joke" id="welcome-trivia-joke"></div>
             </div>
 
             <div id="admin-panel-screen" class="hidden">
                 <h2 class="text-2xl font-bold mb-4 text-green-700">Admin Panel</h2>
-                <p class="mb-2 text-sm">Event ID: <strong id="admin-event-id-display" class="text-purple-600 break-all"></strong> 
-                    <button id="admin-copy-event-id-btn" class="ml-2 text-xs bg-gray-200 hover:bg-gray-300 p-1 rounded">Copy ID</button>
+                <p class="mb-2 text-sm">Session ID: <strong id="admin-session-id-display" class="text-purple-600 break-all"></strong> 
+                   <button id="admin-copy-session-id-btn" class="ml-2 text-xs bg-gray-200 hover:bg-gray-300 p-1 rounded">Copy ID</button>
                 </p>
 
                 <div class="my-6 p-4 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
-                    <h3 class="text-xl font-semibold mb-3 text-green-600">Manage Locations & Items</h3>
+                    <h3 class="text-xl font-semibold mb-3 text-green-600">Manage Locations</h3>
                     <input type="text" id="new-location-admin-input" placeholder="New Location Name (e.g., The Tequila Bar)" class="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:ring-green-500 focus:border-green-500 shadow-sm">
                     <button id="add-location-from-admin-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm">
                         Add New Location
                     </button>
                     <div class="mt-4 pt-4 border-t border-gray-200">
                         <h4 class="text-lg font-semibold mb-2">Existing Locations:</h4>
-                        <ul id="admin-locations-list" class="space-y-4">
-                            <li class="text-gray-500 italic">No locations added yet.</li>
-                        </ul>
+                        <ul id="admin-locations-list" class="space-y-2">
+                            </ul>
                     </div>
                 </div>
 
@@ -223,42 +159,32 @@
                 </div>
 
                 <div class="flex flex-col space-y-3 mt-6">
-                    <button id="admin-go-to-tasting-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg shadow-sm transition duration-150">
+                    <button id="admin-view-tasting-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg shadow-sm transition duration-150">
                         View Tasting Interface (as Admin)
                     </button>
                     <button id="admin-view-results-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg shadow-sm transition duration-150">
                         View Current Results
                     </button>
-                    <button id="admin-reset-all-data-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-sm transition duration-150">
-                        Reset ALL Test Data!
-                    </button>
-                    <button id="admin-end-session-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-6 shadow-sm transition duration-150">
+                    <button id="admin-end-session-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg mt-6 shadow-sm transition duration-150">
                         End Admin Session (Back to Welcome)
                     </button>
                 </div>
             </div>
 
-            <div id="taste-test-section" class="hidden">
-                <h2 class="text-2xl font-bold mb-4 text-primary" id="test-event-name"></h2>
+
+            <div id="taste-test-section" class="hidden p-4 space-y-6">
+                <h2 class="text-2xl font-bold mb-4" id="test-event-name"></h2>
                 <p class="text-sm text-gray-600 mb-4">You are: <strong id="current-player-name"></strong></p>
                 <div class="my-6 p-4 border rounded-lg bg-gray-50 shadow-sm">
-                    <h3 class="text-xl font-semibold mb-3 text-primary">Location:</h3>
+                    <h3 class="text-xl font-semibold mb-3">Current Location:</h3>
                     <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm mb-3"></select>
                     <button id="refresh-locations-btn" class="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-150 shadow-sm text-sm mt-2">Refresh Locations</button>
-                     <div id="admin-add-item-container" class="mt-4 pt-4 border-t border-gray-200 hidden">
-                        <h4 class="text-lg font-semibold mb-2">Add Item to Current Location:</h4>
-                        <input type="text" id="new-item-admin-input" placeholder="New Item Name (e.g., Spicy Jalapeno Margarita)" class="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:ring-primary focus:border-primary shadow-sm">
-                        <button id="add-item-from-admin-btn" class="w-full bg-primary hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-sm">
-                            Add New Item
-                        </button>
-                    </div>
                 </div>
 
                 <form id="rating-form">
-                    <div class="my-6 p-4 border rounded-lg bg-gray-50 shadow-sm">
-                        <h3 class="text-xl font-semibold mb-3 text-primary">What are you tasting?</h3>
-                        <select id="item-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"></select>
-                    </div>
+                    <div id="item-radio-group" class="mb-6 p-4 border rounded-lg bg-gray-50 shadow-sm hidden">
+                         <h3 class="text-xl font-semibold mb-3">Which Margarita are you tasting here?</h3>
+                         </div>
 
                     <div class="rating-explanation"></div>
                     <div id="question-fields" class="space-y-4">
@@ -267,7 +193,7 @@
                         <label for="comments" class="block text-gray-700 font-medium mb-1">Additional Comments:</label>
                         <textarea id="comments" name="comments" rows="3" placeholder="Any other thoughts?" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"></textarea>
                     </div>
-                    <button type="submit" class="w-full bg-primary hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg text-lg mt-6 transition duration-150 shadow-sm">
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg text-lg mt-6 transition duration-150 shadow-sm">
                         Submit Feedback
                     </button>
                 </form>
@@ -275,29 +201,15 @@
                 <button id="view-results-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg my-6 transition duration-150 shadow-sm">
                     View Current Results
                 </button>
-                <button id="view-my-submissions-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
-                    View My Submissions
-                </button>
-                <button id="leave-session-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
+                 <button id="leave-session-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
                     Leave Session
                 </button>
-                <div class="trivia-joke" id="tasting-trivia-joke"></div>
-            </div>
-
-            <div id="my-submissions-screen" class="hidden">
-                <h1 class="text-2xl font-bold mb-4 text-blue-700">My Submissions</h1>
-                <p class="mb-4 text-sm">You are: <strong id="my-submissions-player-name"></strong></p>
-                <div id="my-submissions-list" class="space-y-4">
-                    <p class="text-gray-500">Loading your submissions...</p>
-                </div>
-                <button id="my-submissions-back-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm">
-                    Back to Tasting
-                </button>
+                 <div class="trivia-joke" id="tasting-trivia-joke"></div>
             </div>
 
             <div id="results-screen" class="hidden">
                 <h1 class="text-2xl font-bold mb-4 text-yellow-700">Session Results</h1>
-                <p class="mb-4 text-xs">Event ID: <strong id="results-event-id"></strong></p>
+                <p class="mb-4 text-xs">Session ID: <strong id="results-session-id"></strong></p>
                 <div id="results-summary" class="space-y-4"></div>
                 <button id="view-winner-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg my-6 transition duration-150 shadow-sm">
                     See Winning Item!
@@ -315,14 +227,14 @@
                 <button id="winner-back-to-results-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm">
                     Back to Results
                 </button>
-                <button id="winner-new-session-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
+                 <button id="winner-new-session-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-150 shadow-sm">
                     Start New Session
                 </button>
             </div>
         </main>
 
         <div id="alert-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center p-4 z-[2000]">
-            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm mx-auto">
+            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w_sm mx-auto">
                 <h3 id="alert-title" class="text-lg font-semibold leading-6 text-gray-900 mb-2">Alert</h3>
                 <div class="mt-2">
                     <p id="alert-message" class="text-sm text-gray-700"></p>
@@ -338,9 +250,11 @@
 
 <script>
     const APP_PREFIX = 'margaritaTestApp_';
-    const APP_VERSION = '2.0'; // Updated: App Version
-    const ADMIN_PIN = '2390'; // UPDATED: Admin PIN
-    const PHILL_ADMIN_ID = 'phill_the_admin'; // Consistent ID for Phill
+    const APP_VERSION = '1.0'; 
+    const ADMIN_PIN = '1234'; // **CHANGE THIS FOR PRODUCTION!**
+    const MAX_RATING = 5;
+    const RATING_EXPLANATION = "For all ratings (0-5 or sliders): Think about your ideal margarita. A rating of 5 means this aspect (e.g., sweetness, spiciness) is PERFECTLY what you like. A 0 means it's the complete opposite of what you prefer. Use the in-between values to show how close or far it is from your ideal.";
+    const PHILL_ADMIN_ID = 'phill_the_admin'; 
 
     // DOM Elements
     const loadingScreen = document.getElementById('loading-screen');
@@ -348,23 +262,22 @@
     const tasteTestSection = document.getElementById('taste-test-section');
     const resultsScreen = document.getElementById('results-screen');
     const winnerScreen = document.getElementById('winner-screen');
-    const adminPanelScreen = document.getElementById('admin-panel-screen');
-    const mySubmissionsScreen = document.getElementById('my-submissions-screen'); // NEW Screen
-    const screens = [loadingScreen, welcomeScreen, tasteTestSection, resultsScreen, winnerScreen, adminPanelScreen, mySubmissionsScreen];
+    const adminPanelScreen = document.getElementById('admin-panel-screen'); 
+    const screens = [loadingScreen, welcomeScreen, tasteTestSection, resultsScreen, winnerScreen, adminPanelScreen];
 
     const appHeader = document.getElementById('app-header');
     const headerTitle = document.getElementById('header-title');
     const headerSessionInfo = document.getElementById('header-session-info');
-    const appVersionDisplay = document.getElementById('app-version-display');
+    const appVersionDisplay = document.getElementById('app-version-display'); 
 
     const playerNameInput = document.getElementById('player-name-input');
-    // Removed sessionIdInput (from welcome screen)
+    const sessionIdInput = document.getElementById('session-id-input');
     const startTestBtn = document.getElementById('start-test-btn');
-    const phillStartsSessionBtn = document.getElementById('phill-starts-session-btn');
+    const phillStartsSessionBtn = document.getElementById('phill-starts-session-btn'); 
 
     // ADMIN PANEL ELEMENTS
-    const adminEventIdDisplay = document.getElementById('admin-event-id-display'); // Renamed from adminSessionIdDisplay
-    const adminCopyEventIdBtn = document.getElementById('admin-copy-event-id-btn'); // Renamed from adminCopySessionIdBtn
+    const adminSessionIdDisplay = document.getElementById('admin-session-id-display');
+    const adminCopySessionIdBtn = document.getElementById('admin-copy-session-id-btn');
     const newLocationAdminInput = document.getElementById('new-location-admin-input');
     const addLocationFromAdminBtn = document.getElementById('add-location-from-admin-btn');
     const adminLocationsList = document.getElementById('admin-locations-list');
@@ -372,38 +285,27 @@
     const generateShareLinkBtn = document.getElementById('generate-share-link-btn');
     const generatedShareLink = document.getElementById('generated-share-link');
     const copyShareLinkBtn = document.getElementById('copy-share-link-btn');
-    const adminGoToTastingBtn = document.getElementById('admin-go-to-tasting-btn'); // Renamed
+    const adminViewTastingBtn = document.getElementById('admin-view-tasting-btn');
     const adminViewResultsBtn = document.getElementById('admin-view-results-btn');
-    const adminResetAllDataBtn = document.getElementById('admin-reset-all-data-btn'); // NEW Admin Button
     const adminEndSessionBtn = document.getElementById('admin-end-session-btn');
 
+    // TASTE TEST SECTION ELEMENTS
     const testEventNameDisplay = document.getElementById('test-event-name');
     const currentPlayerNameDisplay = document.getElementById('current-player-name');
-    // Removed currentSessionIdDisplay & copySessionIdBtn (from taste-test-section)
+    // Session ID display is now only in admin panel and header for players, not within tasting section below header
+    // const currentSessionIdDisplay = document.getElementById('current-session-id-display'); 
+    // const copySessionIdBtn = document.getElementById('copy-session-id-btn'); 
 
     const locationSelect = document.getElementById('location-select');
-    const refreshLocationsBtn = document.getElementById('refresh-locations-btn');
-
-    // NEW Admin Add Item in Tasting View
-    const adminAddItemContainer = document.getElementById('admin-add-item-container');
-    const newItemAdminInput = document.getElementById('new-item-admin-input');
-    const addItemFromAdminBtn = document.getElementById('add-item-from-admin-btn');
-    
-    // itemSelect is now inside the rating-form, still needs a reference
-    const itemSelect = document.getElementById('item-select'); // Re-added, now inside form/tasting section
-
+    const itemRadioGroup = document.getElementById('item-radio-group'); // NEW: For item selection
     const ratingForm = document.getElementById('rating-form');
     const questionFields = document.getElementById('question-fields');
     const commentsTextarea = document.getElementById('comments');
     const viewResultsBtn = document.getElementById('view-results-btn');
-    const viewMySubmissionsBtn = document.getElementById('view-my-submissions-btn'); // NEW Button
     const leaveSessionBtn = document.getElementById('leave-session-btn');
+    const refreshLocationsBtn = document.getElementById('refresh-locations-btn'); 
 
-    const mySubmissionsPlayerNameDisplay = document.getElementById('my-submissions-player-name'); // NEW
-    const mySubmissionsList = document.getElementById('my-submissions-list'); // NEW
-    const mySubmissionsBackBtn = document.getElementById('my-submissions-back-btn'); // NEW
-
-    const resultsEventIdDisplay = document.getElementById('results-event-id'); // Renamed from resultsSessionIdDisplay
+    const resultsSessionIdDisplay = document.getElementById('results-session-id');
     const resultsSummary = document.getElementById('results-summary');
     const viewWinnerBtn = document.getElementById('view-winner-btn');
     const backToTastingBtn = document.getElementById('back-to-tasting-btn');
@@ -417,17 +319,19 @@
     const alertMessage = document.getElementById('alert-message');
     const alertOkBtn = document.getElementById('alert-ok-btn');
 
-    const loadingTriviaJokeDisplay = document.getElementById('loading-trivia-joke');
-    const welcomeTriviaJokeDisplay = document.getElementById('welcome-trivia-joke');
-    const tastingTriviaJokeDisplay = document.getElementById('tasting-trivia-joke');
+    const loadingTriviaJokeDisplay = document.getElementById('loading-trivia-joke'); 
+    const welcomeTriviaJokeDisplay = document.getElementById('welcome-trivia-joke'); 
+    const tastingTriviaJokeDisplay = document.getElementById('tasting-trivia-joke'); 
 
 
     // State Variables
-    let currentEventId = null; // Changed from currentSessionId to currentEventId for clarity with EVENTS_DEFINITIONS
+    let currentSessionId = null; // Session ID for data grouping in KV
     let currentPlayerId = null;
     let currentPlayerName = null;
-    let isAdmin = false;
-    let fullEventConfig = null; // This will hold the combined event and test type config
+    let isAdmin = false; 
+    let fullEventConfig = null; // Stores { eventId, eventName, activeLocationId, locations: [], testTypeConfig: { questions: [], ratingScaleExplanation: "" } }
+    let selectedItemForRating = null; // NEW: Stores the item currently being rated by the participant
+
 
     // Data for trivia and jokes
     const MARGARITA_TRIVIA_JOKES = [
@@ -452,36 +356,27 @@
             screens.forEach(screen => screen.classList.add('hidden'));
             if (screenToShow) {
                 screenToShow.classList.remove('hidden');
-                // Update header based on screen and theme
-                let primaryColor = fullEventConfig ? fullEventConfig.testTypeConfig.theme.primaryColor : '#10B981'; // Default green
-                let secondaryColor = fullEventConfig ? fullEventConfig.testTypeConfig.theme.secondaryColor : '#3B82F6'; // Default blue
-                let backgroundColor = fullEventConfig ? fullEventConfig.testTypeConfig.theme.backgroundColor : '#f3f4f6'; // Default gray
-                let backgroundImage = fullEventConfig && fullEventConfig.testTypeConfig.theme.backgroundImage ? `url(${fullEventConfig.testTypeConfig.theme.backgroundImage})` : 'none';
-
-                document.documentElement.style.setProperty('--primary-color', primaryColor);
-                document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-                document.documentElement.style.setProperty('--background-color', backgroundColor);
-                document.documentElement.style.setProperty('--background-image', backgroundImage);
-
-
+                // Update header based on screen
                 if (screenToShow === welcomeScreen || screenToShow === loadingScreen || screenToShow === adminPanelScreen) {
-                    headerTitle.textContent = fullEventConfig ? fullEventConfig.eventName : "Margarita Taste Test"; // Uses new event name from KV
+                    headerTitle.textContent = "Margarita Taste Test";
                     headerSessionInfo.textContent = "";
-                    appHeader.style.backgroundColor = primaryColor; // Use theme primary
-                } else if (screenToShow === tasteTestSection || screenToShow === mySubmissionsScreen) { // Added mySubmissionsScreen
+                    appHeader.classList.remove('bg-blue-500', 'bg-yellow-500');
+                    appHeader.classList.add('bg-green-500');
+                } else if (screenToShow === tasteTestSection) {
                     headerTitle.textContent = fullEventConfig ? fullEventConfig.eventName : "Taste Test";
-                    headerSessionInfo.textContent = currentEventId ? `Event: ${currentEventId}` : "";
-                    appHeader.style.backgroundColor = primaryColor; // Use theme primary
+                    headerSessionInfo.textContent = currentSessionId ? `Session: ${currentSessionId}` : ""; // Keep session ID in header
+                    appHeader.classList.remove('bg-green-500', 'bg-yellow-500');
+                    appHeader.classList.add('bg-blue-500');
                 } else if (screenToShow === resultsScreen || screenToShow === winnerScreen) {
                     headerTitle.textContent = "Results";
-                    headerSessionInfo.textContent = currentEventId ? `Event: ${currentEventId}` : "";
-                    appHeader.style.backgroundColor = primaryColor; // Use theme primary (or a specific results color if desired)
+                    headerSessionInfo.textContent = currentSessionId ? `Session: ${currentSessionId}` : "";
+                    appHeader.classList.remove('bg-green-500', 'bg-blue-500');
+                    appHeader.classList.add('bg-yellow-500');
                 }
             } else {
                 welcomeScreen.classList.remove('hidden');
-                headerTitle.textContent = fullEventConfig ? fullEventConfig.eventName : "Margarita Taste Test"; // Uses new event name from KV
+                headerTitle.textContent = "Margarita Taste Test";
                 headerSessionInfo.textContent = "";
-                appHeader.style.backgroundColor = fullEventConfig ? fullEventConfig.testTypeConfig.theme.primaryColor : '#10B981'; // Default green
             }
             window.scrollTo(0,0);
         },
@@ -574,7 +469,7 @@
         },
         updateEventData: async (eventData) => {
              try {
-                const response = await fetch('/api/update-event-data', {
+                const response = await fetch('/api/update-event-data', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(eventData)
@@ -590,63 +485,7 @@
                 return data;
             } catch (error) {
                 console.error("Error updating event data:", error);
-                utils.showAlert(`Failed to update event data: ${error.message}. Only admin can manage locations/items.`, "Error");
-                return null;
-            }
-        },
-        getAllFeedback: async () => { // New Worker API needed for results
-            try {
-                const response = await fetch(`/api/get-all-feedback?eventId=${currentEventId}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                return data.feedback || [];
-            } catch (error) {
-                console.error("Error fetching all feedback:", error);
-                utils.showAlert(`Failed to load results: ${error.message}.`, "Error");
-                return [];
-            }
-        },
-        getPlayerFeedback: async () => { // New Worker API needed for "My Submissions"
-            try {
-                const response = await fetch(`/api/get-player-feedback?eventId=${currentEventId}&playerId=${currentPlayerId}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                return data.feedback || [];
-            } catch (error) {
-                console.error("Error fetching player feedback:", error);
-                utils.showAlert(`Failed to load your submissions: ${error.message}.`, "Error");
-                return [];
-            }
-        },
-        resetAllEventData: async (eventId) => { // New Worker API for admin reset
-            try {
-                const response = await fetch('/api/admin/reset-event', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ eventId: eventId, adminPin: ADMIN_PIN }) // Pass PIN for basic auth
-                });
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                }
-                const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                return data;
-            } catch (error) {
-                console.error("Error resetting event data:", error);
-                utils.showAlert(`Failed to reset event data: ${error.message}.`, "Error");
+                utils.showAlert(`Failed to update event data: ${error.message}. Only admin can add locations/items.`, "Error");
                 return null;
             }
         }
@@ -655,8 +494,8 @@
     // Session Management and UI Rendering
     const app = {
         init: async () => {
-            appVersionDisplay.textContent = `Written by Phill. Version ${APP_VERSION}`;
-            utils.startTriviaJokeRotation();
+            appVersionDisplay.textContent = `Written by Phill. Version ${APP_VERSION}`; // Set version on load
+            utils.startTriviaJokeRotation(); // Start rotating trivia/jokes
 
             utils.showScreen(loadingScreen);
             const playerInfo = utils.loadPlayerInfo();
@@ -665,108 +504,100 @@
                 currentPlayerName = playerInfo.name;
                 playerNameInput.value = currentPlayerName;
             } else {
-                currentPlayerId = utils.generateId(10);
+                 currentPlayerId = utils.generateId(10); 
             }
 
             fullEventConfig = await api.getActiveTestConfig();
             if (fullEventConfig) {
-                currentEventId = fullEventConfig.eventId; // Set the current event ID
-                
                 // Check for direct share URL
                 const params = new URLSearchParams(window.location.search);
-                const sharedEventId = params.get('event'); // Changed from 'session' to 'event'
+                const sharedSessionId = params.get('session');
                 const sharedPlayerName = params.get('name');
 
-                if (sharedEventId && sharedPlayerName) {
-                    history.replaceState({}, document.title, window.location.pathname);
-                    app.startTasting(sharedEventId, sharedPlayerName); // Pass name to startTasting
+                if (sharedSessionId && sharedPlayerName) {
+                    // Attempt to join directly from URL
+                    // Clear params from URL to prevent re-join loops on refresh
+                    history.replaceState({}, document.title, window.location.pathname); 
+                    app.startTasting(sharedSessionId, sharedPlayerName); // Pass name to startTasting
                     return; // Prevent showing welcome screen and continue to tasting
                 }
 
+
                 // Ensure the active location is present
                 const activeLocation = fullEventConfig.locations.find(loc => loc.locationId === fullEventConfig.activeLocationId);
-                if (!activeLocation && fullEventConfig.locations.length > 0) {
-                     // If no active location set but locations exist, default to first one
-                    fullEventConfig.activeLocationId = fullEventConfig.locations[0].locationId;
-                    // Note: This local change won't persist to KV unless updateEventData is called
-                    // Consider prompting admin to set it or auto-setting it via worker.
-                } else if (fullEventConfig.locations.length === 0) {
-                    utils.showAlert("No locations configured for this event. Please contact the administrator.", "Configuration Error");
+                if (!activeLocation) {
+                    utils.showAlert("The active location configured for this event was not found. Please contact the administrator.", "Configuration Error");
+                    utils.showScreen(welcomeScreen);
+                    return;
                 }
-                
+                // Pre-populate location/item selectors if only one option or active is set
                 app.populateLocationSelect();
-                app.renderRatingForm(); // Render form with the new slider type
+                // Removed populateItemSelect from init as items are now chosen via radio in the form
 
                 // Check if current user is admin for this event
                 isAdmin = currentPlayerId === fullEventConfig.adminId;
-                
+                // Admin buttons are now managed by showing/hiding admin-panel-screen
+
                 utils.showScreen(welcomeScreen);
             } else {
                 utils.showAlert("Could not load taste test configuration. Please refresh the page.", "Error Loading");
-                utils.showScreen(welcomeScreen);
+                utils.showScreen(welcomeScreen); 
             }
         },
 
-        startTasting: async (eventIdFromInput = null, nameFromUrl = null) => {
-            if (nameFromUrl) {
+        startTasting: async (sessionIdFromInput = null, nameFromUrl = null) => { // Modified to accept name from URL
+            if (nameFromUrl) { // If name came from URL, use it directly
                 currentPlayerName = nameFromUrl;
-                playerNameInput.value = nameFromUrl;
-            } else if (!utils.validateInput(playerNameInput.value, 'text', 50)) {
+                playerNameInput.value = nameFromUrl; // Update input field
+            } else if (!utils.validateInput(playerNameInput.value, 'text', 50)) { // Otherwise, validate input field
                 utils.showAlert("Please enter a valid name (1-50 characters).");
                 return;
             } else {
                 currentPlayerName = playerNameInput.value.trim();
             }
-            utils.savePlayerInfo(currentPlayerId, currentPlayerName);
+            utils.savePlayerInfo(currentPlayerId, currentPlayerName); 
 
             if (!fullEventConfig) {
                 utils.showAlert("Application not configured. Please refresh.", "Error");
                 return;
             }
 
-            // If eventId provided via URL, use it, otherwise use the one fetched in init
-            if (eventIdFromInput && eventIdFromInput.trim() !== '') {
-                currentEventId = eventIdFromInput.trim();
+            // Use session ID from input or URL, or generate new
+            if (sessionIdFromInput && sessionIdFromInput.trim() !== '') {
+                currentSessionId = sessionIdFromInput.trim();
             } else {
-                // If user just clicks "Start Tasting" without URL params, they join the active event.
-                currentEventId = fullEventConfig.eventId;
+                currentSessionId = `session_${fullEventConfig.eventId}_${Date.now()}`;
+                utils.showAlert(`No session ID entered. A new session ID "${currentSessionId}" will be used.`, "Info");
             }
 
-            // Re-fetch full event config to ensure latest player list and locations (important for admin actions)
+            // Re-fetch full event config to ensure latest player list and locations
             fullEventConfig = await api.getActiveTestConfig();
             if (!fullEventConfig) {
-                utils.showAlert("Failed to re-load configuration. Please try again.", "Error");
-                utils.showScreen(welcomeScreen);
-                return;
-            }
-            
-            // Ensure currentPlayerId is set to admin ID if isAdmin from loaded config
-            isAdmin = currentPlayerId === fullEventConfig.adminId;
-            if (isAdmin && currentPlayerId !== PHILL_ADMIN_ID) { // If somehow a non-phill admin ID is in KV, ensure client matches
-                 currentPlayerId = PHILL_ADMIN_ID; // Force admin ID for client-side recognition
-                 utils.savePlayerInfo(currentPlayerId, currentPlayerName);
+                 utils.showAlert("Failed to re-load configuration. Please try again.", "Error");
+                 utils.showScreen(welcomeScreen);
+                 return;
             }
 
+            // Update isAdmin status based on latest config and current player ID
+            isAdmin = currentPlayerId === fullEventConfig.adminId;
 
             currentPlayerNameDisplay.textContent = currentPlayerName;
+            // currentSessionIdDisplay.textContent = currentSessionId; // Removed from here for cleaner UX
             testEventNameDisplay.textContent = fullEventConfig.eventName;
-            appHeader.style.backgroundColor = fullEventConfig.testTypeConfig.theme.primaryColor; // Apply theme color
+            appHeader.classList.remove('bg-green-500');
+            appHeader.classList.add('bg-blue-500');
 
-            app.populateLocationSelect(); // Re-populate location dropdown based on fetched config
-            app.renderRatingForm(); // Re-render form to ensure it matches the active config
-
-            // Show/hide admin-specific elements in tasting view
-            if (isAdmin) {
-                adminAddItemContainer.classList.remove('hidden');
-            } else {
-                adminAddItemContainer.classList.add('hidden');
-            }
+            // Populate selectors and render form based on potentially updated fullEventConfig
+            app.populateLocationSelect();
+            // app.populateItemSelect(locationSelect.value); // Items now handled within renderRatingForm
+            app.renderRatingForm();
             
             utils.showScreen(tasteTestSection);
             utils.showAlert(`Welcome, ${currentPlayerName}! Starting tasting for "${fullEventConfig.eventName}".`, "Session Joined");
+
         },
 
-        startPhillAdminSession: async () => {
+        startPhillAdminSession: async () => { 
             const pinAttempt = prompt("Enter Admin PIN:");
             if (pinAttempt !== ADMIN_PIN) {
                 utils.showAlert("Incorrect PIN. Admin access denied.", "Access Denied");
@@ -774,9 +605,9 @@
             }
 
             isAdmin = true;
-            currentPlayerId = PHILL_ADMIN_ID;
+            currentPlayerId = PHILL_ADMIN_ID; 
             currentPlayerName = "Phill (Admin)";
-            utils.savePlayerInfo(currentPlayerId, currentPlayerName);
+            utils.savePlayerInfo(currentPlayerId, currentPlayerName); 
 
             fullEventConfig = await api.getActiveTestConfig();
             if (!fullEventConfig) {
@@ -785,81 +616,47 @@
                 return;
             }
 
-            currentEventId = fullEventConfig.eventId; // Admin directly manages the event, so session ID is the event ID.
+            currentSessionId = fullEventConfig.eventId; // Admin directly manages the event, so session ID is the event ID.
 
             // Set UI elements for admin panel
-            adminEventIdDisplay.textContent = currentEventId;
+            adminSessionIdDisplay.textContent = currentSessionId;
             newLocationAdminInput.value = ''; // Clear input field
             participantNameShareInput.value = ''; // Clear share name input
             generatedShareLink.textContent = ''; // Clear generated link
             generatedShareLink.href = '#';
             copyShareLinkBtn.classList.add('hidden');
 
-            await app.renderAdminLocationsList(); // Populate list of existing locations with new controls
+            app.renderAdminLocationsList(); // Populate list of existing locations
 
-            utils.showScreen(adminPanelScreen);
+            utils.showScreen(adminPanelScreen); 
             utils.showAlert(`Welcome, Phill! You are in Admin Mode for "${fullEventConfig.eventName}".`, "Admin Access");
         },
 
-        renderAdminLocationsList: async () => { // UPDATED FUNCTION for Admin Panel
+        renderAdminLocationsList: () => { // NEW FUNCTION for Admin Panel
             adminLocationsList.innerHTML = '';
-            // Re-fetch fullEventConfig to ensure latest data including activeLocationId and items
-            fullEventConfig = await api.getActiveTestConfig(); 
-            if (!fullEventConfig || fullEventConfig.locations.length === 0) {
+            if (fullEventConfig.locations.length === 0) {
                 adminLocationsList.innerHTML = '<li class="text-gray-500 italic">No locations added yet.</li>';
                 return;
             }
 
             fullEventConfig.locations.forEach(loc => {
                 const li = document.createElement('li');
-                li.className = 'admin-location-item space-y-2'; // Tailwind class for item styling
-                
-                const isActive = loc.locationId === fullEventConfig.activeLocationId;
-
-                let itemsHtml = '';
-                if (loc.items && loc.items.length > 0) {
-                    itemsHtml = `
-                        <ul class="admin-item-list">
-                            ${loc.items.map(item => `
-                                <li>
-                                    <span>${item.itemName}</span>
-                                    <button data-location-id="${loc.locationId}" data-item-id="${item.itemId}" class="remove-item-admin-btn text-red-500 hover:text-red-700 text-xs font-medium px-2 py-1 rounded">Remove</button>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    `;
-                } else {
-                    itemsHtml = '<p class="text-gray-500 text-sm italic">No items for this location yet.</p>';
-                }
-
+                li.className = 'p-2 border rounded-md bg-white flex justify-between items-center shadow-sm';
                 li.innerHTML = `
-                    <div class="admin-location-header">
-                        <h5 class="text-lg font-bold">${loc.locationName}</h5>
-                        <div class="admin-location-controls">
-                            <button data-location-id="${loc.locationId}" class="set-active-location-btn ${isActive ? 'bg-blue-600 text-white' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'} text-xs font-medium px-2 py-1 rounded">
-                                ${isActive ? 'Active' : 'Set Active'}
-                            </button>
-                            <button data-location-id="${loc.locationId}" class="remove-location-admin-btn text-red-500 hover:text-red-700 text-xs font-medium px-2 py-1 rounded">Remove Location</button>
-                            <button data-location-id="${loc.locationId}" class="reset-feedback-admin-btn text-yellow-600 hover:text-yellow-800 text-xs font-medium px-2 py-1 rounded">Reset Feedback</button>
-                        </div>
-                    </div>
-                    <div>
-                        <h6 class="font-semibold text-gray-700 mb-2">Items:</h6>
-                        ${itemsHtml}
-                        <div class="mt-3">
-                            <input type="text" data-location-id="${loc.locationId}" placeholder="New Item Name" class="new-item-input w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500 mb-2">
-                            <button data-location-id="${loc.locationId}" class="add-item-to-location-btn w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded-lg text-sm">Add Item</button>
-                        </div>
+                    <span class="font-medium">${loc.locationName}</span>
+                    <div class="flex space-x-2">
+                        <button data-location-id="${loc.locationId}" class="remove-location-admin-btn text-red-500 hover:text-red-700 text-xs font-medium px-2 py-1 rounded">Remove</button>
+                        <button data-location-id="${loc.locationId}" class="reset-feedback-admin-btn text-yellow-600 hover:text-yellow-800 text-xs font-medium px-2 py-1 rounded">Reset Feedback</button>
                     </div>
                 `;
                 adminLocationsList.appendChild(li);
             });
 
-            // Attach event listeners for dynamic buttons within locations
+            // Attach event listeners for dynamic buttons
             document.querySelectorAll('.remove-location-admin-btn').forEach(button => {
                 button.onclick = async (e) => {
                     const locationId = e.target.dataset.locationId;
-                    if (confirm(`Are you sure you want to remove the location "${fullEventConfig.locations.find(l => l.locationId === locationId)?.locationName}" and ALL its associated items and ratings? This cannot be undone.`)) {
+                    if (confirm(`Are you sure you want to remove this location and ALL its associated ratings? This cannot be undone.`)) {
                         await app.removeLocation(locationId);
                     }
                 };
@@ -867,213 +664,82 @@
             document.querySelectorAll('.reset-feedback-admin-btn').forEach(button => {
                 button.onclick = async (e) => {
                     const locationId = e.target.dataset.locationId;
-                    if (confirm(`Are you sure you want to reset ALL feedback for "${fullEventConfig.locations.find(l => l.locationId === locationId)?.locationName}"? This cannot be undone.`)) {
+                    if (confirm(`Are you sure you want to reset ALL feedback for this location? This cannot be undone.`)) {
                         await app.resetLocationFeedback(locationId);
-                    }
-                };
-            });
-            document.querySelectorAll('.set-active-location-btn').forEach(button => {
-                button.onclick = async (e) => {
-                    const locationId = e.target.dataset.locationId;
-                    await app.setActiveLocation(locationId);
-                };
-            });
-            document.querySelectorAll('.add-item-to-location-btn').forEach(button => {
-                button.onclick = async (e) => {
-                    const locationId = e.target.dataset.locationId;
-                    const inputElement = e.target.previousElementSibling; // The input field
-                    await app.addItemToLocation(locationId, inputElement);
-                };
-            });
-            document.querySelectorAll('.remove-item-admin-btn').forEach(button => {
-                button.onclick = async (e) => {
-                    const locationId = e.target.dataset.locationId;
-                    const itemId = e.target.dataset.itemId;
-                    if (confirm(`Are you sure you want to remove this item and its associated ratings?`)) {
-                        await app.removeItemFromLocation(locationId, itemId);
                     }
                 };
             });
         },
         
-        // NEW ADMIN ACTIONS
-        removeLocation: async (locationId) => {
+        removeLocation: async (locationId) => { // NEW ADMIN ACTION
             if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
 
-            const updatedLocations = fullEventConfig.locations.filter(loc => loc.locationId !== locationId);
-            
-            let newActiveLocationId = fullEventConfig.activeLocationId;
-            if (newActiveLocationId === locationId) { // If the removed location was active, pick a new active one
-                newActiveLocationId = updatedLocations.length > 0 ? updatedLocations[0].locationId : null;
-            }
+            fullEventConfig.locations = fullEventConfig.locations.filter(loc => loc.locationId !== locationId);
+            // Also need to remove all feedback associated with this location (done server-side by new worker)
 
             const updatedEvent = {
-                ...fullEventConfig, // Copy existing properties
-                locations: updatedLocations,
-                activeLocationId: newActiveLocationId
+                eventId: fullEventConfig.eventId,
+                eventName: fullEventConfig.eventName,
+                testTypeId: fullEventConfig.testTypeConfig.id,
+                adminId: fullEventConfig.adminId, 
+                locations: fullEventConfig.locations,
+                activeLocationId: fullEventConfig.activeLocationId // Re-evaluate active if current one removed
             };
-            
-            // API call to update the EVENTS_DEFINITIONS
             const response = await api.updateEventData(updatedEvent);
             if (response) {
-                // Now, call a new worker to delete feedback associated with this location.
-                // This will be `api.deleteFeedbackByLocation(currentEventId, locationId)`
-                utils.showAlert("Location removed successfully. Feedback associated with it will be cleared by a future backend endpoint.", "Success");
-                await app.renderAdminLocationsList(); // Re-render the admin list to show changes
+                // NOW, CALL A NEW WORKER TO DELETE FEEDBACK BY LOCATION ID
+                // This would be api.deleteFeedbackByLocation(fullEventConfig.eventId, locationId)
+                // For now, we'll assume the simple updateEventData handles the *event structure*.
+                // Deleting actual feedback records would need a new dedicated worker function and KV key structure (e.g. feedback:EVENT_ID:LOCATION_ID:ITEM_ID:PLAYER_ID:TIMESTAMP)
+                // For this version, let's just make the UI update.
+                fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to get latest state
+                app.renderAdminLocationsList(); // Re-render the admin list
+                utils.showAlert("Location removed successfully (and its associated feedback on refresh).", "Success");
             }
         },
 
-        resetLocationFeedback: async (locationId) => {
+        resetLocationFeedback: async (locationId) => { // NEW ADMIN ACTION
             if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
             
             // This requires a new API endpoint to delete feedback from KV for a given location.
-            // This will be `api.resetFeedbackForLocation(currentEventId, locationId)`
-            utils.showAlert("Resetting feedback for this location would require a new API endpoint to delete KV data. (Not yet implemented backend)", "Info");
+            // For now, we'll simulate. In a real app: await api.resetFeedbackForLocation(fullEventConfig.eventId, locationId);
+            utils.showAlert("Resetting feedback for this location would require a new API endpoint to delete KV data. (Not implemented in this version)", "Info");
             // After successful API call:
-            await app.renderAdminLocationsList(); // Re-render to show updated (empty) feedback counts
+            fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to get latest state
+            app.renderAdminLocationsList(); // Re-render to show updated (empty) feedback counts
         },
 
-        setActiveLocation: async (locationId) => {
-            if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
-
-            fullEventConfig.activeLocationId = locationId;
-
-            const updatedEvent = {
-                ...fullEventConfig,
-                activeLocationId: locationId
-            };
-
-            const response = await api.updateEventData(updatedEvent);
-            if (response) {
-                utils.showAlert("Active location set successfully!", "Success");
-                await app.renderAdminLocationsList(); // Re-render to update 'Active' status
-                app.populateLocationSelect(); // Update user-facing dropdown if they're in tasting
-            }
-        },
-
-        addItemToLocation: async (locationId, inputElement) => {
-            if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
-
-            const newItemName = inputElement.value.trim();
-            if (!utils.validateInput(newItemName, 'text', 100)) {
-                utils.showAlert("Please enter a valid item name (1-100 characters).", "Invalid Input");
-                return;
-            }
-
-            const targetLocation = fullEventConfig.locations.find(loc => loc.locationId === locationId);
-            if (!targetLocation) {
-                utils.showAlert("Selected location not found in configuration.", "Error");
-                return;
-            }
-
-            const newItem = {
-                itemId: `item_${utils.generateId(6)}`,
-                itemName: newItemName
-            };
-            targetLocation.items.push(newItem);
-
-            const updatedEvent = { ...fullEventConfig }; // Make a shallow copy for sending
-            
-            const response = await api.updateEventData(updatedEvent);
-            if (response) {
-                utils.showAlert("Item added successfully!", "Success");
-                inputElement.value = ''; // Clear input
-                await app.renderAdminLocationsList(); // Re-render admin list
-                app.populateLocationSelect(); // Update user-facing dropdown
-            }
-        },
-
-        removeItemFromLocation: async (locationId, itemId) => {
-            if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
-
-            const targetLocation = fullEventConfig.locations.find(loc => loc.locationId === locationId);
-            if (!targetLocation) {
-                utils.showAlert("Location not found.", "Error");
-                return;
-            }
-            targetLocation.items = targetLocation.items.filter(item => item.itemId !== itemId);
-
-            const updatedEvent = { ...fullEventConfig }; // Make a shallow copy for sending
-
-            const response = await api.updateEventData(updatedEvent);
-            if (response) {
-                utils.showAlert("Item removed successfully. Associated feedback will be cleared by a future backend endpoint.", "Success");
-                await app.renderAdminLocationsList(); // Re-render admin list
-                app.populateLocationSelect(); // Update user-facing dropdown
-            }
-        },
-
-        resetAllEventData: async () => { // NEW ADMIN ACTION
-            if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
-
-            if (!confirm("WARNING: Are you absolutely sure you want to RESET ALL DATA for this event? This will delete ALL locations, items, and feedback! This cannot be undone.")) {
-                return;
-            }
-
-            const response = await api.resetAllEventData(currentEventId); // Pass event ID and admin PIN
-            if (response) {
-                utils.showAlert("All event data has been reset!", "Success");
-                // Clear local state and go back to welcome
-                utils.clearPlayerInfo();
-                currentEventId = null;
-                isAdmin = false;
-                fullEventConfig = null; // Clear cached config
-                // Re-initialize app to fetch fresh state (which should be empty)
-                app.init();
-            }
-        },
-
-        generateShareLink: () => {
+        generateShareLink: () => { // NEW ADMIN ACTION
             const participantName = participantNameShareInput.value.trim();
             if (!utils.validateInput(participantName, 'text', 50)) {
                 utils.showAlert("Please enter a name for the participant.", "Invalid Input");
                 return;
             }
-            if (!currentEventId) {
+            if (!currentSessionId) {
                 utils.showAlert("Admin session not active. Please start Admin Session first.", "Error");
                 return;
             }
 
             const baseUrl = window.location.origin + window.location.pathname;
-            const shareUrl = `${baseUrl}?event=${fullEventConfig.eventId}&name=${encodeURIComponent(participantName)}`; // Changed param to 'event'
+            const shareUrl = `${baseUrl}?session=${fullEventConfig.eventId}&name=${encodeURIComponent(participantName)}`;
             generatedShareLink.href = shareUrl;
             generatedShareLink.textContent = shareUrl;
             copyShareLinkBtn.classList.remove('hidden');
             utils.showAlert("Share link generated!", "Link Ready");
         },
 
-        renderRatingForm: () => { // UPDATED to handle slider type
+        renderRatingForm: () => {
             questionFields.innerHTML = '';
-            ratingForm.classList.remove('hidden');
+            itemRadioGroup.classList.add('hidden'); // Hide by default, show if items exist
+            ratingForm.classList.remove('hidden'); // Show form by default
 
             const ratingExplanationDiv = ratingForm.querySelector('.rating-explanation');
-            if (fullEventConfig.testTypeConfig.ratingScaleExplanation) {
-                ratingExplanationDiv.innerHTML = fullEventConfig.testTypeConfig.ratingScaleExplanation;
-                ratingExplanationDiv.classList.remove('hidden');
-            } else {
-                ratingExplanationDiv.classList.add('hidden');
+            if (ratingExplanationDiv) {
+                ratingExplanationDiv.innerHTML = RATING_EXPLANATION; // Updated instruction text
             }
 
-            const selectedLocationId = locationSelect.value;
-            const selectedLocation = fullEventConfig.locations.find(loc => loc.locationId === selectedLocationId);
-            
-            // Populate itemSelect for the current location
-            itemSelect.innerHTML = '';
-            if (selectedLocation && selectedLocation.items && selectedLocation.items.length > 0) {
-                selectedLocation.items.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.itemId;
-                    option.textContent = item.itemName;
-                    itemSelect.appendChild(option);
-                });
-                itemSelect.disabled = false;
-                ratingForm.querySelector('button[type="submit"]').disabled = false; // Enable submit
-            } else {
-                itemSelect.innerHTML = '<option value="">No items available for this location</option>';
-                itemSelect.disabled = true;
-                ratingForm.querySelector('button[type="submit"]').disabled = true; // Disable submit if no items
-                utils.showAlert("No items configured for the selected location. Please add items via Admin Panel or select another location.", "No Items");
-            }
+            // NEW: Added this instruction paragraph
+            questionFields.insertAdjacentHTML('beforebegin', '<p class="mb-4 text-gray-600 italic">Rate each aspect based on how well it matches your ideal margarita. 5 is perfect for you, 0 is the opposite of what you like.</p>');
 
 
             if (!fullEventConfig || !fullEventConfig.testTypeConfig || !fullEventConfig.testTypeConfig.questions) {
@@ -1082,58 +748,130 @@
                 return;
             }
 
+            const currentSelectedLocation = fullEventConfig.locations.find(loc => loc.locationId === locationSelect.value);
+
+            // NEW: Render item selection as radio buttons
+            if (currentSelectedLocation && currentSelectedLocation.items && currentSelectedLocation.items.length > 0) {
+                itemRadioGroup.classList.remove('hidden');
+                itemRadioGroup.innerHTML = `<h3 class="text-xl font-semibold mb-3">Which Margarita are you tasting here?</h3>`;
+                currentSelectedLocation.items.forEach(item => {
+                    const radioDiv = document.createElement('div');
+                    radioDiv.className = 'item-radio-group';
+                    radioDiv.innerHTML = `
+                        <label>
+                            <input type="radio" name="selectedItem" value="${item.itemId}" data-item-name="${item.itemName}" required>
+                            <span>${item.itemName}</span>
+                        </label>
+                    `;
+                    itemRadioGroup.appendChild(radioDiv);
+                });
+                itemRadioGroup.onchange = (e) => {
+                    if (e.target.name === 'selectedItem') {
+                        selectedItemForRating = {
+                            itemId: e.target.value,
+                            itemName: e.target.dataset.itemName
+                        };
+                        // console.log("Selected item for rating:", selectedItemForRating); // For debugging
+                    }
+                };
+                // Automatically select the first item if none is selected on load
+                if (!selectedItemForRating || !currentSelectedLocation.items.some(item => item.itemId === selectedItemForRating.itemId)) {
+                    const firstItemRadio = itemRadioGroup.querySelector('input[type="radio"]');
+                    if (firstItemRadio) {
+                        firstItemRadio.checked = true;
+                        selectedItemForRating = {
+                            itemId: firstItemRadio.value,
+                            itemName: firstItemRadio.dataset.itemName
+                        };
+                    }
+                }
+            } else {
+                itemRadioGroup.classList.add('hidden'); // Hide if no items
+                selectedItemForRating = null; // No item to rate
+                utils.showAlert("No items available for this location. Please add items via Admin Panel or select a different location.", "No Items");
+                ratingForm.classList.add('hidden'); // Hide form if no items
+                return;
+            }
+
+            // Render questions based on testTypeConfig
             fullEventConfig.testTypeConfig.questions.forEach(q => {
-                if (q.type === 'rating_slider_with_labels') {
+                if (q.type === 'rating_0_5') {
                     const questionDiv = document.createElement('div');
-                    questionDiv.className = 'rating-group space-y-2';
+                    questionDiv.className = 'flex flex-col sm:flex-row sm:items-center sm:justify-between';
 
                     const label = document.createElement('label');
                     label.htmlFor = `question-${q.id}`;
                     label.textContent = `${q.text} ${q.required ? '*' : ''}:`;
+                    label.className = 'mb-1 sm:mb-0 text-gray-700 font-medium';
+
+                    const select = document.createElement('select');
+                    select.id = `question-${q.id}`;
+                    select.name = q.id;
+                    select.className = 'p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto';
+                    select.required = q.required;
+
+                    for (let i = MAX_RATING; i >= 0; i--) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = `${i} star${i !== 1 ? 's' : ''}`;
+                        select.appendChild(option);
+                    }
+                    questionDiv.appendChild(label);
+                    questionDiv.appendChild(select);
+                    questionFields.appendChild(questionDiv);
+                } else if (q.type === 'rating_slider_with_labels') { // NEW: Handle slider questions
+                    const questionDiv = document.createElement('div');
+                    // Changed styling to `flex-col` for better vertical spacing on small screens,
+                    // and removed `sm:flex-row sm:items-center sm:justify-between` to prevent single-line overflow.
+                    questionDiv.className = 'flex flex-col mb-4 p-2 border rounded-lg bg-gray-100'; // Added padding, border, background for clarity
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `question-${q.id}`;
+                    label.textContent = `${q.text} ${q.required ? '*' : ''}:`;
+                    label.className = 'mb-2 text-gray-700 font-medium'; // Increased margin-bottom for label
                     questionDiv.appendChild(label);
 
-                    const inputContainer = document.createElement('div');
-                    inputContainer.className = 'rating-input-container';
+                    const sliderContainer = document.createElement('div');
+                    sliderContainer.className = 'flex flex-col items-center w-full'; // Changed to flex-col for label/slider/value
 
                     const slider = document.createElement('input');
                     slider.type = 'range';
                     slider.id = `question-${q.id}`;
                     slider.name = q.id;
-                    slider.min = q.min;
-                    slider.max = q.max;
-                    slider.step = q.step;
-                    slider.required = q.required;
-                    slider.value = Math.round((q.min + q.max) / 2); // Default to middle value
-                    inputContainer.appendChild(slider);
+                    slider.min = q.min || 0;
+                    slider.max = q.max || 5;
+                    slider.step = q.step || 1;
+                    slider.value = Math.round((parseInt(slider.min, 10) + parseInt(slider.max, 10)) / 2); // Default to middle
+                    slider.className = 'w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer range-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'; // Darker gray for track
+                    sliderContainer.appendChild(slider);
 
-                    const valueDisplay = document.createElement('span');
-                    valueDisplay.className = 'rating-value-display';
-                    const initialLabel = q.labels[slider.value - q.min]; // Calculate initial label
-                    valueDisplay.textContent = initialLabel || slider.value; // Show label or numeric value
-                    inputContainer.appendChild(valueDisplay);
+                    const labelsContainer = document.createElement('div'); // Container for min/max labels below slider
+                    labelsContainer.className = 'flex justify-between w-full text-xs text-gray-500 mt-1';
+                    if (q.labels && q.labels.length > 0) {
+                         const minLabel = document.createElement('span');
+                         minLabel.textContent = q.labels[0];
+                         labelsContainer.appendChild(minLabel);
 
-                    slider.addEventListener('input', () => {
-                        const labelText = q.labels[parseInt(slider.value, 10) - q.min];
-                        valueDisplay.textContent = labelText || slider.value;
-                    });
+                         const maxLabel = document.createElement('span');
+                         maxLabel.textContent = q.labels[q.labels.length - 1];
+                         labelsContainer.appendChild(maxLabel);
+                    }
+                    sliderContainer.appendChild(labelsContainer);
 
-                    questionDiv.appendChild(inputContainer);
 
-                    const labelsDiv = document.createElement('div');
-                    labelsDiv.className = 'slider-labels';
-                    q.labels.forEach((labelText, index) => {
-                        const span = document.createElement('span');
-                        span.textContent = labelText;
-                        if (index === 0) span.style.textAlign = 'left';
-                        else if (index === q.labels.length - 1) span.style.textAlign = 'right';
-                        else span.style.textAlign = 'center'; // Center intermediate labels if needed
-                        labelsDiv.appendChild(span);
-                    });
-                    questionDiv.appendChild(labelsDiv);
+                    const valueDisplay = document.createElement('span'); // Displays current value/label
+                    valueDisplay.className = 'text-sm text-gray-800 mt-2 font-semibold p-1 bg-blue-100 rounded-md'; // Stronger background
+                    valueDisplay.textContent = q.labels ? q.labels[slider.value] : slider.value; // Show initial label/value
+                    sliderContainer.appendChild(valueDisplay);
 
+                    slider.oninput = (e) => {
+                        valueDisplay.textContent = q.labels ? q.labels[e.target.value] : e.target.value;
+                    };
+                    questionDiv.appendChild(sliderContainer);
                     questionFields.appendChild(questionDiv);
+
                 } else if (q.type === 'text_long') {
-                    // Comments field is separate at the bottom, so no need to render here if it's explicitly 'comments'
+                    // Comments field is separate at the bottom
                 } else {
                     console.warn(`Unsupported question type: ${q.type}`);
                 }
@@ -1143,25 +881,16 @@
         populateLocationSelect: () => {
             locationSelect.innerHTML = '';
             if (fullEventConfig.locations.length === 0) {
-                locationSelect.innerHTML = '<option value="">No locations added by admin</option>';
-                locationSelect.disabled = true;
-                itemSelect.innerHTML = '<option value="">No items available</option>';
-                itemSelect.disabled = true;
-                ratingForm.classList.add('hidden'); // Hide rating form if no locations
-                return;
+                 locationSelect.innerHTML = '<option value="">No locations added by admin</option>';
+                 locationSelect.disabled = true;
+                 itemRadioGroup.classList.add('hidden'); // No items if no locations
+                 ratingForm.classList.add('hidden'); // Hide rating form if no locations
+                 return;
             }
             locationSelect.disabled = false;
             ratingForm.classList.remove('hidden'); // Show rating form if locations exist
 
-            // Sort locations by active first, then by name
-            const sortedLocations = [...fullEventConfig.locations].sort((a, b) => {
-                if (a.locationId === fullEventConfig.activeLocationId) return -1;
-                if (b.locationId === fullEventConfig.activeLocationId) return 1;
-                return a.locationName.localeCompare(b.locationName);
-            });
-
-
-            sortedLocations.forEach(loc => {
+            fullEventConfig.locations.forEach(loc => {
                 const option = document.createElement('option');
                 option.value = loc.locationId;
                 option.textContent = loc.locationName;
@@ -1170,59 +899,81 @@
                 }
                 locationSelect.appendChild(option);
             });
-            // Trigger change event to populate items for the initially selected location
-            locationSelect.dispatchEvent(new Event('change'));
+            locationSelect.dispatchEvent(new Event('change')); // Trigger item population / form rendering
         },
 
-        // populateItemSelect is now implicitly handled by renderRatingForm based on locationSelect change
-        // as the itemSelect is part of the form. The old separate populateItemSelect is no longer needed.
-
+        // populateItemSelect now only ensures renderRatingForm is called for current location's items
+        populateItemSelect: (selectedLocationId) => { 
+            const currentSelectedLocation = fullEventConfig.locations.find(loc => loc.locationId === selectedLocationId);
+            if (currentSelectedLocation && currentSelectedLocation.items && currentSelectedLocation.items.length > 0) {
+                itemRadioGroup.classList.remove('hidden'); // Ensure item section is visible
+                ratingForm.classList.remove('hidden'); // Ensure rating form is visible
+                app.renderRatingForm(); // Re-render the form with new item radios
+            } else {
+                itemRadioGroup.classList.add('hidden'); // Hide if no items
+                selectedItemForRating = null; 
+                utils.showAlert("No items available for this location. Please add items via Admin Panel or select a different location.", "No Items");
+                ratingForm.classList.add('hidden'); // Hide form if no items
+            }
+        },
 
         submitRating: async (e) => {
             e.preventDefault();
 
             const locationId = locationSelect.value;
-            const itemId = itemSelect.value; // Get item from the new itemSelect
+            // Get selected item from the radio buttons
+            const selectedItemRadio = itemRadioGroup.querySelector('input[name="selectedItem"]:checked');
 
-            if (!locationId) {
-                utils.showAlert("Please select a location.", "Missing Information");
+            if (!locationId || !selectedItemRadio) {
+                utils.showAlert("Please select both a location and which item you are rating.", "Missing Information");
                 return;
             }
-            if (!itemId) {
-                 utils.showAlert("Please select an item to rate.", "Missing Information");
-                 return;
-            }
+            const itemId = selectedItemRadio.value;
+            const itemName = selectedItemRadio.dataset.itemName; // Get item name from data-attribute
+
 
             const ratings = {};
-            let allQuestionsAnswered = true;
+            let allRequiredQuestionsAnswered = true;
             fullEventConfig.testTypeConfig.questions.forEach(q => {
-                if (q.type === 'rating_slider_with_labels') {
-                    const sliderElement = document.getElementById(`question-${q.id}`);
-                    if (sliderElement) {
-                        ratings[q.id] = parseInt(sliderElement.value, 10);
-                        if (q.required && sliderElement.value === null) { // Check for required sliders
-                            allQuestionsAnswered = false;
+                const inputElement = document.getElementById(`question-${q.id}`);
+                if (inputElement) {
+                    let value;
+                    if (q.type === 'rating_0_5' || q.type === 'rating_slider_with_labels') {
+                        value = parseInt(inputElement.value, 10);
+                        // Validate against min/max defined in KV for sliders
+                        if (q.required && (isNaN(value) || value < (q.min || 0) || value > (q.max || 5))) {
+                             allRequiredQuestionsAnswered = false;
                         }
-                    } else if (q.required) { // Question element not found but is required
-                         allQuestionsAnswered = false;
+                    } else if (q.type === 'text_short' || q.type === 'text_medium' || q.type === 'text_long') {
+                         value = inputElement.value.trim();
+                         if (q.required && value.length === 0) {
+                             allRequiredQuestionsAnswered = false;
+                         }
+                    } else { // Handle other types like dropdown, yes_no if present
+                        value = inputElement.value;
+                        if (q.required && !value) {
+                             allRequiredQuestionsAnswered = false;
+                        }
                     }
+                    ratings[q.id] = value;
                 }
             });
 
-            if (!allQuestionsAnswered) {
-                utils.showAlert("Please answer all required questions.", "Missing Information");
-                return;
+            if (!allRequiredQuestionsAnswered) {
+                 utils.showAlert("Please answer all required questions.", "Missing Answers");
+                 return;
             }
 
             const comments = commentsTextarea.value.trim();
 
             const feedbackData = {
-                eventId: currentEventId,
+                eventId: fullEventConfig.eventId,
                 locationId: locationId,
                 itemId: itemId,
+                itemName: itemName, // Include item name for easier results processing
                 playerId: currentPlayerId,
                 playerName: currentPlayerName,
-                submittedAt: new Date().toISOString(), // Add timestamp for sorting
+                sessionId: currentSessionId, 
                 ratings: ratings,
                 comments: comments
             };
@@ -1231,27 +982,26 @@
             if (response) {
                 utils.showAlert("Feedback submitted successfully!", "Success");
                 ratingForm.reset();
-                // Optionally re-render form to clear labels or for next item
-                app.renderRatingForm();
+                selectedItemForRating = null; // Reset selection after submission
+                fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to get latest feedback counts
+                app.populateLocationSelect(); // Re-populate locations if needed and trigger renderRatingForm
+                // app.renderRatingForm(); // populateLocationSelect will call renderRatingForm
             }
         },
 
-        renderResults: async () => {
+        renderResults: () => {
             utils.showScreen(resultsScreen);
-            resultsEventIdDisplay.textContent = currentEventId; // Changed from sessionIdDisplay
-            resultsSummary.innerHTML = '<p class="text-gray-500">Loading results...</p>';
-
-            const allFeedback = await api.getAllFeedback(); // Fetch all feedback
+            resultsSessionIdDisplay.textContent = currentSessionId;
+            resultsSummary.innerHTML = '';
 
             if (!fullEventConfig || !fullEventConfig.locations.length) {
                 resultsSummary.innerHTML = '<p class="text-gray-500">No locations or ratings to display results.</p>';
                 viewWinnerBtn.classList.add('hidden');
                 return;
             }
-            resultsSummary.innerHTML = ''; // Clear loading message
             viewWinnerBtn.classList.remove('hidden');
 
-            let allScores = [];
+            let allScores = []; 
 
             fullEventConfig.locations.forEach(location => {
                 location.items.forEach(item => {
@@ -1259,7 +1009,7 @@
                     itemResultsDiv.className = 'p-4 border rounded-lg mb-4 bg-yellow-50 shadow';
                     itemResultsDiv.innerHTML = `<h3 class="text-xl font-semibold mb-3 text-yellow-800">${location.locationName} - ${item.itemName}</h3>`;
 
-                    const itemRatings = allFeedback.filter(
+                    const itemRatings = fullEventConfig.feedback.filter(
                         f => f.locationId === location.locationId && f.itemId === item.itemId
                     );
 
@@ -1284,7 +1034,7 @@
                         Object.entries(feedback.ratings).forEach(([critId, value]) => {
                             averageRatings[critId] += value;
                             ratingCounts[critId]++;
-                            totalOverallScore += value; // Sum all individual ratings for overall average
+                            totalOverallScore += value;
                             overallRatingCount++;
                         });
                         if (feedback.comments) {
@@ -1302,12 +1052,12 @@
                     fullEventConfig.testTypeConfig.questions.forEach(q => {
                         const avg = ratingCounts[q.id] > 0 ? (averageRatings[q.id] / ratingCounts[q.id]).toFixed(1) : 'N/A';
                         const row = anbody.insertRow();
-                        row.innerHTML = `<td class="px-3 py-2 whitespace-nowrap text-sm text-gray-700">${q.text}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${avg}/${q.max}</td>`;
+                        row.innerHTML = `<td class="px-3 py-2 whitespace-nowrap text-sm text-gray-700">${q.text}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${avg}/${MAX_RATING}</td>`;
                     });
                     itemResultsDiv.appendChild(avgTable);
 
                     const overallAvg = overallRatingCount > 0 ? (totalOverallScore / overallRatingCount).toFixed(1) : 'N/A';
-                    itemResultsDiv.innerHTML += `<p class="text-sm font-semibold text-gray-700 mt-2">Overall Average Score: ${overallAvg}/${fullEventConfig.testTypeConfig.questions[0].max} (from ${itemRatings.length} submissions)</p>`; // Assuming all questions have same max scale
+                    itemResultsDiv.innerHTML += `<p class="text-sm font-semibold text-gray-700 mt-2">Overall Average Score: ${overallAvg}/${MAX_RATING} (from ${itemRatings.length} total submissions)</p>`;
 
                     if (overallAvg !== 'N/A') {
                         allScores.push({
@@ -1330,54 +1080,6 @@
             resultsSummary.dataset.allScores = JSON.stringify(allScores);
         },
 
-        renderMySubmissions: async () => { // NEW Function to display user's own submissions
-            utils.showScreen(mySubmissionsScreen);
-            mySubmissionsPlayerNameDisplay.textContent = currentPlayerName;
-            mySubmissionsList.innerHTML = '<p class="text-gray-500">Loading your submissions...</p>';
-
-            const playerFeedback = await api.getPlayerFeedback(); // Fetch feedback for current player
-
-            if (playerFeedback.length === 0) {
-                mySubmissionsList.innerHTML = '<p class="text-gray-500">You have not submitted any feedback yet.</p>';
-                return;
-            }
-
-            mySubmissionsList.innerHTML = ''; // Clear loading message
-
-            // Sort by submittedAt descending (most recent first)
-            playerFeedback.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-
-            playerFeedback.forEach(submission => {
-                const submissionDiv = document.createElement('div');
-                submissionDiv.className = 'p-4 border rounded-lg bg-blue-50 shadow';
-
-                const location = fullEventConfig.locations.find(loc => loc.locationId === submission.locationId);
-                const item = location ? location.items.find(it => it.itemId === submission.itemId) : null;
-
-                const locationName = location ? location.locationName : 'Unknown Location';
-                const itemName = item ? item.itemName : 'Unknown Item';
-                const submissionTime = new Date(submission.submittedAt).toLocaleString();
-
-                let ratingsHtml = '<ul class="list-disc pl-5 text-sm space-y-1 mt-2">';
-                fullEventConfig.testTypeConfig.questions.forEach(q => {
-                    const ratingValue = submission.ratings[q.id];
-                    const displayLabel = q.labels ? q.labels[ratingValue - q.min] : ratingValue;
-                    ratingsHtml += `<li><strong>${q.text}:</strong> ${displayLabel}</li>`;
-                });
-                ratingsHtml += '</ul>';
-
-                submissionDiv.innerHTML = `
-                    <h3 class="text-lg font-semibold text-blue-800">${itemName} at ${locationName}</h3>
-                    <p class="text-xs text-gray-600 mb-2">Submitted: ${submissionTime}</p>
-                    <h4 class="text-md font-semibold mt-3 mb-1 text-blue-700">Your Ratings:</h4>
-                    ${ratingsHtml}
-                    ${submission.comments ? `<h4 class="text-md font-semibold mt-3 mb-1 text-blue-700">Your Comments:</h4><p class="text-sm text-gray-700">${submission.comments}</p>` : '<p class="text-sm text-gray-500 italic mt-2">No comments for this submission.</p>'}
-                `;
-                mySubmissionsList.appendChild(submissionDiv);
-            });
-        },
-
-
         renderWinner: () => {
             utils.showScreen(winnerScreen);
             const allScores = JSON.parse(resultsSummary.dataset.allScores || '[]');
@@ -1395,26 +1097,26 @@
             if (winners.length === 1) {
                 winnerHtml = `
                     <p class="text-2xl font-bold text-green-700 mb-2">${winners[0].itemName} at ${winners[0].locationName}</p>
-                    <p class="text-xl text-gray-800">With an average score of: <span class="font-bold text-green-600">${winners[0].score}/${fullEventConfig.testTypeConfig.questions[0].max}</span></p>
+                    <p class="text-xl text-gray-800">With an average score of: <span class="font-bold text-green-600">${winners[0].score}/${MAX_RATING}</span></p>
                 `;
             } else {
                 winnerHtml = `
                     <p class="text-2xl font-bold text-purple-700 mb-2">It's a Tie!</p>
                     <p class="text-xl text-gray-800">The winning items are:</p>
                     <ul class="list-disc pl-8 mt-2 text-lg font-semibold text-purple-600">
-                        ${winners.map(w => `<li>${w.itemName} at ${w.locationName} (${w.score}/${fullEventConfig.testTypeConfig.questions[0].max})</li>`).join('')}
+                        ${winners.map(w => `<li>${w.itemName} at ${w.locationName} (${w.score}/${MAX_RATING})</li>`).join('')}
                     </ul>
                 `;
             }
-            winningItemDetails.innerHTML = winnerHtml + `<p class="mt-4 text-md text-gray-700">Congratulations to all participants!</p>`;
+             winningItemDetails.innerHTML = winnerHtml + `<p class="mt-4 text-md text-gray-700">Congratulations to all participants!</p>`;
         },
 
         addLocation: async () => {
             if (!isAdmin) {
-                utils.showAlert("Permission denied.", "Error");
+                utils.showAlert("Permission denied.", "Error"); 
                 return;
             }
-            const newLocName = newLocationAdminInput.value.trim();
+            const newLocName = newLocationAdminInput.value.trim(); 
             if (!utils.validateInput(newLocName, 'text', 100)) {
                 utils.showAlert("Please enter a valid location name (1-100 characters).", "Invalid Input");
                 return;
@@ -1423,39 +1125,51 @@
             const newLocation = {
                 locationId: `loc_${utils.generateId(6)}`,
                 locationName: newLocName,
-                items: [],
-                allowCustomItem: true
+                items: [], 
+                allowCustomItem: true 
             };
 
-            // Ensure fullEventConfig.locations is an array before pushing
-            if (!fullEventConfig.locations) {
-                fullEventConfig.locations = [];
-            }
             fullEventConfig.locations.push(newLocation);
-            fullEventConfig.activeLocationId = newLocation.locationId; // Make newly added location active
+            fullEventConfig.activeLocationId = newLocation.locationId; 
 
-            const updatedEvent = { ...fullEventConfig }; // Use spread to create a new object, not just reference
+            const updatedEvent = {
+                eventId: fullEventConfig.eventId,
+                eventName: fullEventConfig.eventName,
+                testTypeId: fullEventConfig.testTypeConfig.id,
+                adminId: fullEventConfig.adminId, 
+                locations: fullEventConfig.locations,
+                activeLocationId: fullEventConfig.activeLocationId
+            };
 
-            const response = await api.updateEventData(updatedEvent); // This calls the /api/update-event-data worker
+            const response = await api.updateEventData(updatedEvent);
             if (response) {
                 utils.showAlert("Location added successfully! It is now the active location.", "Success");
-                newLocationAdminInput.value = '';
-                await app.renderAdminLocationsList(); // Re-render admin list
-                app.populateLocationSelect(); // Update user-facing dropdown
+                newLocationAdminInput.value = ''; 
+                fullEventConfig = await api.getActiveTestConfig(); 
+                app.renderAdminLocationsList(); 
             }
         },
 
-        // This function is for adding an item from the admin panel's location section
-        addItemToLocation: async (locationId, inputElement) => {
-            if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
-
-            const newItemName = inputElement.value.trim();
+        addItem: async () => {
+             if (!isAdmin) {
+                utils.showAlert("Permission denied.", "Error");
+                return;
+            }
+            // In the new admin flow, adding items is done to the *currently selected location*
+            // in the tasting view, which admin would access via "View Tasting Interface (as Admin)".
+            // The `addItemAdminBtn` is on the tasting section.
+            const currentLocId = locationSelect.value; 
+            if (!currentLocId) {
+                utils.showAlert("Please select a location to add an item to.", "Missing Location");
+                return;
+            }
+            const newItemName = newItemNameInput.value.trim();
             if (!utils.validateInput(newItemName, 'text', 100)) {
                 utils.showAlert("Please enter a valid item name (1-100 characters).", "Invalid Input");
                 return;
             }
 
-            const targetLocation = fullEventConfig.locations.find(loc => loc.locationId === locationId);
+            const targetLocation = fullEventConfig.locations.find(loc => loc.locationId === currentLocId);
             if (!targetLocation) {
                 utils.showAlert("Selected location not found in configuration.", "Error");
                 return;
@@ -1465,43 +1179,46 @@
                 itemId: `item_${utils.generateId(6)}`,
                 itemName: newItemName
             };
-            
-            if (!targetLocation.items) {
-                targetLocation.items = [];
-            }
             targetLocation.items.push(newItem);
 
-            const updatedEvent = { ...fullEventConfig }; // Make a shallow copy for sending
+            const updatedEvent = {
+                eventId: fullEventConfig.eventId,
+                eventName: fullEventConfig.eventName,
+                testTypeId: fullEventConfig.testTypeConfig.id,
+                adminId: fullEventConfig.adminId,
+                locations: fullEventConfig.locations,
+                activeLocationId: fullEventConfig.activeLocationId
+            };
 
             const response = await api.updateEventData(updatedEvent);
             if (response) {
-                utils.showAlert("Item added successfully!", "Success");
-                inputElement.value = ''; // Clear input
-                await app.renderAdminLocationsList(); // Re-render admin list
-                app.populateLocationSelect(); // Update user-facing dropdown
+                utils.showAlert("Item added successfully to the selected location!", "Success");
+                newItemNameInput.value = '';
+                app.populateItemSelect(currentLocId); 
+                fullEventConfig = await api.getActiveTestConfig(); 
             }
         }
     };
 
     // Event Listeners
     startTestBtn.addEventListener('click', () => {
-        // When start test is clicked without a session ID input, it will use the currentEventId
-        app.startTasting(fullEventConfig.eventId);
+        const sessionId = sessionIdInput.value;
+        app.startTasting(sessionId);
     });
 
     // ADMIN BUTTON EVENT LISTENER
     phillStartsSessionBtn.addEventListener('click', app.startPhillAdminSession);
     
     // ADMIN PANEL BUTTONS
-    addLocationFromAdminBtn.addEventListener('click', app.addLocation);
+    addLocationFromAdminBtn.addEventListener('click', app.addLocation); 
     generateShareLinkBtn.addEventListener('click', app.generateShareLink);
-    adminCopyEventIdBtn.addEventListener('click', () => { // Listener for admin panel copy ID
-        if (adminEventIdDisplay.textContent) {
-            navigator.clipboard.writeText(adminEventIdDisplay.textContent)
-                .then(() => utils.showAlert("Event ID copied to clipboard!", "Copied!"))
+    adminCopySessionIdBtn.addEventListener('click', () => { // Listener for admin panel copy ID
+        if (adminSessionIdDisplay.textContent) {
+            navigator.clipboard.writeText(adminSessionIdDisplay.textContent)
+                .then(() => utils.showAlert("Session ID copied to clipboard!", "Copied!"))
                 .catch(err => {
                     console.error('Failed to copy: ', err);
-                    utils.showAlert("Failed to copy Event ID. Please copy it manually.", "Error");
+                    utils.showAlert("Failed to copy Session ID. Please copy it manually.", "Error");
                 });
         }
     });
@@ -1516,73 +1233,89 @@
         }
     });
 
-    adminGoToTastingBtn.addEventListener('click', () => {
+    adminViewTastingBtn.addEventListener('click', () => {
         utils.showScreen(tasteTestSection);
-        app.populateLocationSelect(); // Ensure locations are up-to-date
-        app.renderRatingForm(); // Render form with correct questions and item list for active location
+        app.populateLocationSelect(); 
+        app.populateItemSelect(locationSelect.value);
+        app.renderRatingForm();
     });
     adminViewResultsBtn.addEventListener('click', app.renderResults);
-    adminResetAllDataBtn.addEventListener('click', app.resetAllEventData); // NEW Listener for reset button
     adminEndSessionBtn.addEventListener('click', () => {
-        utils.clearPlayerInfo();
-        currentEventId = null;
-        isAdmin = false;
+        utils.clearPlayerInfo(); 
+        currentSessionId = null;
+        isAdmin = false; 
         utils.showScreen(welcomeScreen);
         playerNameInput.value = '';
-        // sessionIdInput.value = ''; // Removed input
+        sessionIdInput.value = '';
     });
 
-    // TASTING SCREEN BUTTONS
-    locationSelect.addEventListener('change', () => {
-        app.renderRatingForm(); // Re-render the form questions and item list when location changes
+
+    // COPY SESSION ID BUTTON EVENT LISTENER (on taste-test-section)
+    // This button is in the HTML.
+    // The currentSessionId is displayed in the header via headerSessionInfo.textContent
+    // If you want a button specific to the tasting section to copy the session ID, this is it.
+    // However, the request was to remove Session ID from top of tasting section, but the prompt
+    // text for this current reply still mentioned it "Session ID: <strong id="current-session-id-display"></strong>".
+    // I will assume for now it's still desired in the header, and this specific button might be optional
+    // or moved for clarity. For now, keeping it here.
+    const currentSessionIdDisplayElement = document.getElementById('current-session-id-display');
+    const tasteTestCopySessionIdBtn = document.getElementById('copy-session-id-btn'); // New element mapping for clarity
+
+    if (tasteTestCopySessionIdBtn) { // Check if the element exists before adding listener
+        tasteTestCopySessionIdBtn.addEventListener('click', () => {
+            if (currentSessionId) {
+                navigator.clipboard.writeText(currentSessionId)
+                    .then(() => utils.showAlert("Session ID copied to clipboard!", "Copied!"))
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                        utils.showAlert("Failed to copy Session ID. Please copy it manually.", "Error");
+                    });
+            }
+        });
+    }
+
+    locationSelect.addEventListener('change', (e) => {
+        app.populateItemSelect(e.target.value);
     });
 
     ratingForm.addEventListener('submit', app.submitRating);
     viewResultsBtn.addEventListener('click', app.renderResults);
-    viewMySubmissionsBtn.addEventListener('click', app.renderMySubmissions); // NEW Listener
     leaveSessionBtn.addEventListener('click', () => {
-        utils.clearPlayerInfo();
-        currentEventId = null;
+        utils.clearPlayerInfo(); 
+        currentSessionId = null; 
         utils.showScreen(welcomeScreen);
         playerNameInput.value = '';
-        // sessionIdInput.value = ''; // Removed input
+        sessionIdInput.value = '';
     });
+    
+    // REMOVED THE PROBLEM LINE HERE (already done in previous version I sent):
+    // addItemAdminBtn.addEventListener('click', app.addItem); 
+    // The addLocationAdminBtn event listener was also removed in a prior fix.
 
-    // Admin Add Item from Tasting view (only visible if isAdmin)
-    addItemFromAdminBtn.addEventListener('click', async () => {
-        const selectedLocationId = locationSelect.value;
-        await app.addItemToLocation(selectedLocationId, newItemAdminInput);
-        newItemAdminInput.value = ''; // Clear input after adding
-    });
-
-
-    // RESULTS AND WINNER SCREENS
+    // REFRESH LOCATIONS BUTTON EVENT LISTENER
     refreshLocationsBtn.addEventListener('click', async () => {
         utils.showAlert("Checking for new locations/items...", "Updating...");
         fullEventConfig = await api.getActiveTestConfig(); // Re-fetch all config from KV
         if (fullEventConfig) {
             app.populateLocationSelect(); // Re-populate location dropdown
-            app.renderRatingForm(); // Re-render form questions for current location
-            utils.showAlert("Locations and items updated!", "Success");
+            // No need to call populateItemSelect explicitly here, populateLocationSelect will trigger it.
+            utils.showAlert("Locations updated!", "Success");
         } else {
             utils.showAlert("Failed to refresh locations. Please try again.", "Error");
         }
     });
+
 
     viewWinnerBtn.addEventListener('click', app.renderWinner);
     backToTastingBtn.addEventListener('click', () => utils.showScreen(tasteTestSection));
     winnerBackToResultsBtn.addEventListener('click', () => utils.showScreen(resultsScreen));
     winnerNewSessionBtn.addEventListener('click', () => {
         utils.clearPlayerInfo();
-        currentEventId = null;
+        currentSessionId = null;
         utils.showScreen(welcomeScreen);
         playerNameInput.value = '';
-        // sessionIdInput.value = ''; // Removed input
+        sessionIdInput.value = '';
     });
-
-    // My Submissions Back Button
-    mySubmissionsBackBtn.addEventListener('click', () => utils.showScreen(tasteTestSection));
-
 
     // Initial app load
     app.init();
