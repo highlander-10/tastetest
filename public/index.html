@@ -38,7 +38,7 @@
             text-align: center;
         }
 
-        /* NEW: Styling for taste-test-section background and colors */
+        /* Styling for taste-test-section background and colors */
         #taste-test-section {
             background-color: #f7fafc; /* Light gray */
             background-image: url('https://placehold.co/600x400/D1FAE5/000000?text=Margarita+Background'); /* Subtle light green wave */
@@ -91,6 +91,28 @@
         .item-radio-group input[type="radio"]:checked + span::before {
             content: "✅ "; /* Checkmark emoji */
         }
+
+        /* NEW: Styling for dynamically loaded images */
+        .dynamic-image-container {
+            width: 100%;
+            max-width: 300px; /* Limit max width */
+            height: 200px; /* Fixed height for consistency */
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 15px;
+            overflow: hidden; /* Hide parts of image if it's too big */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; /* For centering image within container */
+            align-items: center;
+            justify-content: center;
+        }
+        .dynamic-image-container img {
+            width: auto; /* Allow natural width */
+            height: 100%; /* Fill height of container */
+            max-width: 100%; /* Ensure it doesn't overflow */
+            object-fit: contain; /* Ensure entire image is visible, scale down if too big */
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -106,11 +128,12 @@
             <div id="loading-screen" class="text-center p-8">
                 <p class="text-lg text-gray-700 mb-4">Loading application...</p>
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+                <div class="dynamic-image-container"><img id="loading-image" src="" alt="Margarita Loading"></div>
                 <div class="trivia-joke" id="loading-trivia-joke"></div>
             </div>
 
             <div id="welcome-screen" class="hidden">
-                <img src="https://placehold.co/300x100/ADD8E6/000000?text=Margarita!" alt="Margarita Banner" class="w-full h-auto rounded-lg mb-6 object-cover">
+                <div class="dynamic-image-container"><img id="welcome-image" src="" alt="Margarita Welcome"></div>
                 
                 <button id="phill-starts-session-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg text-lg mb-4 transition duration-150 shadow-sm">
                     Phill Starts Session (Admin)
@@ -119,9 +142,9 @@
                 <div class="mt-6 pt-6 border-t border-gray-200">
                     <h2 class="text-lg font-semibold mb-3 text-center text-blue-600">Player: Join Existing Test</h2>
                     <input type="text" id="player-name-input" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-                    <input type="text" id="session-id-input" placeholder="Enter Session ID (optional)" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                    <input type="text" id="session-id-input" placeholder="Enter Session ID" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
                     <button id="start-test-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-150 shadow-sm">
-                        Start Tasting!
+                        Join Test Manually
                     </button>
                 </div>
                  <div class="trivia-joke" id="welcome-trivia-joke"></div>
@@ -186,6 +209,8 @@
                          <h3 class="text-xl font-semibold mb-3">Which Margarita are you tasting here?</h3>
                          </div>
 
+                    <p class="mb-4 text-gray-600 italic">Rate each aspect based on how well it matches your ideal margarita. 5 is perfect for you, 0 is the complete opposite of what you prefer.</p>
+
                     <div class="rating-explanation"></div>
                     <div id="question-fields" class="space-y-4">
                         </div>
@@ -210,6 +235,7 @@
             <div id="results-screen" class="hidden">
                 <h1 class="text-2xl font-bold mb-4 text-yellow-700">Session Results</h1>
                 <p class="mb-4 text-xs">Session ID: <strong id="results-session-id"></strong></p>
+                <div class="dynamic-image-container"><img id="results-image" src="" alt="Margarita Results"></div>
                 <div id="results-summary" class="space-y-4"></div>
                 <button id="view-winner-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg my-6 transition duration-150 shadow-sm">
                     See Winning Item!
@@ -223,7 +249,7 @@
                 <h1 class="text-3xl font-bold mb-6 text-red-500">🎉 And the Winner Is... 🎉</h1>
                 <div id="winning-item-details" class="p-6 bg-yellow-100 border-2 border-yellow-400 rounded-lg shadow-lg">
                 </div>
-               <img src="https://placehold.co/200x150/ADD8E6/000000?text=Cheers!" alt="Celebration" class="mx-auto my-6 rounded-lg">
+               <div class="dynamic-image-container"><img id="winner-image" src="" alt="Margarita Winner"></div>
                 <button id="winner-back-to-results-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 transition duration-150 shadow-sm">
                     Back to Results
                 </button>
@@ -234,7 +260,7 @@
         </main>
 
         <div id="alert-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center p-4 z-[2000]">
-            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w_sm mx-auto">
+            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm mx-auto">
                 <h3 id="alert-title" class="text-lg font-semibold leading-6 text-gray-900 mb-2">Alert</h3>
                 <div class="mt-2">
                     <p id="alert-message" class="text-sm text-gray-700"></p>
@@ -256,6 +282,18 @@
     const RATING_EXPLANATION = "For all ratings (0-5 or sliders): Think about your ideal margarita. A rating of 5 means this aspect (e.g., sweetness, spiciness) is PERFECTLY what you like. A 0 means it's the complete opposite of what you prefer. Use the in-between values to show how close or far it is from your ideal.";
     const PHILL_ADMIN_ID = 'phill_the_admin'; 
 
+    // NEW: Array of image URLs to rotate through
+    const MARGARITA_IMAGES = [
+        "https://ih1.redbubble.net/image.4131737203.9681/poster,504x498,f8f8f8-pad,600x600,f8f8f8.jpg",
+        "https://www.digitalmomblog.com/wp-content/uploads/2022/02/Thinking-about-a-margarita-720x720.jpg",
+        "https://i.pinimg.com/736x/03/98/30/039830e0f44ce625f3f9429bf674497f.jpg",
+        "https://images.squarespace-cdn.com/content/v1/5143771ae4b04eaef3677f95/1564611102018-5RNMUU42CGNA296CNX26/public.jpeg",
+        "https://res.cloudinary.com/dukq9ubgm/images/f_auto,q_auto/v1739588799/Keep-calm-meme-margarita/Keep-calm-meme-margarita.jpg?_i=AA",
+        "https://imgix.bustle.com/2017/2/17/9286d94f-ddf9-413f-ae0e-aaf2d001589b.png?w=760&h=758&fit=crop&crop=faces&auto=format%2Ccompress&q=50&dpr=2",
+        "https://i5.walmartimages.com/seo/Stupell-Industries-Funny-Margarita-Phrase-Food-Beverage-Painting-Black-Floater-Framed-Canvas-Art-Print-Wall-Art-18-x-18_212d0c0a-b339-4365-ac2c-0a991630bad1.db904e123a763ad3ca51b0a95787da57.jpeg"
+    ];
+    let currentImageIndex = 0; // To rotate through images
+
     // DOM Elements
     const loadingScreen = document.getElementById('loading-screen');
     const welcomeScreen = document.getElementById('welcome-screen');
@@ -272,7 +310,7 @@
 
     const playerNameInput = document.getElementById('player-name-input');
     const sessionIdInput = document.getElementById('session-id-input');
-    const startTestBtn = document.getElementById('start-test-btn');
+    const startTestBtn = document.getElementById('start-test-btn'); // Renamed text to "Join Test Manually"
     const phillStartsSessionBtn = document.getElementById('phill-starts-session-btn'); 
 
     // ADMIN PANEL ELEMENTS
@@ -292,12 +330,12 @@
     // TASTE TEST SECTION ELEMENTS
     const testEventNameDisplay = document.getElementById('test-event-name');
     const currentPlayerNameDisplay = document.getElementById('current-player-name');
-    // Session ID display is now only in admin panel and header for players, not within tasting section below header
+    // Session ID display is now only in header for players, removed from below "You are:"
     // const currentSessionIdDisplay = document.getElementById('current-session-id-display'); 
-    // const copySessionIdBtn = document.getElementById('copy-session-id-btn'); 
+    // const copySessionIdBtn = document.getElementById('copy-session-id-btn'); // Removed this button from HTML
 
     const locationSelect = document.getElementById('location-select');
-    const itemRadioGroup = document.getElementById('item-radio-group'); // NEW: For item selection
+    const itemRadioGroup = document.getElementById('item-radio-group'); // For item selection
     const ratingForm = document.getElementById('rating-form');
     const questionFields = document.getElementById('question-fields');
     const commentsTextarea = document.getElementById('comments');
@@ -323,14 +361,20 @@
     const welcomeTriviaJokeDisplay = document.getElementById('welcome-trivia-joke'); 
     const tastingTriviaJokeDisplay = document.getElementById('tasting-trivia-joke'); 
 
+    // NEW: Image elements
+    const loadingImage = document.getElementById('loading-image');
+    const welcomeImage = document.getElementById('welcome-image');
+    const resultsImage = document.getElementById('results-image'); // New image ID for results screen
+    const winnerImage = document.getElementById('winner-image'); // New image ID for winner screen
+
 
     // State Variables
-    let currentSessionId = null; // Session ID for data grouping in KV
+    let currentSessionId = null; 
     let currentPlayerId = null;
     let currentPlayerName = null;
     let isAdmin = false; 
-    let fullEventConfig = null; // Stores { eventId, eventName, activeLocationId, locations: [], testTypeConfig: { questions: [], ratingScaleExplanation: "" } }
-    let selectedItemForRating = null; // NEW: Stores the item currently being rated by the participant
+    let fullEventConfig = null; 
+    let selectedItemForRating = null; 
 
 
     // Data for trivia and jokes
@@ -364,12 +408,13 @@
                     appHeader.classList.add('bg-green-500');
                 } else if (screenToShow === tasteTestSection) {
                     headerTitle.textContent = fullEventConfig ? fullEventConfig.eventName : "Taste Test";
-                    headerSessionInfo.textContent = currentSessionId ? `Session: ${currentSessionId}` : ""; // Keep session ID in header
+                    // Only show session ID in header if not admin, or simplify for cleaner UX
+                    headerSessionInfo.textContent = `Session: ${fullEventConfig.eventId}`;
                     appHeader.classList.remove('bg-green-500', 'bg-yellow-500');
                     appHeader.classList.add('bg-blue-500');
                 } else if (screenToShow === resultsScreen || screenToShow === winnerScreen) {
                     headerTitle.textContent = "Results";
-                    headerSessionInfo.textContent = currentSessionId ? `Session: ${currentSessionId}` : "";
+                    headerSessionInfo.textContent = fullEventConfig ? `Session: ${fullEventConfig.eventId}` : "";
                     appHeader.classList.remove('bg-green-500', 'bg-blue-500');
                     appHeader.classList.add('bg-yellow-500');
                 }
@@ -417,12 +462,24 @@
             const joke = MARGARITA_TRIVIA_JOKES[currentTriviaJokeIndex];
             loadingTriviaJokeDisplay.textContent = joke;
             welcomeTriviaJokeDisplay.textContent = joke;
-            tastingTriviaJokeDisplay.textContent = joke; // Update all instances
+            tastingTriviaJokeDisplay.textContent = joke; 
             currentTriviaJokeIndex = (currentTriviaJokeIndex + 1) % MARGARITA_TRIVIA_JOKES.length;
         },
         startTriviaJokeRotation: () => {
-            utils.displayRandomTriviaJoke(); // Display one immediately
-            setInterval(utils.displayRandomTriviaJoke, 15000); // Rotate every 15 seconds
+            utils.displayRandomTriviaJoke(); 
+            setInterval(utils.displayRandomTriviaJoke, 15000); 
+        },
+        displayRandomImage: () => { // NEW: Function to display random image
+            const imageUrl = MARGARITA_IMAGES[currentImageIndex];
+            loadingImage.src = imageUrl;
+            welcomeImage.src = imageUrl;
+            resultsImage.src = imageUrl;
+            winnerImage.src = imageUrl;
+            currentImageIndex = (currentImageIndex + 1) % MARGARITA_IMAGES.length;
+        },
+        startImageRotation: () => { // NEW: Function to start image rotation
+            utils.displayRandomImage(); // Display one immediately
+            setInterval(utils.displayRandomImage, 15000); // Rotate every 15 seconds, synchronized with jokes
         }
     };
 
@@ -494,8 +551,9 @@
     // Session Management and UI Rendering
     const app = {
         init: async () => {
-            appVersionDisplay.textContent = `Written by Phill. Version ${APP_VERSION}`; // Set version on load
-            utils.startTriviaJokeRotation(); // Start rotating trivia/jokes
+            appVersionDisplay.textContent = `Written by Phill. Version ${APP_VERSION}`; 
+            utils.startTriviaJokeRotation(); 
+            utils.startImageRotation(); // NEW: Start rotating images
 
             utils.showScreen(loadingScreen);
             const playerInfo = utils.loadPlayerInfo();
@@ -518,8 +576,8 @@
                     // Attempt to join directly from URL
                     // Clear params from URL to prevent re-join loops on refresh
                     history.replaceState({}, document.title, window.location.pathname); 
-                    app.startTasting(sharedSessionId, sharedPlayerName); // Pass name to startTasting
-                    return; // Prevent showing welcome screen and continue to tasting
+                    app.startTasting(sharedSessionId, sharedPlayerName); 
+                    return; 
                 }
 
 
@@ -545,15 +603,22 @@
             }
         },
 
-        startTasting: async (sessionIdFromInput = null, nameFromUrl = null) => { // Modified to accept name from URL
-            if (nameFromUrl) { // If name came from URL, use it directly
+        startTasting: async (sessionIdFromInput = null, nameFromUrl = null) => { 
+            // Name handling: For "Phill", use "Phill". For URL joins, use name from URL. Otherwise, use input field.
+            if (nameFromUrl) {
                 currentPlayerName = nameFromUrl;
-                playerNameInput.value = nameFromUrl; // Update input field
-            } else if (!utils.validateInput(playerNameInput.value, 'text', 50)) { // Otherwise, validate input field
+                playerNameInput.value = nameFromUrl; // Update input field if coming from URL
+            } else if (!utils.validateInput(playerNameInput.value, 'text', 50)) { 
                 utils.showAlert("Please enter a valid name (1-50 characters).");
                 return;
             } else {
                 currentPlayerName = playerNameInput.value.trim();
+            }
+
+            // If coming from "Phill Starts Session (Admin)" button, currentPlayerId is already set to PHILL_ADMIN_ID
+            // Otherwise, get/generate player ID for non-admin players
+            if (!isAdmin && !currentPlayerId) { // If not admin and no ID yet (e.g., first time player join)
+                currentPlayerId = utils.generateId(10); 
             }
             utils.savePlayerInfo(currentPlayerId, currentPlayerName); 
 
@@ -562,13 +627,19 @@
                 return;
             }
 
-            // Use session ID from input or URL, or generate new
-            if (sessionIdFromInput && sessionIdFromInput.trim() !== '') {
+            // Use session ID from input or URL, or generate new if blank.
+            // For manual join, sessionIdInput.value is used.
+            // For URL join, sessionIdFromInput (from URL params) is used.
+            // If admin, currentSessionId is set to fullEventConfig.eventId directly.
+            if (isAdmin) { // If admin, session ID is the event ID
+                currentSessionId = fullEventConfig.eventId;
+            } else if (sessionIdFromInput && sessionIdFromInput.trim() !== '') { // If player joining via URL or manual input
                 currentSessionId = sessionIdFromInput.trim();
-            } else {
+            } else { // Player hitting Start Tasting without session ID
                 currentSessionId = `session_${fullEventConfig.eventId}_${Date.now()}`;
-                utils.showAlert(`No session ID entered. A new session ID "${currentSessionId}" will be used.`, "Info");
+                utils.showAlert(`No session ID entered. A new session ID "${currentSessionId}" will be used for your feedback.`, "Info");
             }
+
 
             // Re-fetch full event config to ensure latest player list and locations
             fullEventConfig = await api.getActiveTestConfig();
@@ -578,19 +649,17 @@
                  return;
             }
 
-            // Update isAdmin status based on latest config and current player ID
+            // Re-check isAdmin status based on latest config and current player ID
             isAdmin = currentPlayerId === fullEventConfig.adminId;
 
-            currentPlayerNameDisplay.textContent = currentPlayerName;
-            // currentSessionIdDisplay.textContent = currentSessionId; // Removed from here for cleaner UX
+            // Display name: Phill will show as 'Phill', others their name
+            currentPlayerNameDisplay.textContent = isAdmin ? "Phill" : currentPlayerName; 
             testEventNameDisplay.textContent = fullEventConfig.eventName;
             appHeader.classList.remove('bg-green-500');
             appHeader.classList.add('bg-blue-500');
 
-            // Populate selectors and render form based on potentially updated fullEventConfig
             app.populateLocationSelect();
-            // app.populateItemSelect(locationSelect.value); // Items now handled within renderRatingForm
-            app.renderRatingForm();
+            app.renderRatingForm(); // This will handle item selection as well
             
             utils.showScreen(tasteTestSection);
             utils.showAlert(`Welcome, ${currentPlayerName}! Starting tasting for "${fullEventConfig.eventName}".`, "Session Joined");
@@ -606,7 +675,7 @@
 
             isAdmin = true;
             currentPlayerId = PHILL_ADMIN_ID; 
-            currentPlayerName = "Phill (Admin)";
+            currentPlayerName = "Phill"; // Display Phill's name as "Phill", not "Phill (Admin)" in player view context
             utils.savePlayerInfo(currentPlayerId, currentPlayerName); 
 
             fullEventConfig = await api.getActiveTestConfig();
@@ -616,23 +685,22 @@
                 return;
             }
 
-            currentSessionId = fullEventConfig.eventId; // Admin directly manages the event, so session ID is the event ID.
+            currentSessionId = fullEventConfig.eventId; // Admin manages the event, so session ID is the event ID.
 
-            // Set UI elements for admin panel
             adminSessionIdDisplay.textContent = currentSessionId;
-            newLocationAdminInput.value = ''; // Clear input field
-            participantNameShareInput.value = ''; // Clear share name input
-            generatedShareLink.textContent = ''; // Clear generated link
+            newLocationAdminInput.value = ''; 
+            participantNameShareInput.value = ''; 
+            generatedShareLink.textContent = ''; 
             generatedShareLink.href = '#';
             copyShareLinkBtn.classList.add('hidden');
 
-            app.renderAdminLocationsList(); // Populate list of existing locations
+            app.renderAdminLocationsList(); 
 
             utils.showScreen(adminPanelScreen); 
             utils.showAlert(`Welcome, Phill! You are in Admin Mode for "${fullEventConfig.eventName}".`, "Admin Access");
         },
 
-        renderAdminLocationsList: () => { // NEW FUNCTION for Admin Panel
+        renderAdminLocationsList: () => { 
             adminLocationsList.innerHTML = '';
             if (fullEventConfig.locations.length === 0) {
                 adminLocationsList.innerHTML = '<li class="text-gray-500 italic">No locations added yet.</li>';
@@ -652,7 +720,6 @@
                 adminLocationsList.appendChild(li);
             });
 
-            // Attach event listeners for dynamic buttons
             document.querySelectorAll('.remove-location-admin-btn').forEach(button => {
                 button.onclick = async (e) => {
                     const locationId = e.target.dataset.locationId;
@@ -671,11 +738,10 @@
             });
         },
         
-        removeLocation: async (locationId) => { // NEW ADMIN ACTION
+        removeLocation: async (locationId) => { 
             if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
 
             fullEventConfig.locations = fullEventConfig.locations.filter(loc => loc.locationId !== locationId);
-            // Also need to remove all feedback associated with this location (done server-side by new worker)
 
             const updatedEvent = {
                 eventId: fullEventConfig.eventId,
@@ -683,33 +749,27 @@
                 testTypeId: fullEventConfig.testTypeConfig.id,
                 adminId: fullEventConfig.adminId, 
                 locations: fullEventConfig.locations,
-                activeLocationId: fullEventConfig.activeLocationId // Re-evaluate active if current one removed
+                activeLocationId: fullEventConfig.activeLocationId 
             };
+
             const response = await api.updateEventData(updatedEvent);
             if (response) {
-                // NOW, CALL A NEW WORKER TO DELETE FEEDBACK BY LOCATION ID
-                // This would be api.deleteFeedbackByLocation(fullEventConfig.eventId, locationId)
-                // For now, we'll assume the simple updateEventData handles the *event structure*.
-                // Deleting actual feedback records would need a new dedicated worker function and KV key structure (e.g. feedback:EVENT_ID:LOCATION_ID:ITEM_ID:PLAYER_ID:TIMESTAMP)
-                // For this version, let's just make the UI update.
-                fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to get latest state
-                app.renderAdminLocationsList(); // Re-render the admin list
+                fullEventConfig = await api.getActiveTestConfig(); 
+                app.renderAdminLocationsList(); 
                 utils.showAlert("Location removed successfully (and its associated feedback on refresh).", "Success");
             }
         },
 
-        resetLocationFeedback: async (locationId) => { // NEW ADMIN ACTION
+        resetLocationFeedback: async (locationId) => { 
             if (!isAdmin) { utils.showAlert("Permission denied.", "Error"); return; }
             
             // This requires a new API endpoint to delete feedback from KV for a given location.
-            // For now, we'll simulate. In a real app: await api.resetFeedbackForLocation(fullEventConfig.eventId, locationId);
             utils.showAlert("Resetting feedback for this location would require a new API endpoint to delete KV data. (Not implemented in this version)", "Info");
-            // After successful API call:
-            fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to get latest state
-            app.renderAdminLocationsList(); // Re-render to show updated (empty) feedback counts
+            fullEventConfig = await api.getActiveTestConfig(); 
+            app.renderAdminLocationsList(); 
         },
 
-        generateShareLink: () => { // NEW ADMIN ACTION
+        generateShareLink: () => { 
             const participantName = participantNameShareInput.value.trim();
             if (!utils.validateInput(participantName, 'text', 50)) {
                 utils.showAlert("Please enter a name for the participant.", "Invalid Input");
@@ -730,16 +790,17 @@
 
         renderRatingForm: () => {
             questionFields.innerHTML = '';
-            itemRadioGroup.classList.add('hidden'); // Hide by default, show if items exist
-            ratingForm.classList.remove('hidden'); // Show form by default
+            itemRadioGroup.classList.add('hidden'); 
+            ratingForm.classList.remove('hidden'); 
 
             const ratingExplanationDiv = ratingForm.querySelector('.rating-explanation');
             if (ratingExplanationDiv) {
-                ratingExplanationDiv.innerHTML = RATING_EXPLANATION; // Updated instruction text
+                ratingExplanationDiv.innerHTML = RATING_EXPLANATION; 
             }
 
-            // NEW: Added this instruction paragraph
-            questionFields.insertAdjacentHTML('beforebegin', '<p class="mb-4 text-gray-600 italic">Rate each aspect based on how well it matches your ideal margarita. 5 is perfect for you, 0 is the opposite of what you like.</p>');
+            // Insert the general instruction paragraph above the question fields
+            // Removed redundant insertion, now part of the HTML directly
+            // questionFields.insertAdjacentHTML('beforebegin', '<p class="mb-4 text-gray-600 italic">Rate each aspect based on how well it matches your ideal margarita. 5 is perfect for you, 0 is the opposite of what you like.</p>');
 
 
             if (!fullEventConfig || !fullEventConfig.testTypeConfig || !fullEventConfig.testTypeConfig.questions) {
@@ -750,7 +811,7 @@
 
             const currentSelectedLocation = fullEventConfig.locations.find(loc => loc.locationId === locationSelect.value);
 
-            // NEW: Render item selection as radio buttons
+            // Render item selection as radio buttons
             if (currentSelectedLocation && currentSelectedLocation.items && currentSelectedLocation.items.length > 0) {
                 itemRadioGroup.classList.remove('hidden');
                 itemRadioGroup.innerHTML = `<h3 class="text-xl font-semibold mb-3">Which Margarita are you tasting here?</h3>`;
@@ -771,11 +832,17 @@
                             itemId: e.target.value,
                             itemName: e.target.dataset.itemName
                         };
-                        // console.log("Selected item for rating:", selectedItemForRating); // For debugging
                     }
                 };
-                // Automatically select the first item if none is selected on load
-                if (!selectedItemForRating || !currentSelectedLocation.items.some(item => item.itemId === selectedItemForRating.itemId)) {
+                // Auto-select first item or previously selected one if available
+                const savedSelectedItem = selectedItemForRating ? currentSelectedLocation.items.find(item => item.itemId === selectedItemForRating.itemId) : null;
+                if (savedSelectedItem) {
+                    const radioToSelect = itemRadioGroup.querySelector(`input[value="${savedSelectedItem.itemId}"]`);
+                    if (radioToSelect) {
+                        radioToSelect.checked = true;
+                        selectedItemForRating = savedSelectedItem;
+                    }
+                } else {
                     const firstItemRadio = itemRadioGroup.querySelector('input[type="radio"]');
                     if (firstItemRadio) {
                         firstItemRadio.checked = true;
@@ -787,7 +854,7 @@
                 }
             } else {
                 itemRadioGroup.classList.add('hidden'); // Hide if no items
-                selectedItemForRating = null; // No item to rate
+                selectedItemForRating = null; 
                 utils.showAlert("No items available for this location. Please add items via Admin Panel or select a different location.", "No Items");
                 ratingForm.classList.add('hidden'); // Hide form if no items
                 return;
@@ -795,6 +862,7 @@
 
             // Render questions based on testTypeConfig
             fullEventConfig.testTypeConfig.questions.forEach(q => {
+                let defaultValue = Math.round(((q.min || 0) + (q.max || 5)) / 2); // Default to middle for sliders/0-5
                 if (q.type === 'rating_0_5') {
                     const questionDiv = document.createElement('div');
                     questionDiv.className = 'flex flex-col sm:flex-row sm:items-center sm:justify-between';
@@ -814,25 +882,26 @@
                         const option = document.createElement('option');
                         option.value = i;
                         option.textContent = `${i} star${i !== 1 ? 's' : ''}`;
+                        if (i === defaultValue) { // Set default
+                            option.selected = true;
+                        }
                         select.appendChild(option);
                     }
                     questionDiv.appendChild(label);
                     questionDiv.appendChild(select);
                     questionFields.appendChild(questionDiv);
-                } else if (q.type === 'rating_slider_with_labels') { // NEW: Handle slider questions
+                } else if (q.type === 'rating_slider_with_labels') { 
                     const questionDiv = document.createElement('div');
-                    // Changed styling to `flex-col` for better vertical spacing on small screens,
-                    // and removed `sm:flex-row sm:items-center sm:justify-between` to prevent single-line overflow.
-                    questionDiv.className = 'flex flex-col mb-4 p-2 border rounded-lg bg-gray-100'; // Added padding, border, background for clarity
+                    questionDiv.className = 'flex flex-col mb-4 p-2 border rounded-lg bg-gray-100';
 
                     const label = document.createElement('label');
                     label.htmlFor = `question-${q.id}`;
                     label.textContent = `${q.text} ${q.required ? '*' : ''}:`;
-                    label.className = 'mb-2 text-gray-700 font-medium'; // Increased margin-bottom for label
+                    label.className = 'mb-2 text-gray-700 font-medium'; 
                     questionDiv.appendChild(label);
 
                     const sliderContainer = document.createElement('div');
-                    sliderContainer.className = 'flex flex-col items-center w-full'; // Changed to flex-col for label/slider/value
+                    sliderContainer.className = 'flex flex-col items-center w-full'; 
 
                     const slider = document.createElement('input');
                     slider.type = 'range';
@@ -841,11 +910,11 @@
                     slider.min = q.min || 0;
                     slider.max = q.max || 5;
                     slider.step = q.step || 1;
-                    slider.value = Math.round((parseInt(slider.min, 10) + parseInt(slider.max, 10)) / 2); // Default to middle
-                    slider.className = 'w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer range-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'; // Darker gray for track
+                    slider.value = defaultValue; // Set default
+                    slider.className = 'w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer range-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'; 
                     sliderContainer.appendChild(slider);
 
-                    const labelsContainer = document.createElement('div'); // Container for min/max labels below slider
+                    const labelsContainer = document.createElement('div'); 
                     labelsContainer.className = 'flex justify-between w-full text-xs text-gray-500 mt-1';
                     if (q.labels && q.labels.length > 0) {
                          const minLabel = document.createElement('span');
@@ -859,9 +928,9 @@
                     sliderContainer.appendChild(labelsContainer);
 
 
-                    const valueDisplay = document.createElement('span'); // Displays current value/label
-                    valueDisplay.className = 'text-sm text-gray-800 mt-2 font-semibold p-1 bg-blue-100 rounded-md'; // Stronger background
-                    valueDisplay.textContent = q.labels ? q.labels[slider.value] : slider.value; // Show initial label/value
+                    const valueDisplay = document.createElement('span'); 
+                    valueDisplay.className = 'text-sm text-gray-800 mt-2 font-semibold p-1 bg-blue-100 rounded-md'; 
+                    valueDisplay.textContent = q.labels ? q.labels[slider.value] : slider.value; 
                     sliderContainer.appendChild(valueDisplay);
 
                     slider.oninput = (e) => {
@@ -899,7 +968,7 @@
                 }
                 locationSelect.appendChild(option);
             });
-            locationSelect.dispatchEvent(new Event('change')); // Trigger item population / form rendering
+            locationSelect.dispatchEvent(new Event('change')); 
         },
 
         // populateItemSelect now only ensures renderRatingForm is called for current location's items
@@ -921,7 +990,6 @@
             e.preventDefault();
 
             const locationId = locationSelect.value;
-            // Get selected item from the radio buttons
             const selectedItemRadio = itemRadioGroup.querySelector('input[name="selectedItem"]:checked');
 
             if (!locationId || !selectedItemRadio) {
@@ -929,7 +997,7 @@
                 return;
             }
             const itemId = selectedItemRadio.value;
-            const itemName = selectedItemRadio.dataset.itemName; // Get item name from data-attribute
+            const itemName = selectedItemRadio.dataset.itemName; 
 
 
             const ratings = {};
@@ -940,7 +1008,6 @@
                     let value;
                     if (q.type === 'rating_0_5' || q.type === 'rating_slider_with_labels') {
                         value = parseInt(inputElement.value, 10);
-                        // Validate against min/max defined in KV for sliders
                         if (q.required && (isNaN(value) || value < (q.min || 0) || value > (q.max || 5))) {
                              allRequiredQuestionsAnswered = false;
                         }
@@ -970,7 +1037,7 @@
                 eventId: fullEventConfig.eventId,
                 locationId: locationId,
                 itemId: itemId,
-                itemName: itemName, // Include item name for easier results processing
+                itemName: itemName, 
                 playerId: currentPlayerId,
                 playerName: currentPlayerName,
                 sessionId: currentSessionId, 
@@ -982,10 +1049,9 @@
             if (response) {
                 utils.showAlert("Feedback submitted successfully!", "Success");
                 ratingForm.reset();
-                selectedItemForRating = null; // Reset selection after submission
-                fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to get latest feedback counts
-                app.populateLocationSelect(); // Re-populate locations if needed and trigger renderRatingForm
-                // app.renderRatingForm(); // populateLocationSelect will call renderRatingForm
+                selectedItemForRating = null; 
+                fullEventConfig = await api.getActiveTestConfig(); 
+                app.populateLocationSelect(); 
             }
         },
 
@@ -1150,58 +1216,15 @@
             }
         },
 
-        addItem: async () => {
-             if (!isAdmin) {
-                utils.showAlert("Permission denied.", "Error");
-                return;
-            }
-            // In the new admin flow, adding items is done to the *currently selected location*
-            // in the tasting view, which admin would access via "View Tasting Interface (as Admin)".
-            // The `addItemAdminBtn` is on the tasting section.
-            const currentLocId = locationSelect.value; 
-            if (!currentLocId) {
-                utils.showAlert("Please select a location to add an item to.", "Missing Location");
-                return;
-            }
-            const newItemName = newItemNameInput.value.trim();
-            if (!utils.validateInput(newItemName, 'text', 100)) {
-                utils.showAlert("Please enter a valid item name (1-100 characters).", "Invalid Input");
-                return;
-            }
-
-            const targetLocation = fullEventConfig.locations.find(loc => loc.locationId === currentLocId);
-            if (!targetLocation) {
-                utils.showAlert("Selected location not found in configuration.", "Error");
-                return;
-            }
-
-            const newItem = {
-                itemId: `item_${utils.generateId(6)}`,
-                itemName: newItemName
-            };
-            targetLocation.items.push(newItem);
-
-            const updatedEvent = {
-                eventId: fullEventConfig.eventId,
-                eventName: fullEventConfig.eventName,
-                testTypeId: fullEventConfig.testTypeConfig.id,
-                adminId: fullEventConfig.adminId,
-                locations: fullEventConfig.locations,
-                activeLocationId: fullEventConfig.activeLocationId
-            };
-
-            const response = await api.updateEventData(updatedEvent);
-            if (response) {
-                utils.showAlert("Item added successfully to the selected location!", "Success");
-                newItemNameInput.value = '';
-                app.populateItemSelect(currentLocId); 
-                fullEventConfig = await api.getActiveTestConfig(); 
-            }
-        }
+        // Removed addItem: async () => { ... } as per request.
+        // Item management is now purely via KV editing or initial setup.
+        // The add-item-admin-btn and new-item-name-input HTML elements
+        // within taste-test-section are now effectively unused/inert.
+        // If you need UI for adding items, it would need to be rebuilt in the admin panel.
     };
 
     // Event Listeners
-    startTestBtn.addEventListener('click', () => {
+    startTestBtn.addEventListener('click', () => { // "Join Test Manually" button
         const sessionId = sessionIdInput.value;
         app.startTasting(sessionId);
     });
@@ -1236,7 +1259,6 @@
     adminViewTastingBtn.addEventListener('click', () => {
         utils.showScreen(tasteTestSection);
         app.populateLocationSelect(); 
-        app.populateItemSelect(locationSelect.value);
         app.renderRatingForm();
     });
     adminViewResultsBtn.addEventListener('click', app.renderResults);
@@ -1251,17 +1273,12 @@
 
 
     // COPY SESSION ID BUTTON EVENT LISTENER (on taste-test-section)
-    // This button is in the HTML.
-    // The currentSessionId is displayed in the header via headerSessionInfo.textContent
-    // If you want a button specific to the tasting section to copy the session ID, this is it.
-    // However, the request was to remove Session ID from top of tasting section, but the prompt
-    // text for this current reply still mentioned it "Session ID: <strong id="current-session-id-display"></strong>".
-    // I will assume for now it's still desired in the header, and this specific button might be optional
-    // or moved for clarity. For now, keeping it here.
+    // This button is removed from HTML, so this listener is inert.
+    /*
     const currentSessionIdDisplayElement = document.getElementById('current-session-id-display');
-    const tasteTestCopySessionIdBtn = document.getElementById('copy-session-id-btn'); // New element mapping for clarity
+    const tasteTestCopySessionIdBtn = document.getElementById('copy-session-id-btn'); // This element is removed from HTML
 
-    if (tasteTestCopySessionIdBtn) { // Check if the element exists before adding listener
+    if (tasteTestCopySessionIdBtn) { 
         tasteTestCopySessionIdBtn.addEventListener('click', () => {
             if (currentSessionId) {
                 navigator.clipboard.writeText(currentSessionId)
@@ -1273,6 +1290,7 @@
             }
         });
     }
+    */
 
     locationSelect.addEventListener('change', (e) => {
         app.populateItemSelect(e.target.value);
@@ -1288,17 +1306,17 @@
         sessionIdInput.value = '';
     });
     
-    // REMOVED THE PROBLEM LINE HERE (already done in previous version I sent):
-    // addItemAdminBtn.addEventListener('click', app.addItem); 
-    // The addLocationAdminBtn event listener was also removed in a prior fix.
+    // Removed specific addItemAdminBtn event listener (it was already causing ReferenceErrors).
+    // The HTML elements newLocationNameInput, addLocationAdminBtn, addItemAdminBtn, newItemNameInput
+    // within the taste-test-section are commented out or effectively inert now.
 
     // REFRESH LOCATIONS BUTTON EVENT LISTENER
     refreshLocationsBtn.addEventListener('click', async () => {
         utils.showAlert("Checking for new locations/items...", "Updating...");
         fullEventConfig = await api.getActiveTestConfig(); // Re-fetch all config from KV
         if (fullEventConfig) {
-            app.populateLocationSelect(); // Re-populate location dropdown
-            // No need to call populateItemSelect explicitly here, populateLocationSelect will trigger it.
+            app.populateLocationSelect(); 
+            // populateItemSelect will trigger renderRatingForm if needed
             utils.showAlert("Locations updated!", "Success");
         } else {
             utils.showAlert("Failed to refresh locations. Please try again.", "Error");
