@@ -38,19 +38,28 @@
             </div>
 
             <div id="welcome-screen" class="hidden">
-               <img src="https://placehold.co/300x100/ADD8E6/000000?text=Margarita!" alt="Margarita Banner" class="w-full h-auto rounded-lg mb-6 object-cover">
-                <h2 class="text-lg font-semibold mb-3 text-center text-blue-600">Join a Taste Test</h2>
-                <input type="text" id="player-name-input" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-                <input type="text" id="session-id-input" placeholder="Enter Session ID (optional)" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-                <button id="start-test-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-150 shadow-sm">
-                    Start Tasting!
+                <img src="https://placehold.co/300x100/ADD8E6/000000?text=Margarita!" alt="Margarita Banner" class="w-full h-auto rounded-lg mb-6 object-cover">
+                
+                <button id="phill-starts-session-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg text-lg mb-4 transition duration-150 shadow-sm">
+                    Phill Starts Session (Admin)
                 </button>
+
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h2 class="text-lg font-semibold mb-3 text-center text-blue-600">Player: Join Existing Test</h2>
+                    <input type="text" id="player-name-input" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                    <input type="text" id="session-id-input" placeholder="Enter Session ID (optional)" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                    <button id="start-test-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-150 shadow-sm">
+                        Start Tasting!
+                    </button>
+                </div>
             </div>
 
             <div id="taste-test-section" class="hidden">
                 <h2 class="text-2xl font-bold mb-4 text-green-700" id="test-event-name"></h2>
                 <p class="text-sm text-gray-600 mb-4">You are: <strong id="current-player-name"></strong></p>
-                <p class="text-sm text-gray-600 mb-4">Session: <strong id="current-session-id-display"></strong></p>
+                <p class="mb-4 text-sm">Session ID: <strong id="current-session-id-display"></strong> 
+                   <button id="copy-session-id-btn" class="ml-2 text-xs bg-gray-200 hover:bg-gray-300 p-1 rounded">Copy ID</button>
+                </p>
 
                 <div id="location-picker" class="mb-6 p-4 border rounded-lg bg-gray-50 shadow-sm">
                     <h3 class="text-xl font-semibold mb-3 text-green-600">Current Location:</h3>
@@ -132,6 +141,7 @@
     const APP_PREFIX = 'margaritaTestApp_';
     const MAX_RATING = 5;
     const RATING_EXPLANATION = "For 0-5 ratings, 0 means it's the *opposite* of your ideal, and 5 means it *perfectly matches your ideal*. E.g., if you love sweet and it's sweet, that's a 5. If you hate sweet and it's sweet, that's a 0.";
+    const PHILL_ADMIN_ID = 'phill_the_admin'; // Consistent ID for Phill
 
     // DOM Elements
     const loadingScreen = document.getElementById('loading-screen');
@@ -148,10 +158,12 @@
     const playerNameInput = document.getElementById('player-name-input');
     const sessionIdInput = document.getElementById('session-id-input');
     const startTestBtn = document.getElementById('start-test-btn');
+    const phillStartsSessionBtn = document.getElementById('phill-starts-session-btn'); // NEW DOM ELEMENT
 
     const testEventNameDisplay = document.getElementById('test-event-name');
     const currentPlayerNameDisplay = document.getElementById('current-player-name');
     const currentSessionIdDisplay = document.getElementById('current-session-id-display');
+    const copySessionIdBtn = document.getElementById('copy-session-id-btn'); // New for copying
 
     const locationSelect = document.getElementById('location-select');
     const itemSelect = document.getElementById('item-select');
@@ -397,6 +409,47 @@
 
             app.renderRatingForm();
             utils.showScreen(tasteTestSection);
+        },
+
+        startPhillAdminSession: async () => { // NEW FUNCTION FOR ADMIN BUTTON
+            isAdmin = true;
+            currentPlayerId = 'phill_the_admin'; // Hardcoded admin ID
+            currentPlayerName = "Phill (Admin)";
+            utils.savePlayerInfo(currentPlayerId, currentPlayerName); // Save for consistency
+
+            // Logic to get the current active event config
+            fullEventConfig = await api.getActiveTestConfig();
+            if (!fullEventConfig) {
+                utils.showAlert("Could not load active event configuration for admin mode. Please ensure KV is set up.", "Error");
+                utils.showScreen(welcomeScreen);
+                return;
+            }
+
+            // Set currentSessionId based on the active event
+            currentSessionId = `session_${fullEventConfig.eventId}_${Date.now()}`; // Generate a new session ID for admin
+
+            // Update local state and UI elements for admin mode
+            playerNameInput.value = currentPlayerName;
+            sessionIdInput.value = currentSessionId; // Pre-fill session ID
+
+            // Now proceed to the main testing section, but with admin privileges
+            currentPlayerNameDisplay.textContent = currentPlayerName;
+            currentSessionIdDisplay.textContent = currentSessionId;
+            testEventNameDisplay.textContent = fullEventConfig.eventName;
+            appHeader.classList.remove('bg-green-500');
+            appHeader.classList.add('bg-blue-500');
+
+            app.populateLocationSelect(); // Populate for admin to manage
+            app.populateItemSelect(locationSelect.value); // Populate items for current selection
+            app.renderRatingForm(); // Admin can also rate
+
+            addLocationAdminBtn.classList.remove('hidden');
+            addItemAdminBtn.classList.remove('hidden');
+            newLocationNameInput.classList.remove('hidden');
+            newItemNameInput.classList.remove('hidden');
+            
+            utils.showScreen(tasteTestSection); // Go straight to the main section with admin controls
+            utils.showAlert(`Welcome, Phill! You are in Admin Mode for "${fullEventConfig.eventName}".`, "Admin Access");
         },
 
         renderRatingForm: () => {
@@ -742,6 +795,10 @@
         const sessionId = sessionIdInput.value;
         app.startTasting(sessionId);
     });
+
+    // NEW ADMIN BUTTON EVENT LISTENER
+    phillStartsSessionBtn.addEventListener('click', app.startPhillAdminSession);
+
 
     locationSelect.addEventListener('change', (e) => {
         app.populateItemSelect(e.target.value);
