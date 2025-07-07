@@ -254,8 +254,9 @@
     const leaveSessionBtn = document.getElementById('leave-session-btn');
     const refreshLocationsBtn = document.getElementById('refresh-locations-btn'); // NEW REFRESH BUTTON
 
-    // Admin buttons now belong only to admin-panel-screen
-    // Removed the problematic commented-out variables to ensure no conflict.
+    // Removed problematic DOM element declarations for buttons that moved to admin-panel-screen
+    // These were causing ReferenceErrors because they were being re-declared or targeted incorrectly.
+    // The relevant buttons are now handled by their new IDs on admin-panel-screen.
 
     const resultsSessionIdDisplay = document.getElementById('results-session-id');
     const resultsSummary = document.getElementById('results-summary');
@@ -983,6 +984,9 @@
                 utils.showAlert("Permission denied.", "Error");
                 return;
             }
+            // In the new admin flow, adding items is done to the *currently selected location*
+            // in the tasting view, which admin would access via "View Tasting Interface (as Admin)".
+            // The `addItemAdminBtn` is on the tasting section.
             const currentLocId = locationSelect.value; 
             if (!currentLocId) {
                 utils.showAlert("Please select a location to add an item to.", "Missing Location");
@@ -1037,7 +1041,7 @@
     // ADMIN PANEL BUTTONS
     addLocationFromAdminBtn.addEventListener('click', app.addLocation); 
     generateShareLinkBtn.addEventListener('click', app.generateShareLink);
-    adminCopySessionIdBtn.addEventListener('click', () => { // NEW Listener for admin panel copy ID
+    adminCopySessionIdBtn.addEventListener('click', () => { // Listener for admin panel copy ID
         if (adminSessionIdDisplay.textContent) {
             navigator.clipboard.writeText(adminSessionIdDisplay.textContent)
                 .then(() => utils.showAlert("Session ID copied to clipboard!", "Copied!"))
@@ -1047,7 +1051,7 @@
                 });
         }
     });
-    copyShareLinkBtn.addEventListener('click', () => {
+    copyShareLinkBtn.addEventListener('click', () => { // Listener for share link copy button
         if (generatedShareLink.textContent) {
             navigator.clipboard.writeText(generatedShareLink.textContent)
                 .then(() => utils.showAlert("Share link copied to clipboard!", "Copied!"))
@@ -1101,11 +1105,11 @@
         sessionIdInput.value = '';
     });
     
-    // Existing Admin Add Location/Item buttons from taste-test-section are now controlled by isAdmin flag
-    // and hidden by default. The primary adding is from admin panel.
     // The `addItemAdminBtn` on the taste-test-section is now handled by `app.addItem`
     // The previous event listener for addLocationAdminBtn from taste-test-section that caused ReferenceError has been removed.
-
+    // The new `addLocationFromAdminBtn` in the admin panel calls `app.addLocation`.
+    // We only need an event listener for `addItemAdminBtn` if it's still present in the HTML (it is in taste-test-section)
+    // and if we want it functional from there. The logic below is correct for it.
     addItemAdminBtn.addEventListener('click', app.addItem); 
 
     // REFRESH LOCATIONS BUTTON EVENT LISTENER
