@@ -255,10 +255,7 @@
     const refreshLocationsBtn = document.getElementById('refresh-locations-btn'); // NEW REFRESH BUTTON
 
     // Admin buttons now belong only to admin-panel-screen
-    // const addLocationAdminBtn = document.getElementById('add-location-admin-btn');
-    // const newLocationNameInput = document.getElementById('new-location-name-input');
-    // const addItemAdminBtn = document.getElementById('add-item-admin-btn');
-    // const newItemNameInput = document.getElementById('new-item-name-input');
+    // Removed the problematic commented-out variables to ensure no conflict.
 
     const resultsSessionIdDisplay = document.getElementById('results-session-id');
     const resultsSummary = document.getElementById('results-summary');
@@ -944,10 +941,10 @@
 
         addLocation: async () => {
             if (!isAdmin) {
-                utils.showAlert("Permission denied.", "Error"); // Should not happen with admin screen logic
+                utils.showAlert("Permission denied.", "Error"); 
                 return;
             }
-            const newLocName = newLocationAdminInput.value.trim(); // Changed to admin input field
+            const newLocName = newLocationAdminInput.value.trim(); 
             if (!utils.validateInput(newLocName, 'text', 100)) {
                 utils.showAlert("Please enter a valid location name (1-100 characters).", "Invalid Input");
                 return;
@@ -961,7 +958,7 @@
             };
 
             fullEventConfig.locations.push(newLocation);
-            fullEventConfig.activeLocationId = newLocation.locationId; // Make newly added the active one for convenience
+            fullEventConfig.activeLocationId = newLocation.locationId; 
 
             const updatedEvent = {
                 eventId: fullEventConfig.eventId,
@@ -975,9 +972,9 @@
             const response = await api.updateEventData(updatedEvent);
             if (response) {
                 utils.showAlert("Location added successfully! It is now the active location.", "Success");
-                newLocationAdminInput.value = ''; // Clear admin input field
-                fullEventConfig = await api.getActiveTestConfig(); // Re-fetch to get latest state including existing feedback
-                app.renderAdminLocationsList(); // Re-render the admin list
+                newLocationAdminInput.value = ''; 
+                fullEventConfig = await api.getActiveTestConfig(); 
+                app.renderAdminLocationsList(); 
             }
         },
 
@@ -1107,37 +1104,7 @@
     // Existing Admin Add Location/Item buttons from taste-test-section are now controlled by isAdmin flag
     // and hidden by default. The primary adding is from admin panel.
     // The `addItemAdminBtn` on the taste-test-section is now handled by `app.addItem`
-    addLocationAdminBtn.addEventListener('click', async () => {
-        const newLocName = newLocationNameInput.value.trim();
-        if (!utils.validateInput(newLocName, 'text', 100)) {
-            utils.showAlert("Please enter a valid location name (1-100 characters).", "Invalid Input");
-            return;
-        }
-        const newLocation = {
-            locationId: `loc_${utils.generateId(6)}`,
-            locationName: newLocName,
-            items: [],
-            allowCustomItem: true
-        };
-        fullEventConfig.locations.push(newLocation);
-        fullEventConfig.activeLocationId = newLocation.locationId;
-        const updatedEvent = {
-            eventId: fullEventConfig.eventId,
-            eventName: fullEventConfig.eventName,
-            testTypeId: fullEventConfig.testTypeConfig.id,
-            adminId: fullEventConfig.adminId,
-            locations: fullEventConfig.locations,
-            activeLocationId: fullEventConfig.activeLocationId
-        };
-        const response = await api.updateEventData(updatedEvent);
-        if (response) {
-            utils.showAlert("Location added successfully from tasting view!", "Success");
-            newLocationNameInput.value = '';
-            app.populateLocationSelect(); 
-            app.populateItemSelect(newLocation.locationId);
-            fullEventConfig = await api.getActiveTestConfig(); 
-        }
-    });
+    // The previous event listener for addLocationAdminBtn from taste-test-section that caused ReferenceError has been removed.
 
     addItemAdminBtn.addEventListener('click', app.addItem); 
 
