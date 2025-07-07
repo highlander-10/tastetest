@@ -1110,7 +1110,7 @@
     // The new `addLocationFromAdminBtn` in the admin panel calls `app.addLocation`.
     // We only need an event listener for `addItemAdminBtn` if it's still present in the HTML (it is in taste-test-section)
     // and if we want it functional from there. The logic below is correct for it.
-    addItemAdminBtn.addEventListener('click', app.addItem); 
+    // REMOVED THE PROBLEM LINE HERE: addItemAdminBtn.addEventListener('click', app.addItem); 
 
     // REFRESH LOCATIONS BUTTON EVENT LISTENER
     refreshLocationsBtn.addEventListener('click', async () => {
