@@ -3,7 +3,8 @@
 export async function onRequestGet({ env }) {
   try {
     // 1. Get the ID of the currently active event
-    const activeEventId = await env.TASTE_TEST_APP_KV.get('ACTIVE_EVENT_ID');
+    // Changed binding name to env.MargaritaSessionData
+    const activeEventId = await env.MargaritaSessionData.get('ACTIVE_EVENT_ID');
 
     if (!activeEventId) {
       return new Response(JSON.stringify({ error: "No active event ID set in KV." }), {
@@ -13,7 +14,8 @@ export async function onRequestGet({ env }) {
     }
 
     // 2. Get all defined events
-    const eventsDefinitionsJson = await env.TASTE_TEST_APP_KV.get('EVENTS_DEFINITIONS');
+    // Changed binding name to env.MargaritaSessionData
+    const eventsDefinitionsJson = await env.MargaritaSessionData.get('EVENTS_DEFINITIONS');
     if (!eventsDefinitionsJson) {
       return new Response(JSON.stringify({ error: "Events definitions not found in KV." }), {
         status: 500,
@@ -31,7 +33,8 @@ export async function onRequestGet({ env }) {
     }
 
     // 3. Get all defined test types (which contain questions)
-    const testDefinitionsJson = await env.TASTE_TEST_APP_KV.get('TEST_DEFINITIONS');
+    // Changed binding name to env.MargaritaSessionData
+    const testDefinitionsJson = await env.MargaritaSessionData.get('TEST_DEFINITIONS');
     if (!testDefinitionsJson) {
       return new Response(JSON.stringify({ error: "Test definitions not found in KV." }), {
         status: 500,
@@ -52,9 +55,7 @@ export async function onRequestGet({ env }) {
     const fullConfigForFrontend = {
       ...currentEventConfig,
       testTypeConfig: testTypeConfig,
-      // For now, feedback is not dynamically fetched here. It would be a separate worker.
-      // We'll leave it as an empty array as the frontend expects this property.
-      feedback: []
+      feedback: [] // Ensure feedback property exists, even if empty, for frontend consistency
     };
 
     return new Response(JSON.stringify(fullConfigForFrontend), {
